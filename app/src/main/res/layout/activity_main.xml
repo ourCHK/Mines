@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    >
+    <TableLayout
+        android:id="@+id/tableLayout"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="visible">
+        <TableRow
+            android:gravity="center">
+            <Button
+                android:layout_width="match_parent"
+                android:id="@+id/singlePlayer"
+                android:text="@string/single_player"/>
+        </TableRow>
+
+        <TableRow
+            android:gravity="center">
+            <Button
+                android:layout_width="match_parent"
+                android:id="@+id/doublePlayer"
+                android:text="@string/double_player"/>
+        </TableRow>
+
+        <TableRow
+        android:gravity="center">
+            <Button
+                android:layout_width="match_parent"
+                android:id="@+id/about"
+                android:text="@string/about"/>
+        </TableRow>
+    </TableLayout>
+
+    <android.support.v7.widget.GridLayout
+        android:id="@+id/gridView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        app:rowCount="2"
+        app:columnCount="2">
+
+        <Button
+            app:layout_columnWeight="1"
+            app:layout_rowWeight="1"
+            android:id="@+id/type1"
+            android:text="8*8"
+            android:textSize="30dp"
+            />
+
+        <Button
+            app:layout_columnWeight="1"
+            app:layout_rowWeight="1"
+            android:id="@+id/type2"
+            android:text="16*16"
+            android:textSize="30dp"
+            />
+
+        <Button
+            app:layout_columnWeight="1"
+            app:layout_rowWeight="1"
+            android:id="@+id/type3"
+            android:text="16*30"
+            android:textSize="30dp"
+            />
+
+        <Button
+            app:layout_columnWeight="1"
+            app:layout_rowWeight="1"
+            android:id="@+id/type4"
+            android:text="@string/custom"
+            android:textSize="30dp"
+            />
+    </android.support.v7.widget.GridLayout>
+
+    <TableLayout
+        android:id="@+id/connectType"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+        <TableRow
+            android:gravity="center">
+            <Button
+                android:layout_width="match_parent"
+                android:id="@+id/wifiConnector"
+                android:text="@string/wifi_connector"/>
+        </TableRow>
+
+        <TableRow
+            android:gravity="center">
+            <Button
+                android:layout_width="match_parent"
+                android:id="@+id/bluetoothConnector"
+                android:text="@string/bluetooth_connector"/>
+        </TableRow>
+    </TableLayout>
+
+</LinearLayout>

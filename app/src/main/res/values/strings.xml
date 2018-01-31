@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Mines</string>
+    <string name="single_player">单人游戏</string>
+    <string name="double_player">双人游戏</string>
+    <string name="about">关于</string>
+    <string name="wifi_connector">Wifi联机</string>
+    <string name="bluetooth_connector">BlueTooth联机</string>
+    <string name="server">我要当服务端</string>
+    <string name="client">我要当客户端</string>
+    <string name="chooseSpec">选择规格</string>
+
+    <string name="custom">自定义</string>
+</resources>
