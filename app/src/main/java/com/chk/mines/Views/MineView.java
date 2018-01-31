@@ -12,6 +12,8 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.ViewGroup;
 
+import com.chk.mines.Beans.Mine;
+
 /**
  * Created by chk on 18-1-31.
  */
@@ -32,6 +34,10 @@ public class MineView extends SurfaceView implements SurfaceHolder.Callback,Runn
 
     Thread mGameThread;
     boolean isOnRun;
+
+    Mine[][] mines;
+    int rows;
+    int columns;
 
 
     public MineView(Context context) {
@@ -63,8 +69,6 @@ public class MineView extends SurfaceView implements SurfaceHolder.Callback,Runn
         mPaint.setStyle(Paint.Style.STROKE);
 
         mGameThread = new Thread(this);
-
-
     }
 
     void init2() {
@@ -106,6 +110,11 @@ public class MineView extends SurfaceView implements SurfaceHolder.Callback,Runn
         }
     }
 
+
+    void drawMines() {
+
+    }
+
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         ViewGroup.LayoutParams layoutParams = getLayoutParams();
@@ -133,5 +142,17 @@ public class MineView extends SurfaceView implements SurfaceHolder.Callback,Runn
     @Override
     public void scrollTo(int x, int y) {
         super.scrollTo(x, y);
+    }
+
+    public Mine[][] getMines() {
+        return mines;
+    }
+
+    public void setMines(Mine[][] mines) {
+        this.mines = mines;
+        if (mines != null) {
+            rows = mines.length;
+            columns = mines[0].length;
+        }
     }
 }
