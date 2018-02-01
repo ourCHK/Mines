@@ -4,148 +4,97 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.RectF;
+import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.MotionEvent;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
+import android.view.View;
 import android.view.ViewGroup;
 
 import com.chk.mines.Beans.Mine;
 
 /**
- * Created by chk on 18-1-31.
+ * Created by chk on 18-2-1.
  */
 
-public class MineView extends SurfaceView implements SurfaceHolder.Callback,Runnable{
+public abstract class MineView extends View{
 
     public static int DEVICE_WIDTH;
     public static int DEVICE_HEIGHT;
 
-    SurfaceHolder mHolder;
-
-    int mWidth;
-    int mHeight;
-    int testX;
-
-    Canvas canvas;
     Paint mPaint;
+    Paint mNumPaint;
+    Paint mCubePaint;
 
-    Thread mGameThread;
-    boolean isOnRun;
+
+    int mWidth; //View的宽高
+    int mHeight;
+
+    int mMineSize; //雷的宽高
+    int detalX; //画布的偏移
+    int detalY;
 
     Mine[][] mines;
     int rows;
     int columns;
-
+    RectF rectF;
 
     public MineView(Context context) {
         super(context);
         init1();
     }
 
-    public MineView(Context context, AttributeSet attrs) {
+    public MineView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         init1();
     }
 
     void init1() {
-        setFocusable(true);
-        setFocusableInTouchMode(true);
-        setKeepScreenOn(true);
-
         DisplayMetrics dm = getResources().getDisplayMetrics(); //获取屏幕尺寸大小
         DEVICE_WIDTH = dm.widthPixels;
         DEVICE_HEIGHT = dm.heightPixels;
+        mMineSize = DEVICE_WIDTH / 12;    //其实这里应该加个判断屏幕横竖的判断
 
-        mHolder = getHolder();
-        mHolder.addCallback(this);
+        rectF = new RectF();
 
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
-        mPaint.setColor(Color.BLUE);
-        mPaint.setStrokeWidth(20);
+        mPaint.setColor(Color.GREEN);
         mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setStrokeWidth(10);
+        mPaint.setTextSize(50);
 
-        mGameThread = new Thread(this);
+        mNumPaint = new Paint();
+        mNumPaint.setAntiAlias(true);
+        mNumPaint.setColor(Color.BLACK);
+
+        mCubePaint = new Paint();
+        mCubePaint.setAntiAlias(true);
+        mCubePaint.setColor(Color.GRAY);
+        mCubePaint.setStyle(Paint.Style.FILL);
+
     }
 
     void init2() {
         mWidth = getWidth();
         mHeight = getHeight();
 
+        detalX = mMineSize * 2;
+        detalY = (mHeight - 8*mMineSize)/2;
         Log.i("init2",mWidth+"  "+mHeight);
-
-        onMyDraw();
-
-        if (!mGameThread.isAlive()) {
-            isOnRun = true;
-            mGameThread.start();
-            Log.i("init2","run");
-        }
     }
 
     @Override
-    public void run() {
-        while (isOnRun) {
-            try {
-                onMyDraw();
-                Log.i("onDraw","run");
-                scrollTo(testX++,0);
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    void onMyDraw() {
-        canvas = mHolder.lockCanvas();
-        if (canvas != null) {
-            canvas.drawRect(0,0,mWidth,mHeight,mPaint);
-            canvas.drawText("Hello",100,100,mPaint);
-            Log.i("onMyDraw","run");
-            mHolder.unlockCanvasAndPost(canvas);
-        }
-    }
-
-
-    void drawMines() {
-
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        setViewSize();
     }
 
     @Override
-    public void surfaceCreated(SurfaceHolder holder) {
-        ViewGroup.LayoutParams layoutParams = getLayoutParams();
-        layoutParams.width = 2000;
-        layoutParams.height = 3000;
-        this.setLayoutParams(layoutParams);
-    }
-
-    @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
         init2();
-    }
-
-    @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {
-        isOnRun = false;
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        return super.onTouchEvent(event);
-    }
-
-
-    @Override
-    public void scrollTo(int x, int y) {
-        super.scrollTo(x, y);
-    }
-
-    public Mine[][] getMines() {
-        return mines;
     }
 
     public void setMines(Mine[][] mines) {
@@ -154,5 +103,69 @@ public class MineView extends SurfaceView implements SurfaceHolder.Callback,Runn
             rows = mines.length;
             columns = mines[0].length;
         }
+        invalidate();
     }
+
+    @Override
+    public void onDraw(Canvas canvas) {
+//        drawFrame(canvas);
+        drawColorCube(canvas);
+    }
+
+    /**
+     * 绘制边框
+     * @param canvas
+     */
+    public  void drawFrame(Canvas canvas) {
+        canvas.save();
+        canvas.translate(mMineSize,mMineSize);
+
+        for (int i=0; i<=rows; i++) {
+            canvas.drawLine(0,i*mMineSize,columns*mMineSize,i*mMineSize,mPaint);
+        }
+
+        for (int j=0; j<=columns; j++) {
+            canvas.drawLine(j*mMineSize,0,j*mMineSize,rows*mMineSize,mPaint);
+        }
+        canvas.restore();
+    }
+
+    /**
+     * 绘制雷
+     * @param canvas
+     */
+    public abstract void drawMines(Canvas canvas);
+
+    /**
+     * 绘制方块
+     * @param canvas
+     */
+    public void drawColorCube(Canvas canvas) {
+        canvas.save();
+        canvas.translate(mMineSize,mMineSize);
+        for (int i=0; i<rows; i++) {
+            for (int j=0; j<columns; j++) {
+                rectF.top = 5 + i*mMineSize;
+                rectF.left = 5 + j * mMineSize;
+                rectF.bottom = (i+1) * mMineSize - 5;
+                rectF.right = (j+1) * mMineSize - 5;
+                canvas.drawRoundRect(rectF,5,5,mCubePaint);
+            }
+        }
+        canvas.restore();
+    }
+
+    /**
+     * 绘制数字
+     * @param canvas
+     */
+    public abstract void drawNum(Canvas canvas);
+
+    /**
+     * 这个方法在onMeasure中调用，可以在这个方法内利用LayoutParams设置设置view的大小
+     */
+    public abstract void setViewSize();
+
+
+
 }

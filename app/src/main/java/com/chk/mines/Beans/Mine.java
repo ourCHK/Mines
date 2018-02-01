@@ -26,15 +26,7 @@ public class Mine {
      */
     boolean isFlaged;
 
-    public Mine(int num) {
-        this.num = num;
-        init();
-    }
-
-    void init() {
-        if (num < 0) {
-            isMine = true;
-        }
+    public Mine() {
     }
 
     public int getNum() {

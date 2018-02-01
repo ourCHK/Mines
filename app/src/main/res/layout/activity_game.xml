@@ -1,19 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context="com.chk.mines.GameActivity"
     >
         <LinearLayout
+            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content">
+                <Button
+                    android:text="标记"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
 
-                <com.chk.mines.Views.MineView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                <Button
+                    android:text="时间"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <Button
+                    android:text="null"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
         </LinearLayout>
 
-</ScrollView>
+        <ScrollView
+            android:fillViewport="true"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="0dp">
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+                        <LinearLayout
+                            android:id="@+id/mineViewContainer"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical">
+                        </LinearLayout>
+                </HorizontalScrollView>
+        </ScrollView>
+
+</LinearLayout>
