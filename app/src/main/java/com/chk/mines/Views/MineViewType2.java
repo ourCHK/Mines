@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.ViewGroup;
 
 /**
@@ -22,14 +23,9 @@ public class MineViewType2 extends MineView{
     }
 
     @Override
-    public void drawMines(Canvas canvas) {
-
-    }
-
-
-    @Override
-    public void drawNum(Canvas canvas) {
-
+    public void setTranslateDetal() {
+        detalX = mMineSize;
+        detalY = mMineSize;
     }
 
     @Override
@@ -39,4 +35,18 @@ public class MineViewType2 extends MineView{
         lp.height = mMineSize*18;
         setLayoutParams(lp);
     }
+
+//    @Override
+//    public boolean onTouchEvent(MotionEvent event) {
+//        switch(event.getAction()) {
+//            case MotionEvent.ACTION_DOWN:
+//                break;
+//            case MotionEvent.ACTION_MOVE:
+//                break;
+//            case MotionEvent.ACTION_UP:
+//                break;
+//        }
+//        Log.i("MineViewType2",event.getX()+"   "+event.getY()+"   raw:"+event.getRawX()+"  "+event.getRawY());
+//        return true;
+//    }
 }

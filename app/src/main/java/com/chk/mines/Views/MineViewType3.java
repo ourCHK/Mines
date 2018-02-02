@@ -21,20 +21,17 @@ public class MineViewType3 extends MineView{
     }
 
     @Override
-    public void drawMines(Canvas canvas) {
-
-    }
-
-    @Override
-    public void drawNum(Canvas canvas) {
-
-    }
-
-    @Override
     public void setViewSize() {
         ViewGroup.LayoutParams lp = getLayoutParams();
         lp.width = mMineSize*32;
         lp.height = mMineSize * 18;
         setLayoutParams(lp);
     }
+
+    @Override
+    public void setTranslateDetal() {
+        detalX = mMineSize;
+        detalY = mMineSize;
+    }
+
 }

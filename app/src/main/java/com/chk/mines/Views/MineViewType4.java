@@ -21,22 +21,17 @@ public class MineViewType4 extends MineView{
     }
 
     @Override
-    public void drawMines(Canvas canvas) {
-
-    }
-
-    @Override
     public void drawFrame(Canvas canvas) {
 
     }
 
     @Override
-    public void drawColorCube(Canvas canvas) {
-
+    public void setTranslateDetal() {
+        detalX = mMineSize;
+        detalY = mMineSize;
     }
-
     @Override
-    public void drawNum(Canvas canvas) {
+    public void drawColorCube(Canvas canvas) {
 
     }
 
