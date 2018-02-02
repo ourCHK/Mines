@@ -9,5 +9,9 @@
     <string name="client">我要当客户端</string>
     <string name="chooseSpec">选择规格</string>
 
+    <string name="flag">标记</string>
+    <string name="paused">暂停</string>
+    <string name="restart">重新开始</string>
+
     <string name="custom">自定义</string>
 </resources>

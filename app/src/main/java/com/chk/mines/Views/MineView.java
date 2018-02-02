@@ -29,6 +29,7 @@ public abstract class MineView extends View{
 
     Bitmap mBlackMineBitmap;
     Bitmap mRedMineBitmap;
+    Bitmap mFlagBitmap;
     Rect rectResize;
     Rect rectBitmap;
 
@@ -48,11 +49,21 @@ public abstract class MineView extends View{
     int pointY;
 
     Mine[][] mines;
+    int mMineCount;
     int rows;
     int columns;
     int row;
     int column;
     RectF rectCube;
+    int mDraggedCount;  //挖掘的数量
+
+    boolean isGameOver;
+
+    PointType currentType = PointType.DRAG_MINE;    //默认是挖雷状态
+
+    public enum PointType {    //用于判断点击下去时是什么状态，挖雷状态还是标记状态
+        DRAG_MINE,FLAG_MINE
+    }
 
     public MineView(Context context) {
         super(context);
@@ -68,6 +79,7 @@ public abstract class MineView extends View{
 
         mBlackMineBitmap = BitmapFactory.decodeResource(getResources(),R.mipmap.mine_black);
         mRedMineBitmap = BitmapFactory.decodeResource(getResources(),R.mipmap.mine_red);
+        mFlagBitmap = BitmapFactory.decodeResource(getResources(),R.mipmap.flag);
         rectResize = new Rect();
         rectBitmap = new Rect(0,0,mBlackMineBitmap.getWidth(),mBlackMineBitmap.getHeight());
 
@@ -123,11 +135,12 @@ public abstract class MineView extends View{
         init2();
     }
 
-    public void setMines(Mine[][] mines) {
+    public void setMines(Mine[][] mines,int mineCount) {
         this.mines = mines;
         if (mines != null) {
             rows = mines.length;
             columns = mines[0].length;
+            mMineCount = mineCount;
         }
         invalidate();
     }
@@ -136,8 +149,8 @@ public abstract class MineView extends View{
     public void onDraw(Canvas canvas) {
         drawColorCube(canvas);
         drawNum(canvas);
+        drawMines(canvas);
         drawFlag(canvas);
-//        drawMines(canvas);
     }
 
     /**
@@ -195,25 +208,33 @@ public abstract class MineView extends View{
      * @param canvas
      */
     public void drawMines(Canvas canvas) {
-        canvas.save();
-        canvas.translate(detalX,detalY);
-        for (int i=0; i<rows; i++) {
-            for (int j=0; j<columns; j++) {
+        if (isGameOver) {
+            int row = (pointY - detalY) / mMineSize;
+            int column = (pointX - detalX) / mMineSize;
+            canvas.save();
+            canvas.translate(detalX,detalY);
+            for (int i=0; i<rows; i++) {
+                for (int j=0; j<columns; j++) {
 //                rectCube.top = 5 + i*mMineSize;
 //                rectCube.left = 5 + j * mMineSize;
 //                rectCube.bottom = (i+1) * mMineSize - 5;
 //                rectCube.right = (j+1) * mMineSize - 5;
 //                canvas.drawRoundRect(rectCube,5,5,mCubePaint);
-                if (mines[i][j].isMine()) {
-                    rectResize.top = i * mMineSize;
-                    rectResize.left = j * mMineSize;
-                    rectResize.bottom = (i+1) * mMineSize;
-                    rectResize.right = (j+1) * mMineSize;
-                    canvas.drawBitmap(mBlackMineBitmap, rectBitmap, rectResize,mPaint);
+                    if (mines[i][j].isMine()) {
+                        rectResize.top = i * mMineSize;
+                        rectResize.left = j * mMineSize;
+                        rectResize.bottom = (i+1) * mMineSize;
+                        rectResize.right = (j+1) * mMineSize;
+                        if (row == i && column == j && !mines[i][j].isFlaged())
+                            canvas.drawBitmap(mRedMineBitmap, rectBitmap, rectResize,mPaint);
+                        else
+                            canvas.drawBitmap(mBlackMineBitmap, rectBitmap, rectResize,mPaint);
+                    }
                 }
             }
+            canvas.restore();
         }
-        canvas.restore();
+
     }
 
     /**
@@ -221,7 +242,22 @@ public abstract class MineView extends View{
      * @param canvas
      */
     public void drawFlag(Canvas canvas) {
-
+        canvas.save();
+        canvas.translate(detalX,detalY);
+        for (int i=0; i<rows; i++) {
+            for (int j=0; j<columns; j++) {
+                if (mines[i][j].isFlaged()) {
+                    if (mines[i][j].isFlaged()) {
+                        rectResize.top = i * mMineSize;
+                        rectResize.left = j * mMineSize;
+                        rectResize.bottom = (i+1) * mMineSize;
+                        rectResize.right = (j+1) * mMineSize;
+                        canvas.drawBitmap(mFlagBitmap, rectBitmap, rectResize,mPaint);
+                    }
+                }
+            }
+        }
+        canvas.restore();
     }
 
     /**
@@ -250,6 +286,7 @@ public abstract class MineView extends View{
     }
 
     void setGameOver() {
+        isGameOver = true;
         Log.i("MineView","GameOver");
     }
 
@@ -263,22 +300,43 @@ public abstract class MineView extends View{
             case MotionEvent.ACTION_UP:
                 pointX = (int) event.getX();
                 pointY = (int) event.getY();
-                dealPoint(pointX,pointY);
+                dealPointer(pointX,pointY);
                 break;
         }
         Log.i("MineViewType2",event.getX()+"   "+event.getY()+"   raw:"+event.getRawX()+"  "+event.getRawY());
         return true;
     }
 
-    void dealPoint(int pointX, int pointY) {
+    void dealPointer(int pointX, int pointY) {
         int row = (pointY - detalY) / mMineSize;
         int column = (pointX - detalX) / mMineSize;
         if (row<0 || row>= rows || column<0 || column >= columns)   //边界判断
             return;
         long startTime = System.currentTimeMillis();
-        openCube(row,column);
+        switch (currentType) {
+            case DRAG_MINE:
+                openCube(row,column);
+                break;
+            case FLAG_MINE:
+                flagCube(row,column);
+                break;
+        }
         Log.i("MineView","openCube Cost Time:"+(System.currentTimeMillis() - startTime));
         invalidate();
+    }
+
+    /**
+     * 标记雷
+     * @param row
+     * @param column
+     */
+    void flagCube(int row, int column) {
+        if (mines[row][column].isOpen())
+            return;
+        if (mines[row][column].isFlaged())
+            mines[row][column].setFlaged(false);
+        else
+            mines[row][column].setFlaged(true);
     }
 
     /**
@@ -296,6 +354,7 @@ public abstract class MineView extends View{
             return;
 
         mines[row][column].setOpen(true);   //首先设置为打开状态
+        mines[row][column].setFlaged(false);    //去掉标记状态
 
         if (mines[row][column].getNum() != 0) {    //如果打开的不是0，结束
             return;
@@ -335,4 +394,13 @@ public abstract class MineView extends View{
             }
         }
     }
+
+    public void setCurrentType() {
+        if (currentType == PointType.DRAG_MINE)
+            this.currentType = PointType.FLAG_MINE;
+        else
+            this.currentType = PointType.DRAG_MINE;
+    }
+
+    void get
 }
