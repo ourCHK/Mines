@@ -2,6 +2,7 @@
     <string name="app_name">Mines</string>
     <string name="single_player">单人游戏</string>
     <string name="double_player">双人游戏</string>
+    <string name="record">记录榜</string>
     <string name="about">关于</string>
     <string name="wifi_connector">Wifi联机</string>
     <string name="bluetooth_connector">BlueTooth联机</string>

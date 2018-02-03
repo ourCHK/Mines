@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -17,6 +18,10 @@ import android.view.View;
 
 import com.chk.mines.Beans.Mine;
 import com.chk.mines.R;
+
+import static com.chk.mines.GameActivity.GAME_OVER;
+import static com.chk.mines.GameActivity.GAME_START;
+import static com.chk.mines.GameActivity.GAME_SUCCESS;
 
 /**
  * Created by chk on 18-2-1.
@@ -57,7 +62,10 @@ public abstract class MineView extends View{
     RectF rectCube;
     int mDraggedCount;  //挖掘的数量
 
+    Handler mHandler;
+    boolean isGameStart;
     boolean isGameOver;
+    boolean isGameSuccess;
 
     PointType currentType = PointType.DRAG_MINE;    //默认是挖雷状态
 
@@ -151,6 +159,7 @@ public abstract class MineView extends View{
         drawNum(canvas);
         drawMines(canvas);
         drawFlag(canvas);
+        checkResult();
     }
 
     /**
@@ -194,7 +203,7 @@ public abstract class MineView extends View{
     }
 
     /**
-     * 设置绘制时View的偏移量
+     * 设置绘制时画布的偏移量
      */
     public abstract void setTranslateDetal();
 
@@ -303,11 +312,21 @@ public abstract class MineView extends View{
                 dealPointer(pointX,pointY);
                 break;
         }
-        Log.i("MineViewType2",event.getX()+"   "+event.getY()+"   raw:"+event.getRawX()+"  "+event.getRawY());
         return true;
     }
 
+    /**
+     * 对点击的点进行事件处理
+     * @param pointX
+     * @param pointY
+     */
     void dealPointer(int pointX, int pointY) {
+        if (isGameOver || isGameSuccess)
+            return;
+        if (!isGameStart) { //开始游戏
+            isGameStart = true;
+            mHandler.sendEmptyMessage(GAME_START);
+        }
         int row = (pointY - detalY) / mMineSize;
         int column = (pointX - detalX) / mMineSize;
         if (row<0 || row>= rows || column<0 || column >= columns)   //边界判断
@@ -365,7 +384,6 @@ public abstract class MineView extends View{
 
             if (row-1 >= 0) {
                 openCube(row-1,column);
-
             }
 
             if (row-1 >= 0 && column+1 < columns) {
@@ -402,5 +420,41 @@ public abstract class MineView extends View{
             this.currentType = PointType.DRAG_MINE;
     }
 
-    void get
+    /**
+     * 检查游戏状态，结束还是成功?
+     */
+    void checkResult() {
+        int openedCount = 0;
+        for (int i=0; i<rows; i++) {
+            for (int j=0; j<columns; j++) {
+                if (!mines[i][j].isMine() && mines[i][j].isOpen())
+                    openedCount++;
+            }
+        }
+
+        if (openedCount == rows * columns - mMineCount) {
+            isGameSuccess = true;
+            mHandler.sendEmptyMessage(GAME_SUCCESS); //通知GameActivity
+        }
+        if (isGameOver)
+            mHandler.sendEmptyMessage(GAME_OVER);
+    }
+
+    public void setHandler(Handler mHandler) {
+        this.mHandler = mHandler;
+    }
+
+    /**
+     * 重新开始游戏,初始化标志
+     * @param mines
+     * @param mineCount
+     */
+    public void restart(Mine[][] mines,int mineCount) {
+        isGameOver = false;
+        isGameSuccess = false;
+        isGameStart = false;
+        currentType = PointType.DRAG_MINE;
+        setMines(mines,mineCount);
+    }
+
 }

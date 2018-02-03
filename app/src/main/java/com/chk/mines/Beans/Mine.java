@@ -2,8 +2,8 @@ package com.chk.mines.Beans;
 
 /**
  * Created by chk on 18-1-31.
+ * 方块
  */
-
 public class Mine {
 
     /**
@@ -25,6 +25,11 @@ public class Mine {
      * 是否被标记了
      */
     boolean isFlaged;
+
+    /**
+     * 是否疑惑
+     */
+    boolean isConfused;
 
     public Mine() {
     }
@@ -59,5 +64,13 @@ public class Mine {
 
     public void setFlaged(boolean flaged) {
         isFlaged = flaged;
+    }
+
+    public boolean isConfused() {
+        return isConfused;
+    }
+
+    public void setConfused(boolean confused) {
+        isConfused = confused;
     }
 }

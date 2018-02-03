@@ -29,6 +29,14 @@
         </TableRow>
 
         <TableRow
+            android:gravity="center">
+            <Button
+                android:layout_width="match_parent"
+                android:id="@+id/record"
+                android:text="@string/record"/>
+        </TableRow>
+
+        <TableRow
         android:gravity="center">
             <Button
                 android:layout_width="match_parent"

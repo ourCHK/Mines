@@ -13,15 +13,20 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 
 import com.chk.mines.Beans.Mine;
+import com.chk.mines.Interface.OnDialogButtonClickListener;
 import com.chk.mines.Utils.BindView;
 import com.chk.mines.Utils.InitBindView;
+import com.chk.mines.Views.CustomDialog;
 import com.chk.mines.Views.MineView;
 import com.chk.mines.Views.MineViewType1;
 import com.chk.mines.Views.MineViewType2;
 import com.chk.mines.Views.MineViewType3;
 import com.chk.mines.Views.MineViewType4;
+import com.chk.mines.Views.TimeTextView;
 
 import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class GameActivity extends AppCompatActivity implements View.OnClickListener{
 
@@ -35,9 +40,14 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
     public final static int FLAG_IS_DOUBLE = 1<<5;
 
     public final static int GAME_OVER = -1;
-    public final static int SUCCESS = 1;
+    public final static int GAME_SUCCESS = 1;
+    public final static int GAME_PAUSED = 2;
+    public final static int GAME_START = 3;     //用于开始计时
+    public final static int TIME_CHANGED = 8;
 
     Handler mHandler;
+    Timer timer;
+    int time;
 
     private int mChoosedGameType;
     private boolean isSingle;
@@ -51,6 +61,15 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
 
     @BindView(R.id.flagButton)
     Button mFlagButton;
+
+    @BindView(R.id.restart)
+    Button mRestartGame;
+
+    @BindView(R.id.showDialog)
+    Button mShowDialog;
+
+    @BindView(R.id.timeView)
+    TimeTextView mTimeView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,10 +86,32 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void handleMessage(Message msg) {
                 switch (msg.what) {
-
+                    case GAME_SUCCESS:
+                        showCustomDialog(GAME_SUCCESS);
+                        timer.cancel();
+                        Log.i("GameActivity","Success");
+                        break;
+                    case GAME_OVER:
+                        showCustomDialog(GAME_OVER);
+                        Log.i("GameActivity","GameOver");
+                        timer.cancel();
+                        break;
+                    case GAME_START:
+                        timer = new Timer();
+                        timer.schedule(new TimerTask() {
+                            @Override
+                            public void run() {
+                                mHandler.sendEmptyMessage(TIME_CHANGED);
+                            }
+                        },1000,1000);
+                        break;
+                    case TIME_CHANGED:
+                        mTimeView.setText("TIME:"+ ++time);
+                        break;
                 }
             }
         };
+
 
         Intent intent = getIntent();
         int gameType = intent.getIntExtra(GAME_TYPE,-1);
@@ -104,8 +145,11 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         mMineViewContainer.addView(mMineView,lp);
         initMines(mines, mMineCount);
         mMineView.setMines(mines, mMineCount);
+        mMineView.setHandler(mHandler);
 
         mFlagButton.setOnClickListener(this);
+        mRestartGame.setOnClickListener(this);
+        mShowDialog.setOnClickListener(this);
     }
 
     void initMines(Mine[][] mines,int mineCount) {
@@ -183,6 +227,47 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.flagButton:
                 mMineView.setCurrentType();
                 break;
+            case R.id.restart:
+                restartGame();
+                break;
+            case R.id.showDialog:
+//                showDialog();
+                break;
         }
+    }
+
+
+
+
+    void showCustomDialog(int GameType) {
+        CustomDialog dialog = null;
+        switch (GameType) {
+            case GAME_SUCCESS:
+                dialog = new CustomDialog(this,R.style.Custom_Dialog_Style,R.layout.dialog_layout_success);
+                break;
+            case GAME_OVER:
+                dialog = new CustomDialog(this,R.style.Custom_Dialog_Style,R.layout.dialog_layout_fail);
+                break;
+        }
+        if (dialog != null) {
+            dialog.setOnDialogButtonClickListener(new OnDialogButtonClickListener() {
+                @Override
+                public void onLeftClickListener() {
+                }
+
+                @Override
+                public void onRightClickListener() {
+                    restartGame();
+                }
+            });
+            dialog.show();
+        }
+    }
+
+    void restartGame() {
+        time = 0;
+        mTimeView.setText("Time:0");
+        initMines(mines,mMineCount);
+        mMineView.restart(mines,mMineCount);
     }
 }
