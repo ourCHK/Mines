@@ -37,6 +37,14 @@
         </TableRow>
 
         <TableRow
+            android:gravity="center">
+            <Button
+                android:layout_width="match_parent"
+                android:id="@+id/help"
+                android:text="游戏帮助"/>
+        </TableRow>
+
+        <TableRow
         android:gravity="center">
             <Button
                 android:layout_width="match_parent"

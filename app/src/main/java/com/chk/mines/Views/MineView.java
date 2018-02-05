@@ -9,6 +9,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -22,6 +23,7 @@ import com.chk.mines.R;
 import static com.chk.mines.GameActivity.GAME_OVER;
 import static com.chk.mines.GameActivity.GAME_START;
 import static com.chk.mines.GameActivity.GAME_SUCCESS;
+import static com.chk.mines.GameActivity.PointDown;
 
 /**
  * Created by chk on 18-2-1.
@@ -35,6 +37,7 @@ public abstract class MineView extends View{
     Bitmap mBlackMineBitmap;
     Bitmap mRedMineBitmap;
     Bitmap mFlagBitmap;
+    Bitmap mFlagAndConfuzedBitmap;
     Rect rectResize;
     Rect rectBitmap;
 
@@ -67,10 +70,10 @@ public abstract class MineView extends View{
     boolean isGameOver;
     boolean isGameSuccess;
 
-    PointType currentType = PointType.DRAG_MINE;    //默认是挖雷状态
+    PointType currentType = PointType.DRAG;    //默认是挖雷状态
 
-    public enum PointType {    //用于判断点击下去时是什么状态，挖雷状态还是标记状态
-        DRAG_MINE,FLAG_MINE
+    public enum PointType {    //用于判断点击下去时是什么状态，挖雷状态还是标记状态,又或者是疑惑雷标记等等
+        DRAG, FLAG, FLAG_CONFUSED;
     }
 
     public MineView(Context context) {
@@ -84,10 +87,10 @@ public abstract class MineView extends View{
     }
 
     void init1() {
-
         mBlackMineBitmap = BitmapFactory.decodeResource(getResources(),R.mipmap.mine_black);
         mRedMineBitmap = BitmapFactory.decodeResource(getResources(),R.mipmap.mine_red);
         mFlagBitmap = BitmapFactory.decodeResource(getResources(),R.mipmap.flag);
+        mFlagAndConfuzedBitmap = BitmapFactory.decodeResource(getResources(),R.mipmap.flag_confused);
         rectResize = new Rect();
         rectBitmap = new Rect(0,0,mBlackMineBitmap.getWidth(),mBlackMineBitmap.getHeight());
 
@@ -294,7 +297,7 @@ public abstract class MineView extends View{
         canvas.restore();
     }
 
-    void setGameOver() {
+    public void setGameOver() {
         isGameOver = true;
         Log.i("MineView","GameOver");
     }
@@ -321,27 +324,31 @@ public abstract class MineView extends View{
      * @param pointY
      */
     void dealPointer(int pointX, int pointY) {
-        if (isGameOver || isGameSuccess)
-            return;
-        if (!isGameStart) { //开始游戏
-            isGameStart = true;
-            mHandler.sendEmptyMessage(GAME_START);
-        }
+//        if (isGameOver || isGameSuccess)
+//            return;
+//        if (!isGameStart) { //开始游戏
+//            isGameStart = true;
+//            mHandler.sendEmptyMessage(GAME_START);
+//        }
         int row = (pointY - detalY) / mMineSize;
         int column = (pointX - detalX) / mMineSize;
         if (row<0 || row>= rows || column<0 || column >= columns)   //边界判断
             return;
-        long startTime = System.currentTimeMillis();
-        switch (currentType) {
-            case DRAG_MINE:
-                openCube(row,column);
-                break;
-            case FLAG_MINE:
-                flagCube(row,column);
-                break;
-        }
-        Log.i("MineView","openCube Cost Time:"+(System.currentTimeMillis() - startTime));
-        invalidate();
+        Message msg = mHandler.obtainMessage();
+        msg.arg1 = row;
+        msg.arg2 = column;
+        msg.what = PointDown;
+        mHandler.sendMessage(msg);
+//        switch (currentType) {
+//            case DRAG:
+//                openCube(row,column);
+//                break;
+//            case FLAG:
+//                flagCube(row,column);
+//                break;
+//        }
+//        Log.i("MineView","openCube Cost Time:"+(System.currentTimeMillis() - startTime));
+//        invalidate();
     }
 
     /**
@@ -414,10 +421,10 @@ public abstract class MineView extends View{
     }
 
     public void setCurrentType() {
-        if (currentType == PointType.DRAG_MINE)
-            this.currentType = PointType.FLAG_MINE;
+        if (currentType == PointType.DRAG)
+            this.currentType = PointType.FLAG;
         else
-            this.currentType = PointType.DRAG_MINE;
+            this.currentType = PointType.DRAG;
     }
 
     /**
@@ -436,8 +443,6 @@ public abstract class MineView extends View{
             isGameSuccess = true;
             mHandler.sendEmptyMessage(GAME_SUCCESS); //通知GameActivity
         }
-        if (isGameOver)
-            mHandler.sendEmptyMessage(GAME_OVER);
     }
 
     public void setHandler(Handler mHandler) {
@@ -453,7 +458,7 @@ public abstract class MineView extends View{
         isGameOver = false;
         isGameSuccess = false;
         isGameStart = false;
-        currentType = PointType.DRAG_MINE;
+        currentType = PointType.DRAG;
         setMines(mines,mineCount);
     }
 
