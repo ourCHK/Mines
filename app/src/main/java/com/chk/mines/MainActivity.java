@@ -20,7 +20,7 @@ import static com.chk.mines.GameActivity.TYPE_3;
 import static com.chk.mines.GameActivity.TYPE_4;
 
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     View mCurrentLayout;
     View mPreLayout;

@@ -9,8 +9,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
+import android.widget.TextView;
 
 import com.chk.mines.Beans.Mine;
 import com.chk.mines.Interface.GameState;
@@ -68,8 +71,7 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
     int mMineCount;
 
     public enum PointType {    //用于判断点击下去时是什么状态，挖雷状态还是标记状态,又或者是疑惑雷标记等等
-        DRAG, FLAG, FLAG_CONFUSED;
-
+        DRAG, FLAG, FLAG_CONFUSED
     }
     PointType mCurrentType = DRAG;    //默认是挖雷状态
 
@@ -93,6 +95,15 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
 
     @BindView(R.id.startAndPaused)
     ImageView mStartAndPaused;
+
+    @BindView(R.id.remainMines)
+    TextView mRemainMines;
+
+    @BindView(R.id.gameView)
+    ScrollView mGameView;
+
+    @BindView(R.id.pausedView)
+    TextView mPausedView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -127,7 +138,7 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
                         gameRestart();
                         break;
                     case TIME_CHANGED:
-                        mTimeView.setText("TIME:"+ ++time);
+                        mTimeView.setText("TIME:"+ time);
                         break;
                     case PointDown:
                         pointDownCube(msg.arg1,msg.arg2);
@@ -261,8 +272,10 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.flag:     //这里对按钮背景或则资源进行设置
             case R.id.flag_confused:
             case R.id.shovel:
-            case R.id.startAndPaused:
                 setBackgroundOrSrc(v.getId());
+                break;
+            case R.id.startAndPaused:
+                startOrPauseGame();
                 break;
         }
     }
@@ -271,10 +284,10 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         CustomDialog dialog = null;
         switch (GameType) {
             case GAME_SUCCESS:
-                dialog = new CustomDialog(this,R.style.Custom_Dialog_Style,R.layout.dialog_layout_success);
+                dialog = new CustomDialog(this,R.style.Custom_Dialog_Style,R.layout.dialog_layout_success,time);
                 break;
             case GAME_OVER:
-                dialog = new CustomDialog(this,R.style.Custom_Dialog_Style,R.layout.dialog_layout_fail);
+                dialog = new CustomDialog(this,R.style.Custom_Dialog_Style,R.layout.dialog_layout_fail,-1);
                 break;
         }
         if (dialog != null) {
@@ -300,12 +313,16 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case GAME_PAUSED:
             case GAME_OVER:
+            case GAME_SUCCESS:
                 return;
         }
 
         switch (mCurrentType) {
             case DRAG:
-                openCube(row,column);
+                if (mines[row][column].isFlaged())  //flag状态下也不可点击
+                    return;
+                else
+                    openCube(row,column);
                 break;
             case FLAG:
                 flagCube(row, column);
@@ -314,7 +331,8 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
                 confuseCube(row, column);
                 break;
         }
-        mMineView.invalidate();
+        mMineView.invalidate();     //刷新界面
+        setRemainMinesOrCheckResult();
     }
 
     /**
@@ -333,42 +351,27 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
 
         mines[row][column].setOpen(true);   //首先设置为打开状态
         mines[row][column].setFlaged(false);    //去掉标记状态
+        mines[row][column].setConfused(false);  //去掉？标记
 
         if (mines[row][column].getNum() != 0) {    //如果打开的不是0，结束
             return;
         } else {     //如果打开的是0， 判断边界是否合法，对周围8个方向进行递归
-            if (row-1 >= 0 && column-1 >= 0) {
+            if (row-1 >= 0 && column-1 >= 0)
                 openCube(row-1,column-1);
-            }
-
-            if (row-1 >= 0) {
+            if (row-1 >= 0)
                 openCube(row-1,column);
-            }
-
-            if (row-1 >= 0 && column+1 < columns) {
+            if (row-1 >= 0 && column+1 < columns)
                 openCube(row-1,column+1);
-            }
-
-            if (column-1 >= 0) {
+            if (column-1 >= 0)
                 openCube(row,column-1);
-            }
-
-            if (column+1 < columns) {
+            if (column+1 < columns)
                 openCube(row,column+1);
-            }
-
-            if (row+1 < rows && column-1 >= 0 ) {
+            if (row+1 < rows && column-1 >= 0 )
                 openCube(row+1,column-1);
-            }
-
-            if (row+1 < rows) {
+            if (row+1 < rows)
                 openCube(row+1,column);
-            }
-
-            if (row+1 < rows && column+1 < columns) {
+            if (row+1 < rows && column+1 < columns)
                 openCube(row+1,column+1);
-
-            }
         }
     }
 
@@ -380,6 +383,8 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
     void flagCube(int row, int column) {
         if (mines[row][column].isOpen())
             return;
+        if (mines[row][column].isConfused())
+            mines[row][column].setConfused(false);
         if (mines[row][column].isFlaged())
             mines[row][column].setFlaged(false);
         else
@@ -387,7 +392,15 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     void confuseCube(int row, int column) {
-
+        if (mines[row][column].isOpen())
+            return;
+        if (mines[row][column].isFlaged()) {
+            mines[row][column].setFlaged(false);
+        }
+        if (mines[row][column].isConfused())
+            mines[row][column].setConfused(false);
+        else
+            mines[row][column].setConfused(true);
     }
 
     void setBackgroundOrSrc(int id) {
@@ -406,22 +419,6 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
             mFlagConfused.setBackgroundResource(0);
             mFlag.setBackgroundResource(0);
             mCurrentType = DRAG;
-        } else if (mStartAndPaused.getId() == id) {
-            if (GAME_STATE == GAME_START || GAME_STATE == GAME_PAUSED) {
-                if (mStartAndPaused.isPressed())
-                    gamePause();
-                else
-                    gameStart();
-            }
-//            if (GAME_STATE == GAME_START) {
-//                mStartAndPaused.setImageResource(R.mipmap.start);
-//            } else if (GAME_STATE == GAME_PAUSED) {
-//                mStartAndPaused.setImageResource(R.mipmap.pause);
-//            } else if (GAME_STATE == GAME_INIT) {
-//                mStartAndPaused.setImageResource(R.mipmap.start);
-//            } else if (GAME_STATE == GAME_RESTART) {
-//                mStartAndPaused.setImageResource(R.mipmap.pause);
-//            }
         }
     }
 
@@ -431,38 +428,60 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         Log.i("MineView","GameOver");
     }
 
+    void startOrPauseGame() {
+        if (GAME_STATE == GAME_START) {
+            showView();
+            gamePause();
+        } else if (GAME_STATE == GAME_PAUSED) {
+            showView();
+            gameStart();
+        }
+    }
+
+    void setRemainMinesOrCheckResult() {
+        int flagMines = 0;
+        int openedCount = 0;
+        for (int i=0; i<rows; i++) {
+            for (int j=0; j<columns; j++) {
+                if (mines[i][j].isFlaged())
+                    flagMines++;
+                if (!mines[i][j].isMine() && mines[i][j].isOpen())
+                    openedCount++;
+
+            }
+        }
+        if (openedCount == rows * columns - mMineCount)     //说明成功了
+            mHandler.sendEmptyMessage(GAME_SUCCESS);    //通知GameActivity
+        mRemainMines.setText("Mines:"+flagMines+"/"+mMineCount);
+    }
+
     @Override
     public void gameInit() {
         GAME_STATE = GAME_INIT;
         timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                if (GAME_STATE == GAME_START) {
+                    time++;
+                    mHandler.sendEmptyMessage(TIME_CHANGED);
+                }
+            }
+        },1000,1000);
+        mStartAndPaused.setImageResource(R.mipmap.pause);
+        mRemainMines.setText("Mines:"+0+"/"+mMineCount);
     }
 
     @Override
     public void gameStart() {
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                if (GAME_STATE == GAME_START)
-                    mHandler.sendEmptyMessage(TIME_CHANGED);
-            }
-        },1000,1000);
-        mStartAndPaused.setPressed(true);
         GAME_STATE = GAME_START;
+        mStartAndPaused.setImageResource(R.mipmap.start);
     }
 
     @Override
     public void gamePause() {
-        mStartAndPaused.setPressed(false);
         GAME_STATE = GAME_PAUSED;
-    }
-
-    @Override
-    public void gameOver() {
-        GAME_STATE = GAME_OVER;
-        showCustomDialog(GAME_OVER);
-        Log.i("GameActivity","GameOver");
-        if (timer != null)
-            timer.cancel();
+        mStartAndPaused.setImageResource(R.mipmap.pause);
     }
 
     @Override
@@ -477,18 +496,53 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         initMines(mines,mMineCount);
         mMineView.restart(mines,mMineCount);
         setBackgroundOrSrc(mShovel.getId());
-//        setBackgroundOrSrc(mStartAndPaused.getId());
-//        GAME_STATE = GAME_INIT;
+        showView();
+        if (timer != null)
+            timer.cancel();
         mHandler.sendEmptyMessage(GAME_INIT);
     }
 
     @Override
     public void gameSuccess() {
         GAME_STATE = GAME_SUCCESS;
+        mStartAndPaused.setImageResource(R.mipmap.pause);
         showCustomDialog(GAME_SUCCESS);
         if (timer != null)
             timer.cancel();
         Log.i("GameActivity","Success");
+    }
+
+    @Override
+    public void gameOver() {
+        GAME_STATE = GAME_OVER;
+        mStartAndPaused.setImageResource(R.mipmap.pause);
+        showCustomDialog(GAME_OVER);
+        Log.i("GameActivity","GameOver");
+        if (timer != null)
+            timer.cancel();
+    }
+
+    void showView() {
+        AlphaAnimation appearAnimation = new AlphaAnimation(0, 1);
+        appearAnimation.setDuration(500);
+        AlphaAnimation disappearAnimation = new AlphaAnimation(1, 0);
+        disappearAnimation.setDuration(500);
+
+        if (GAME_STATE == GAME_START) {
+            mPausedView.setAnimation(appearAnimation);
+            mPausedView.setVisibility(View.VISIBLE);
+            mGameView.setAnimation(disappearAnimation);
+            mGameView.setVisibility(View.GONE);
+        } else if (GAME_STATE == GAME_PAUSED) {
+            mGameView.setAnimation(appearAnimation);
+            mGameView.setVisibility(View.VISIBLE);
+            mPausedView.setAnimation(disappearAnimation);
+            mPausedView.setVisibility(View.GONE);
+        } else if (GAME_STATE == GAME_RESTART) {
+            mGameView.setVisibility(View.VISIBLE);
+            mPausedView.setVisibility(View.GONE);
+        }
+
     }
 
 }

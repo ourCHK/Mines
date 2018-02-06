@@ -45,19 +45,27 @@
 
                         <LinearLayout
                             android:layout_margin="@dimen/default_gap"
-                            android:orientation="vertical"
+                            android:orientation="horizontal"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content">
 
+                                <TextView
+                                    android:id="@+id/remainMines"
+                                    android:text="Mines:"
+                                    android:gravity="left"
+                                    android:layout_weight="1"
+                                    android:textStyle="bold"
+                                    android:layout_width="0dp"
+                                    android:layout_height="match_parent" />
 
                                 <com.chk.mines.Views.TimeTextView
                                     android:id="@+id/timeView"
                                     android:text="Time:0"
-                                    android:layout_gravity="center_horizontal"
                                     android:gravity="center"
                                     android:textStyle="bold"
                                     android:textColor="#FF0000"
-                                    android:layout_width="match_parent"
+                                    android:layout_weight="1"
+                                    android:layout_width="0dp"
                                     android:layout_height="match_parent"/>
                         </LinearLayout>
 
@@ -74,7 +82,7 @@
                             android:layout_weight="1"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:src="@drawable/game_state_background"/>
+                            android:src="@mipmap/pause"/>
                         <ImageView
                             android:id="@+id/restart"
                             android:layout_gravity="center"
@@ -87,6 +95,7 @@
         </LinearLayout>
 
         <ScrollView
+            android:id="@+id/gameView"
             android:fillViewport="true"
             android:layout_weight="1"
             android:layout_width="match_parent"
@@ -102,5 +111,14 @@
                         </LinearLayout>
                 </HorizontalScrollView>
         </ScrollView>
+
+        <TextView
+            android:visibility="gone"
+            android:id="@+id/pausedView"
+            android:gravity="center"
+            android:text="Paused\n暂停了就别偷看了哦"
+            android:textSize="30sp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
 
 </LinearLayout>

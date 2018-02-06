@@ -29,6 +29,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
+                android:id="@+id/successTime"
                 android:text="时间："
                 android:textStyle="bold"
                 android:textColor="#000000"

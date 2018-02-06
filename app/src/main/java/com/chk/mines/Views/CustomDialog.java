@@ -7,6 +7,7 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.chk.mines.Interface.OnDialogButtonClickListener;
 import com.chk.mines.R;
@@ -18,14 +19,14 @@ import com.chk.mines.R;
 public class CustomDialog extends Dialog {
 
     Context mContext;
-    View mLayoutView;
     int mLayoutId;
 
     Button mLeftButton;
     Button mRightButton;
+    TextView mTime;
     OnDialogButtonClickListener mOnDialogButtonClickListener;
 
-
+    int time;   //-1时表示失败
 
     public CustomDialog(@NonNull Context context) {
         super(context);
@@ -37,10 +38,11 @@ public class CustomDialog extends Dialog {
         this.mContext = context;
     }
 
-    public CustomDialog(@NonNull Context context, int themeResId,int layoutId) {
+    public CustomDialog(@NonNull Context context, int themeResId,int layoutId,int time) {
         super(context,themeResId);
         this.mContext = context;
         this.mLayoutId = layoutId;
+        this.time = time;
     }
 
     @Override
@@ -50,6 +52,10 @@ public class CustomDialog extends Dialog {
 
         mLeftButton = findViewById(R.id.leftButton);
         mRightButton = findViewById(R.id.rightButton);
+        if (time != -1) {   //-1表示弹出失败框
+            mTime = findViewById(R.id.successTime);
+            mTime.setText("时间："+time+"秒");
+        }
 
         mLeftButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -83,5 +89,4 @@ public class CustomDialog extends Dialog {
     public void setOnDialogButtonClickListener(OnDialogButtonClickListener mOnDialogButtonClickListener) {
         this.mOnDialogButtonClickListener = mOnDialogButtonClickListener;
     }
-
 }
