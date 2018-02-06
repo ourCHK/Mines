@@ -17,12 +17,14 @@
             <Button
                 android:layout_width="match_parent"
                 android:id="@+id/singlePlayer"
+                android:textSize="24sp"
                 android:text="@string/single_player"/>
         </TableRow>
 
         <TableRow
             android:gravity="center">
             <Button
+                android:textSize="24sp"
                 android:layout_width="match_parent"
                 android:id="@+id/doublePlayer"
                 android:text="@string/double_player"/>
@@ -33,6 +35,7 @@
             <Button
                 android:layout_width="match_parent"
                 android:id="@+id/record"
+                android:textSize="24sp"
                 android:text="@string/record"/>
         </TableRow>
 
@@ -41,6 +44,7 @@
             <Button
                 android:layout_width="match_parent"
                 android:id="@+id/help"
+                android:textSize="24sp"
                 android:text="游戏帮助"/>
         </TableRow>
 
@@ -49,6 +53,7 @@
             <Button
                 android:layout_width="match_parent"
                 android:id="@+id/about"
+                android:textSize="24sp"
                 android:text="@string/about"/>
         </TableRow>
     </TableLayout>

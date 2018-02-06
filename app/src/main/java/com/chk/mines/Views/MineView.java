@@ -331,7 +331,7 @@ public abstract class MineView extends View{
                 break;
             case MotionEvent.ACTION_MOVE:
                 break;
-            case MotionEvent.ACTION_UP:
+             case MotionEvent.ACTION_UP:
                 pointX = (int) event.getX();
                 pointY = (int) event.getY();
                 dealPointer(pointX,pointY);

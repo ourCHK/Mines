@@ -15,4 +15,6 @@
     <string name="restart">重新开始</string>
 
     <string name="custom">自定义</string>
+
+    <string name="HotspotIpAddress">192.168.43.1</string>
 </resources>
