@@ -12,6 +12,8 @@ import android.widget.TableLayout;
 import com.chk.mines.Utils.BindView;
 import com.chk.mines.Utils.InitBindView;
 
+import static com.chk.mines.ConnectActivity.BLUETOOTH;
+import static com.chk.mines.ConnectActivity.WIFI;
 import static com.chk.mines.GameActivity.FLAG_IS_SINGLE;
 import static com.chk.mines.GameActivity.GAME_TYPE;
 import static com.chk.mines.GameActivity.TYPE_1;
@@ -52,6 +54,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @BindView(R.id.type4)
     Button mType4;
 
+    @BindView(R.id.wifiConnector)
+    Button mWifiConnector;
+
+    @BindView(R.id.bluetoothConnector)
+    Button mBlueConnector;
+
+    int mConnectorType = -1;
+
     int mChoosedGameType;
     boolean isSingleGame = true;
 
@@ -75,6 +85,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mType2.setOnClickListener(this);
         mType3.setOnClickListener(this);
         mType4.setOnClickListener(this);
+        mWifiConnector.setOnClickListener(this);
+        mBlueConnector.setOnClickListener(this);
     }
 
     @Override
@@ -102,6 +114,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mChoosedGameType = TYPE_4;
                 startGameActivity();
                 break;
+            case R.id.wifiConnector:
+                mConnectorType = WIFI;
+                startConnectActivity();
+                break;
+            case R.id.bluetoothConnector:
+                mConnectorType = BLUETOOTH;
+                startConnectActivity();
+                break;
+
         }
     }
 
@@ -110,6 +131,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         Intent intent = new Intent(this,GameActivity.class);
         intent.putExtra(GAME_TYPE,mChoosedGameType);
+        startActivity(intent);
+    }
+
+    void startConnectActivity() {
+        Intent intent  = new Intent(this,ConnectActivity.class);
+        intent.putExtra("ConnectType",mConnectorType);
         startActivity(intent);
     }
 
