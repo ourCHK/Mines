@@ -27,37 +27,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     View mCurrentLayout;
     View mPreLayout;
 
-    @BindView(R.id.tableLayout)
+//    @BindView(R.id.tableLayout)
     TableLayout mTableLayout;
 
-    @BindView(R.id.gridView)
+//    @BindView(R.id.gridView)
     GridLayout mGridLayout;
 
-    @BindView(R.id.connectType)
+//    @BindView(R.id.connectType)
     TableLayout mConnectType;
 
-    @BindView(R.id.doublePlayer)
+//    @BindView(R.id.doublePlayer)
     Button doublePlayer;
 
-    @BindView(R.id.singlePlayer)
+//    @BindView(R.id.singlePlayer)
     Button singlePlayer;
 
-    @BindView(R.id.type1)
+//    @BindView(R.id.type1)
     Button mType1;
 
-    @BindView(R.id.type2)
+//    @BindView(R.id.type2)
     Button mType2;
 
-    @BindView(R.id.type3)
+//    @BindView(R.id.type3)
     Button mType3;
 
-    @BindView(R.id.type4)
+//    @BindView(R.id.type4)
     Button mType4;
 
-    @BindView(R.id.wifiConnector)
+//    @BindView(R.id.wifiConnector)
     Button mWifiConnector;
 
-    @BindView(R.id.bluetoothConnector)
+//    @BindView(R.id.bluetoothConnector)
     Button mBlueConnector;
 
     int mConnectorType = -1;
@@ -75,7 +75,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     void init() {
-        InitBindView.init(this);
+//        InitBindView.init(this);
+        mTableLayout = findViewById(R.id.tableLayout);
+        mGridLayout = findViewById(R.id.gridView);
+        mConnectType = findViewById(R.id.connectType);
+        doublePlayer = findViewById(R.id.doublePlayer);
+        singlePlayer = findViewById(R.id.singlePlayer);
+        mType1 = findViewById(R.id.type1);
+        mType2 = findViewById(R.id.type2);
+        mType3 = findViewById(R.id.type3);
+        mType4 = findViewById(R.id.type4);
+        mWifiConnector = findViewById(R.id.wifiConnector);
+        mBlueConnector = findViewById(R.id.bluetoothConnector);
+
         mCurrentLayout = mTableLayout;
         mPreLayout = mTableLayout;
 

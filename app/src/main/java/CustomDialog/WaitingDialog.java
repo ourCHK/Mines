@@ -1,16 +1,11 @@
-package com.chk.mines.Views;
+package CustomDialog;
 
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
 
-import com.chk.mines.Interface.OnDialogButtonClickListener;
-import com.chk.mines.R;
+import com.chk.mines.Interfaces.OnDialogButtonClickListener;
 
 /**
  * Created by chk on 18-2-3.

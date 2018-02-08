@@ -1,79 +1,89 @@
 package com.chk.mines;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.provider.Settings;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import com.chk.mines.Utils.BindView;
-import com.chk.mines.Utils.InitBindView;
-import com.chk.mines.Utils.WifiHotspotUtil;
-import com.chk.mines.Views.WaitingDialog;
+import com.chk.mines.Utils.ClientSocketUtil;
+import com.chk.mines.Utils.ServerSocketUtil;
+import com.chk.mines.Utils.SocketUtil;
 
-import java.lang.reflect.Method;
+import CustomDialog.ClientDialog;
+import CustomDialog.ServerDialog;
 
 public class ConnectActivity extends AppCompatActivity implements View.OnClickListener{
 
     public final static int WIFI = 0;
     public final static int BLUETOOTH = 1;
     public final static int AP_ON = 2;
-    public final static int Ap_CONNECTED = 3;   //通过Ap地址判断是否连接了Ap
+    public final static int AP_CONNECTED = 3;   //通过Ap地址判断是否连接了Ap
     public final static int SERVER = 4; //服务端
     public final static int CLIENT = 5; //客户端
+    public final static int SOCKET_ACCEPTED = 6;
+    public final static int SOCKET_CONNECTED = 7;
+    public final static int START_CONNECT = 8;
+    public final static int START_ACCEPT = 9;
+    public final static int IP_CHANGED = 10;
     int mConnectType;
-    WifiHotspotUtil mWifiUtil;
-
-    WifiManager mWifiManager;
-    String IpAddress;
-
-    @BindView(R.id.openHotspot)
-    Button mOpenHotspot;
-
-    @BindView(R.id.openWifi)
-    Button mOpenWifi;
 
     Handler mHandler;
 
-    Thread mServerThread; //用于检测wifi热点是否开启;
-    boolean isServerRun = true;
-    Thread mClientThread; //用于判断是否连接上了Wifi热点;
-    boolean isClientRun = true;
+    WifiManager mWifiManager;
+    String IpAddress = "0.0.0.0";
+    String IpAddressServer;   //用户客户端输入的服务端Ip地址
 
-    int mServerOrClient;
+    Button mServerButton;
+    Button mClientButton;
+    TextView mIpAddress;
 
+    Thread mMonitorIpThread;
+    boolean isMonitorRun = true;
+
+    ServerDialog serverDialog;
+    ClientDialog clientDialog;
+
+    ServerSocketUtil mServerSocketUtil;
+    ClientSocketUtil mClientSocketUtil;
 
     @SuppressLint("HandlerLeak")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_connect);
+        setContentView(R.layout.activity_connect_copy);
         mHandler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
                 switch (msg.what) {
-                    case AP_ON:
-                        mServerOrClient = SERVER;
-                        Toast.makeText(ConnectActivity.this, "Wifi Ap is On!", Toast.LENGTH_SHORT).show();
-                        showServerDialog();
-                        getIpAddress();
+                    case IP_CHANGED:
+                        mIpAddress.setText("您的IP地址："+IpAddress);
                         break;
-                    case Ap_CONNECTED:
-                        mServerOrClient = CLIENT;
-                        Toast.makeText(ConnectActivity.this, "Wifi Ap connected!", Toast.LENGTH_SHORT).show();
+                    case START_CONNECT: //客户端开始连接服务端
+                        IpAddressServer = (String) msg.obj;
+                        mClientSocketUtil = new ClientSocketUtil(IpAddress,IpAddressServer,mHandler);
+                        mClientSocketUtil.startConnect();
+                        break;
+                    case START_ACCEPT:  //服务端开始接收客户端请求
+                        mServerSocketUtil = new ServerSocketUtil(IpAddress,mHandler);
+                        mServerSocketUtil.startListener();
+                        break;
+                    case SOCKET_CONNECTED:  //客户端已经连接到服务端
+                        clientDialog.dismiss();
+                        Toast.makeText(ConnectActivity.this, "已连接到服务端", Toast.LENGTH_SHORT).show();
+                        break;
+                    case SOCKET_ACCEPTED:   //服务端已经接收了客户端
+                        serverDialog.dismiss();
+                        Toast.makeText(ConnectActivity.this, "已接收到客户端", Toast.LENGTH_SHORT).show();
                         break;
                 }
             }
@@ -82,46 +92,8 @@ public class ConnectActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     void init() {
-        InitBindView.init(this);
+        viewInit();
         mWifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-
-        mServerThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (isServerRun) {
-                    if (isApOn()) {
-                        isServerRun = false;
-                    }
-                    try {
-                        Thread.sleep(50);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        });
-
-        mClientThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (isClientRun) {
-
-                    String IpAddress = getIpAddress();
-                    if (IpAddress != null && !IpAddress.isEmpty()) {
-                        if (IpAddress.contains("192.168.43.")) {
-                            isClientRun = false;
-                            mHandler.sendEmptyMessage(Ap_CONNECTED);
-                        }
-                    }
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        });
-
         Intent intent = getIntent();
         mConnectType = intent.getIntExtra("ConnectType",-1);
         switch (mConnectType) {
@@ -133,113 +105,80 @@ public class ConnectActivity extends AppCompatActivity implements View.OnClickLi
                     break;
         }
 
-        mOpenHotspot.setOnClickListener(this);
-        mOpenWifi.setOnClickListener(this);
+        mMonitorIpThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (isMonitorRun) {
+                    try {
+                        if (IpAddress != getIpAddress()) {
+                            IpAddress = getIpAddress();
+                            mHandler.sendEmptyMessage(IP_CHANGED);
+                        }
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        mMonitorIpThread.start();
+    }
+
+    void viewInit() {
+        mServerButton = findViewById(R.id.server);
+        mClientButton = findViewById(R.id.client);
+        mIpAddress = findViewById(R.id.ipAddress);
+        mServerButton.setOnClickListener(this);
+        mClientButton.setOnClickListener(this);
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.openHotspot:
-                if (isApOn()) {
-                    mHandler.sendEmptyMessage(AP_ON);
-                    Log.i("ConnectActivity","这里不走吗");
-                    return;
-                }
-                openSettingsUI();
-                if (!mServerThread.isAlive())
-                        mServerThread.start();
-                mHandler.sendEmptyMessage(AP_ON);
-                Toast.makeText(this, "请手动开启WiFi热点", Toast.LENGTH_SHORT).show();
+            case R.id.server:   //这边应该还加一个判断Ip地址是否合法的一个判断
+                showServerDialog();
+                mHandler.sendEmptyMessage(START_ACCEPT);
                 break;
-            case R.id.openWifi:
-                openWifiUI();
-                if (!mClientThread.isAlive())
-                    mClientThread.start();
+            case R.id.client:
+                showClientDialog();
                 break;
-        }
-    }
-
-    public void requestPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {   //6.0及以上
-            if (checkSelfPermission(Manifest.permission.WRITE_SETTINGS) !=PackageManager.PERMISSION_GRANTED) {
-                if (shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                    Toast.makeText(this, "the app need the permission tu run,please grant it", Toast.LENGTH_SHORT).show();
-                }
-                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},1);
-            } else {
-                init();
-            }
-        } else {    //以下直接初始化
-            init();
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == 1) {
-            if (grantResults.length >0
-                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {  //授权了
-                init();
-            } else {
-                Toast.makeText(this, "sorry you do not have granted the permission to me ", Toast.LENGTH_SHORT).show();
-            }
         }
     }
 
     /**
-     * 用于检测WiFi热点是否开启
+     * 获取WiFi时的IP地址
      * @return
      */
-    public boolean isApOn() {
-        try {
-            Method method = mWifiManager.getClass().getDeclaredMethod("isWifiApEnabled");
-            method.setAccessible(true);
-            return (Boolean) method.invoke(mWifiManager);
-        }
-        catch (Throwable ignored) {
-            Log.i("ConnectActivity",ignored.toString());
-        }
-        return false;
-    }
-
-    /**
-     * 打开设置页面让用户开启WiFi热点
-     */
-    private void openSettingsUI() {
-        Intent intent =  new Intent(Settings.ACTION_SETTINGS);
-        startActivity(intent);
-    }
-
-    private void openWifiUI() {
-        Intent wifiSettingsIntent = new Intent("android.settings.WIFI_SETTINGS");
-        startActivity(wifiSettingsIntent);
-    }
-
-    void showServerDialog() {
-        WaitingDialog dialog = null;
-        dialog = new WaitingDialog(this,R.style.Waiting_Dialog_Style,R.layout.dialog_layout_waiting);
-        dialog.show();
-    }
-
     String getIpAddress() {
         if (!mWifiManager.isWifiEnabled()) {
             return null;
         }
         WifiInfo wifiInfo = mWifiManager.getConnectionInfo();
         String IPAddress = intToIp(wifiInfo.getIpAddress());
-        Log.i("ipAddress",IPAddress);
         return IPAddress;
-
-//        DhcpInfo dhcpinfo = mWifiManager.getDhcpInfo();
-//        String serverAddress = intToIp(dhcpinfo.serverAddress);
-//        Log.i("ipAddress",serverAddress);
-//        return null;
     }
 
     private String intToIp(int paramInt)
     {
         return (paramInt & 0xFF) + "." + (0xFF & paramInt >> 8) + "." + (0xFF & paramInt >> 16) + "."
                 + (0xFF & paramInt >> 24);
+    }
+
+    /**
+     * 显示服务端Dialog
+     */
+    void showServerDialog() {
+        if (serverDialog == null)
+            serverDialog = new ServerDialog(this,R.style.Custom_Dialog_Style);
+        serverDialog.show();
+    }
+
+    /**
+     * 显示客户端Dialog
+     */
+    void showClientDialog() {
+        if (clientDialog == null)
+            clientDialog = new ClientDialog(this,R.style.Custom_Dialog_Style,mHandler);
+        clientDialog.show();
     }
 }

@@ -16,11 +16,10 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.chk.mines.Beans.Mine;
-import com.chk.mines.Interface.GameState;
-import com.chk.mines.Interface.OnDialogButtonClickListener;
-import com.chk.mines.Utils.BindView;
-import com.chk.mines.Utils.InitBindView;
-import com.chk.mines.Views.CustomDialog;
+import com.chk.mines.Interfaces.GameState;
+import com.chk.mines.Interfaces.OnDialogButtonClickListener;
+
+import CustomDialog.CustomDialog;
 import com.chk.mines.Views.MineView;
 import com.chk.mines.Views.MineViewType1;
 import com.chk.mines.Views.MineViewType2;
@@ -75,34 +74,34 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
     }
     PointType mCurrentType = DRAG;    //默认是挖雷状态
 
-    @BindView(R.id.mineViewContainer)
+//    @BindView(R.id.mineViewContainer)
     LinearLayout mMineViewContainer;
 
-    @BindView(R.id.shovel)
+//    @BindView(R.id.shovel)
     ImageView mShovel;
 
-    @BindView(R.id.flag)
+//    @BindView(R.id.flag)
     ImageView mFlag;
 
-    @BindView(R.id.flag_confused)
+//    @BindView(R.id.flag_confused)
     ImageView mFlagConfused;
 
-    @BindView(R.id.timeView)
+//    @BindView(R.id.timeView)
     TimeTextView mTimeView;
 
-    @BindView(R.id.restart)
+//    @BindView(R.id.restart)
     ImageView mRestart;
 
-    @BindView(R.id.startAndPaused)
+//    @BindView(R.id.startAndPaused)
     ImageView mStartAndPaused;
 
-    @BindView(R.id.remainMines)
+//    @BindView(R.id.remainMines)
     TextView mRemainMines;
 
-    @BindView(R.id.gameView)
+//    @BindView(R.id.gameView)
     ScrollView mGameView;
 
-    @BindView(R.id.pausedView)
+//    @BindView(R.id.pausedView)
     TextView mPausedView;
 
     @Override
@@ -114,7 +113,19 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
 
     @SuppressLint("HandlerLeak")
     void init() {
-        InitBindView.init(this);
+//        InitBindView.init(this);
+
+        mMineViewContainer = findViewById(R.id.mineViewContainer);
+        mShovel = findViewById(R.id.shovel);
+        mFlag = findViewById(R.id.flag);
+        mFlagConfused = findViewById(R.id.flag_confused);
+        mTimeView = findViewById(R.id.timeView);
+        mRestart = findViewById(R.id.restart);
+        mStartAndPaused = findViewById(R.id.startAndPaused);
+        mRemainMines = findViewById(R.id.remainMines);
+        mGameView = findViewById(R.id.gameView);
+        mPausedView = findViewById(R.id.pausedView);
+
         mHandler = new Handler(){
             @Override
             public void handleMessage(Message msg) {

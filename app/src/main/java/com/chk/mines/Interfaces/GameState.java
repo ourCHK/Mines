@@ -1,4 +1,4 @@
-package com.chk.mines.Interface;
+package com.chk.mines.Interfaces;
 
 /**
  * Created by chk on 18-2-5.

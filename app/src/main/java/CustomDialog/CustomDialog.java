@@ -1,4 +1,4 @@
-package com.chk.mines.Views;
+package CustomDialog;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -9,7 +9,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.chk.mines.Interface.OnDialogButtonClickListener;
+import com.chk.mines.Interfaces.OnDialogButtonClickListener;
 import com.chk.mines.R;
 
 /**
