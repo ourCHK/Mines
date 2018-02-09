@@ -29,8 +29,8 @@ public class ServerSocketUtil {
     AcceptThread mAcceptThread;
     ServerThread mServerThread;
 
-    public ServerSocketUtil(String ipAddressServer,Handler handler) {
-        this.mIpAddressServer = ipAddressServer;
+    public ServerSocketUtil(Handler handler) {
+//        this.mIpAddressServer = ipAddressClient;
         this.mActivityHandler = handler;
         mAcceptThread = new AcceptThread();
         mServerThread = new ServerThread();
@@ -96,5 +96,15 @@ public class ServerSocketUtil {
                 }
             }
         }).start();
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        if (mSocket != null)
+            mSocket.close();
+        if (mServerSocket != null)
+            mServerSocket.close();
+        Log.i("ServerSocketUtil","服务端Socket关闭");
     }
 }

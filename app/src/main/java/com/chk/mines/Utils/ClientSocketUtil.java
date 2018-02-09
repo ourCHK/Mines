@@ -19,7 +19,6 @@ import static com.chk.mines.ConnectActivity.SOCKET_CONNECTED;
 public class ClientSocketUtil {
 
     private String mIpAddressServer;
-    private String mIpAddressClient;
     private Socket mSocket;
     private int mPort = 7876;
 
@@ -28,8 +27,7 @@ public class ClientSocketUtil {
     ConnectThread mConnectThread;
     ClientThread mClientThread;
 
-    public ClientSocketUtil(String ipAddressClient,String ipAddressServer,Handler handler) {
-        this.mIpAddressClient = ipAddressClient;
+    public ClientSocketUtil(String ipAddressServer,Handler handler) {
         this.mIpAddressServer = ipAddressServer;
         this.mActivityHandler = handler;
         mConnectThread = new ConnectThread();
@@ -88,5 +86,13 @@ public class ClientSocketUtil {
                 }
             }
         }).start();
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        if (mSocket != null)
+            mSocket.close();
+        Log.i("ServerSocketUtil","客户端Socket关闭");
     }
 }

@@ -30,7 +30,17 @@
         <service
             android:name=".CustomService.ConnectService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true"/>
+
+        <service
+            android:name=".CustomService.ClientConnectService"
+            android:enabled="true"
+            android:exported="true"/>
+
+        <service
+            android:name=".CustomService.ServerConnectService"
+            android:enabled="true"
+            android:exported="true"/>
     </application>
 
 </manifest>
