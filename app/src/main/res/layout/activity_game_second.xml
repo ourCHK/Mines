@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.chk.mines.GameActivity"
+    >
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+                                <ImageView
+                                    android:id="@+id/shovel"
+                                    android:background="@drawable/image_background"
+                                    android:layout_weight="1"
+                                    android:src="@mipmap/shovel"
+                                    android:layout_width="40dp"
+                                    android:layout_height="40dp" />
+
+                                <ImageView
+                                    android:id="@+id/flag"
+                                    android:layout_weight="1"
+                                    android:src="@mipmap/flag"
+                                    android:layout_width="40dp"
+                                    android:layout_height="40dp" />
+
+                                <ImageView
+                                    android:id="@+id/flag_confused"
+                                    android:layout_weight="1"
+                                    android:src="@mipmap/flag_confused"
+                                    android:layout_width="40dp"
+                                    android:layout_height="40dp" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_margin="@dimen/default_gap"
+                            android:orientation="horizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+
+                                <TextView
+                                    android:id="@+id/remainMines"
+                                    android:text="Mines:"
+                                    android:gravity="left"
+                                    android:layout_weight="1"
+                                    android:textStyle="bold"
+                                    android:layout_width="0dp"
+                                    android:layout_height="match_parent" />
+
+                                <com.chk.mines.Views.TimeTextView
+                                    android:id="@+id/timeView"
+                                    android:text="Time:0"
+                                    android:gravity="center"
+                                    android:textStyle="bold"
+                                    android:textColor="#FF0000"
+                                    android:layout_weight="1"
+                                    android:layout_width="0dp"
+                                    android:layout_height="match_parent"/>
+                        </LinearLayout>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent">
+                        <ImageView
+                            android:id="@+id/startAndPaused"
+                            android:layout_gravity="center"
+                            android:layout_weight="1"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:src="@mipmap/pause"/>
+                        <ImageView
+                            android:id="@+id/restart"
+                            android:layout_gravity="center"
+                            android:layout_weight="1"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:src="@mipmap/restart"/>
+
+                </LinearLayout>
+        </LinearLayout>
+
+        <ScrollView
+            android:id="@+id/gameView"
+            android:fillViewport="true"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="0dp">
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+                        <LinearLayout
+                            android:id="@+id/mineViewContainer"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical">
+                        </LinearLayout>
+                </HorizontalScrollView>
+        </ScrollView>
+
+        <TextView
+            android:visibility="gone"
+            android:id="@+id/pausedView"
+            android:gravity="center"
+            android:text="Paused\n暂停了就别偷看了哦"
+            android:textSize="30sp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+</LinearLayout>

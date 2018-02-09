@@ -14,7 +14,7 @@
             android:gravity="center">
             <TextView
                 android:layout_gravity="center"
-                android:text="恭喜您成功扫出所有的雷"
+                android:text="连接至服务端"
                 android:textStyle="bold"
                 android:textSize="20sp"
                 android:textColor="#000000"
@@ -25,15 +25,15 @@
         <TableRow
             android:layout_margin="15dp"
             android:gravity="center">
-            <TextView
+            <EditText
+                android:id="@+id/inputIp"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
-                android:id="@+id/successTime"
-                android:text="时间："
                 android:textStyle="bold"
                 android:textColor="#000000"
-                android:textSize="20sp" />
+                android:hint="请在此输入服务端的IP地址"
+                 />
         </TableRow>
 
         <TableRow
@@ -50,7 +50,7 @@
 
                 <Button
                     android:id="@+id/rightButton"
-                    android:text="重新开始"
+                    android:text="连接"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content" />

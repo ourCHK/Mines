@@ -9,6 +9,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -19,9 +20,7 @@ import android.view.View;
 import com.chk.mines.Beans.Mine;
 import com.chk.mines.R;
 
-import static com.chk.mines.GameActivity.GAME_OVER;
-import static com.chk.mines.GameActivity.GAME_START;
-import static com.chk.mines.GameActivity.GAME_SUCCESS;
+import static com.chk.mines.GameActivity.PointDown;
 
 /**
  * Created by chk on 18-2-1.
@@ -35,6 +34,7 @@ public abstract class MineView extends View{
     Bitmap mBlackMineBitmap;
     Bitmap mRedMineBitmap;
     Bitmap mFlagBitmap;
+    Bitmap mFlagAndConfuzedBitmap;
     Rect rectResize;
     Rect rectBitmap;
 
@@ -67,10 +67,10 @@ public abstract class MineView extends View{
     boolean isGameOver;
     boolean isGameSuccess;
 
-    PointType currentType = PointType.DRAG_MINE;    //默认是挖雷状态
+    PointType currentType = PointType.DRAG;    //默认是挖雷状态
 
-    public enum PointType {    //用于判断点击下去时是什么状态，挖雷状态还是标记状态
-        DRAG_MINE,FLAG_MINE
+    public enum PointType {    //用于判断点击下去时是什么状态，挖雷状态还是标记状态,又或者是疑惑雷标记等等
+        DRAG, FLAG, FLAG_CONFUSED;
     }
 
     public MineView(Context context) {
@@ -84,10 +84,10 @@ public abstract class MineView extends View{
     }
 
     void init1() {
-
         mBlackMineBitmap = BitmapFactory.decodeResource(getResources(),R.mipmap.mine_black);
         mRedMineBitmap = BitmapFactory.decodeResource(getResources(),R.mipmap.mine_red);
         mFlagBitmap = BitmapFactory.decodeResource(getResources(),R.mipmap.flag);
+        mFlagAndConfuzedBitmap = BitmapFactory.decodeResource(getResources(),R.mipmap.flag_confused);
         rectResize = new Rect();
         rectBitmap = new Rect(0,0,mBlackMineBitmap.getWidth(),mBlackMineBitmap.getHeight());
 
@@ -159,7 +159,7 @@ public abstract class MineView extends View{
         drawNum(canvas);
         drawMines(canvas);
         drawFlag(canvas);
-        checkResult();
+        drawConfused(canvas);
     }
 
     /**
@@ -234,10 +234,12 @@ public abstract class MineView extends View{
                         rectResize.left = j * mMineSize;
                         rectResize.bottom = (i+1) * mMineSize;
                         rectResize.right = (j+1) * mMineSize;
-                        if (row == i && column == j && !mines[i][j].isFlaged())
-                            canvas.drawBitmap(mRedMineBitmap, rectBitmap, rectResize,mPaint);
-                        else
-                            canvas.drawBitmap(mBlackMineBitmap, rectBitmap, rectResize,mPaint);
+                        if (!mines[i][j].isFlaged()) {
+                            if (row == i && column == j)
+                                canvas.drawBitmap(mRedMineBitmap, rectBitmap, rectResize,mPaint);
+                            else
+                                canvas.drawBitmap(mBlackMineBitmap, rectBitmap, rectResize,mPaint);
+                        }
                     }
                 }
             }
@@ -262,6 +264,29 @@ public abstract class MineView extends View{
                         rectResize.bottom = (i+1) * mMineSize;
                         rectResize.right = (j+1) * mMineSize;
                         canvas.drawBitmap(mFlagBitmap, rectBitmap, rectResize,mPaint);
+                    }
+                }
+            }
+        }
+        canvas.restore();
+    }
+
+    public void drawConfused(Canvas canvas) {
+        canvas.save();
+        canvas.translate(detalX,detalY);
+        for (int i=0; i<rows; i++) {
+            for (int j=0; j<columns; j++) {
+                if (mines[i][j].isConfused()) {
+                    if (mines[i][j].isConfused()) {
+                        rectResize.top = i * mMineSize;
+                        rectResize.left = j * mMineSize;
+                        rectResize.bottom = (i+1) * mMineSize;
+                        rectResize.right = (j+1) * mMineSize;
+                        if (isGameOver) {
+                            if (mines[i][j].isMine())   //刚好位置也是雷，那就不画这个confused
+                                continue;
+                        }
+                        canvas.drawBitmap(mFlagAndConfuzedBitmap, rectBitmap, rectResize,mPaint);
                     }
                 }
             }
@@ -294,7 +319,7 @@ public abstract class MineView extends View{
         canvas.restore();
     }
 
-    void setGameOver() {
+    public void setGameOver() {
         isGameOver = true;
         Log.i("MineView","GameOver");
     }
@@ -306,7 +331,7 @@ public abstract class MineView extends View{
                 break;
             case MotionEvent.ACTION_MOVE:
                 break;
-            case MotionEvent.ACTION_UP:
+             case MotionEvent.ACTION_UP:
                 pointX = (int) event.getX();
                 pointY = (int) event.getY();
                 dealPointer(pointX,pointY);
@@ -321,123 +346,38 @@ public abstract class MineView extends View{
      * @param pointY
      */
     void dealPointer(int pointX, int pointY) {
-        if (isGameOver || isGameSuccess)
-            return;
-        if (!isGameStart) { //开始游戏
-            isGameStart = true;
-            mHandler.sendEmptyMessage(GAME_START);
-        }
+//        if (isGameOver || isGameSuccess)
+//            return;
+//        if (!isGameStart) { //开始游戏
+//            isGameStart = true;
+//            mHandler.sendEmptyMessage(GAME_START);
+//        }
         int row = (pointY - detalY) / mMineSize;
         int column = (pointX - detalX) / mMineSize;
         if (row<0 || row>= rows || column<0 || column >= columns)   //边界判断
             return;
-        long startTime = System.currentTimeMillis();
-        switch (currentType) {
-            case DRAG_MINE:
-                openCube(row,column);
-                break;
-            case FLAG_MINE:
-                flagCube(row,column);
-                break;
-        }
-        Log.i("MineView","openCube Cost Time:"+(System.currentTimeMillis() - startTime));
-        invalidate();
-    }
-
-    /**
-     * 标记雷
-     * @param row
-     * @param column
-     */
-    void flagCube(int row, int column) {
-        if (mines[row][column].isOpen())
-            return;
-        if (mines[row][column].isFlaged())
-            mines[row][column].setFlaged(false);
-        else
-            mines[row][column].setFlaged(true);
-    }
-
-    /**
-     * 对周围进行递归找出可以打开的方块
-     * @param row
-     * @param column
-     */
-    void openCube(int row, int column) {
-        if (mines[row][column].isMine()) {  //打开的是雷，游戏直接结束
-            setGameOver();
-            return;
-        }
-
-        if (mines[row][column].isOpen())    //已经打开过了，结束
-            return;
-
-        mines[row][column].setOpen(true);   //首先设置为打开状态
-        mines[row][column].setFlaged(false);    //去掉标记状态
-
-        if (mines[row][column].getNum() != 0) {    //如果打开的不是0，结束
-            return;
-        } else {     //如果打开的是0， 判断边界是否合法，对周围8个方向进行递归
-            if (row-1 >= 0 && column-1 >= 0) {
-                openCube(row-1,column-1);
-            }
-
-            if (row-1 >= 0) {
-                openCube(row-1,column);
-            }
-
-            if (row-1 >= 0 && column+1 < columns) {
-                openCube(row-1,column+1);
-            }
-
-            if (column-1 >= 0) {
-                openCube(row,column-1);
-            }
-
-            if (column+1 < columns) {
-                openCube(row,column+1);
-            }
-
-            if (row+1 < rows && column-1 >= 0 ) {
-                openCube(row+1,column-1);
-            }
-
-            if (row+1 < rows) {
-                openCube(row+1,column);
-            }
-
-            if (row+1 < rows && column+1 < columns) {
-                openCube(row+1,column+1);
-
-            }
-        }
+        Message msg = mHandler.obtainMessage();
+        msg.arg1 = row;
+        msg.arg2 = column;
+        msg.what = PointDown;
+        mHandler.sendMessage(msg);
+//        switch (currentType) {
+//            case DRAG:
+//                openCube(row,column);
+//                break;
+//            case FLAG:
+//                flagCube(row,column);
+//                break;
+//        }
+//        Log.i("MineView","openCube Cost Time:"+(System.currentTimeMillis() - startTime));
+//        invalidate();
     }
 
     public void setCurrentType() {
-        if (currentType == PointType.DRAG_MINE)
-            this.currentType = PointType.FLAG_MINE;
+        if (currentType == PointType.DRAG)
+            this.currentType = PointType.FLAG;
         else
-            this.currentType = PointType.DRAG_MINE;
-    }
-
-    /**
-     * 检查游戏状态，结束还是成功?
-     */
-    void checkResult() {
-        int openedCount = 0;
-        for (int i=0; i<rows; i++) {
-            for (int j=0; j<columns; j++) {
-                if (!mines[i][j].isMine() && mines[i][j].isOpen())
-                    openedCount++;
-            }
-        }
-
-        if (openedCount == rows * columns - mMineCount) {
-            isGameSuccess = true;
-            mHandler.sendEmptyMessage(GAME_SUCCESS); //通知GameActivity
-        }
-        if (isGameOver)
-            mHandler.sendEmptyMessage(GAME_OVER);
+            this.currentType = PointType.DRAG;
     }
 
     public void setHandler(Handler mHandler) {
@@ -453,7 +393,7 @@ public abstract class MineView extends View{
         isGameOver = false;
         isGameSuccess = false;
         isGameStart = false;
-        currentType = PointType.DRAG_MINE;
+        currentType = PointType.DRAG;
         setMines(mines,mineCount);
     }
 

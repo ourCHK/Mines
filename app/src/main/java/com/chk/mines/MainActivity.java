@@ -12,6 +12,8 @@ import android.widget.TableLayout;
 import com.chk.mines.Utils.BindView;
 import com.chk.mines.Utils.InitBindView;
 
+import static com.chk.mines.ConnectActivity.BLUETOOTH;
+import static com.chk.mines.ConnectActivity.WIFI;
 import static com.chk.mines.GameActivity.FLAG_IS_SINGLE;
 import static com.chk.mines.GameActivity.GAME_TYPE;
 import static com.chk.mines.GameActivity.TYPE_1;
@@ -20,37 +22,45 @@ import static com.chk.mines.GameActivity.TYPE_3;
 import static com.chk.mines.GameActivity.TYPE_4;
 
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     View mCurrentLayout;
     View mPreLayout;
 
-    @BindView(R.id.tableLayout)
+//    @BindView(R.id.tableLayout)
     TableLayout mTableLayout;
 
-    @BindView(R.id.gridView)
+//    @BindView(R.id.gridView)
     GridLayout mGridLayout;
 
-    @BindView(R.id.connectType)
+//    @BindView(R.id.connectType)
     TableLayout mConnectType;
 
-    @BindView(R.id.doublePlayer)
+//    @BindView(R.id.doublePlayer)
     Button doublePlayer;
 
-    @BindView(R.id.singlePlayer)
+//    @BindView(R.id.singlePlayer)
     Button singlePlayer;
 
-    @BindView(R.id.type1)
+//    @BindView(R.id.type1)
     Button mType1;
 
-    @BindView(R.id.type2)
+//    @BindView(R.id.type2)
     Button mType2;
 
-    @BindView(R.id.type3)
+//    @BindView(R.id.type3)
     Button mType3;
 
-    @BindView(R.id.type4)
+//    @BindView(R.id.type4)
     Button mType4;
+
+//    @BindView(R.id.wifiConnector)
+    Button mWifiConnector;
+
+//    @BindView(R.id.bluetoothConnector)
+    Button mBlueConnector;
+
+    int mConnectorType = -1;
 
     int mChoosedGameType;
     boolean isSingleGame = true;
@@ -65,7 +75,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     void init() {
-        InitBindView.init(this);
+//        InitBindView.init(this);
+        mTableLayout = findViewById(R.id.tableLayout);
+        mGridLayout = findViewById(R.id.gridView);
+        mConnectType = findViewById(R.id.connectType);
+        doublePlayer = findViewById(R.id.doublePlayer);
+        singlePlayer = findViewById(R.id.singlePlayer);
+        mType1 = findViewById(R.id.type1);
+        mType2 = findViewById(R.id.type2);
+        mType3 = findViewById(R.id.type3);
+        mType4 = findViewById(R.id.type4);
+        mWifiConnector = findViewById(R.id.wifiConnector);
+        mBlueConnector = findViewById(R.id.bluetoothConnector);
+
         mCurrentLayout = mTableLayout;
         mPreLayout = mTableLayout;
 
@@ -75,6 +97,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mType2.setOnClickListener(this);
         mType3.setOnClickListener(this);
         mType4.setOnClickListener(this);
+        mWifiConnector.setOnClickListener(this);
+        mBlueConnector.setOnClickListener(this);
     }
 
     @Override
@@ -102,6 +126,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mChoosedGameType = TYPE_4;
                 startGameActivity();
                 break;
+            case R.id.wifiConnector:
+                mConnectorType = WIFI;
+                startConnectActivity();
+                break;
+            case R.id.bluetoothConnector:
+                mConnectorType = BLUETOOTH;
+                startConnectActivity();
+                break;
+
         }
     }
 
@@ -110,6 +143,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         Intent intent = new Intent(this,GameActivity.class);
         intent.putExtra(GAME_TYPE,mChoosedGameType);
+        startActivity(intent);
+    }
+
+    void startConnectActivity() {
+        Intent intent  = new Intent(this,ConnectActivity.class);
+        intent.putExtra("ConnectType",mConnectorType);
         startActivity(intent);
     }
 
