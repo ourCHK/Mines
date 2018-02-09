@@ -1,12 +1,16 @@
 package com.chk.mines.Utils;
 
 import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import static com.chk.mines.ConnectActivity.RECEIVED_MESSAGE;
 import static com.chk.mines.ConnectActivity.SOCKET_ACCEPTED;
 
 /**
@@ -23,11 +27,13 @@ public class ServerSocketUtil {
     private Handler mActivityHandler;
 
     AcceptThread mAcceptThread;
+    ServerThread mServerThread;
 
     public ServerSocketUtil(String ipAddressServer,Handler handler) {
         this.mIpAddressServer = ipAddressServer;
         this.mActivityHandler = handler;
         mAcceptThread = new AcceptThread();
+        mServerThread = new ServerThread();
 
         try {
             mServerSocket = new ServerSocket(mPort);
@@ -46,6 +52,7 @@ public class ServerSocketUtil {
             try {
                 Log.i("SocketUtil","开始接受客户端请求");
                 mSocket = mServerSocket.accept();
+                mServerThread.start();
                 mActivityHandler.sendEmptyMessage(SOCKET_ACCEPTED);
                 Log.i("SocketUtil","接收到客户端请求");
             } catch (IOException e) {
@@ -54,9 +61,40 @@ public class ServerSocketUtil {
         }
     }
 
-    class ServerThread extends Thread{  //用于通信的一个线程
+    class ServerThread extends Thread{  //用于接受消息的一个线程
         @Override
         public void run() {
+            DataInputStream reader;
+            try {
+                // 获取读取流
+                reader = new DataInputStream(mSocket.getInputStream());
+                while (true) {
+                    // 读取数据
+                    String message = reader.readUTF();
+                    Message msg = mActivityHandler.obtainMessage();
+                    msg.what = RECEIVED_MESSAGE;
+                    msg.obj = message;
+                    mActivityHandler.sendMessage(msg);
+                    Log.i("ServerSocketUtil",message);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
+    }
+
+    public void send(final String message) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                DataOutputStream writer = null;
+                try {
+                    writer = new DataOutputStream(mSocket.getOutputStream());
+                    writer.writeUTF(message); // 写一个UTF-8的信息
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 }

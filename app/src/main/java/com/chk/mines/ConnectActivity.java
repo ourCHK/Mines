@@ -12,6 +12,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,6 +36,7 @@ public class ConnectActivity extends AppCompatActivity implements View.OnClickLi
     public final static int START_CONNECT = 8;
     public final static int START_ACCEPT = 9;
     public final static int IP_CHANGED = 10;
+    public final static int RECEIVED_MESSAGE = 11;
     int mConnectType;
 
     Handler mHandler;
@@ -47,6 +49,10 @@ public class ConnectActivity extends AppCompatActivity implements View.OnClickLi
     Button mClientButton;
     TextView mIpAddress;
 
+    Button mSend;
+    EditText mInputContent;
+    TextView mReceivedContent;
+
     Thread mMonitorIpThread;
     boolean isMonitorRun = true;
 
@@ -55,6 +61,8 @@ public class ConnectActivity extends AppCompatActivity implements View.OnClickLi
 
     ServerSocketUtil mServerSocketUtil;
     ClientSocketUtil mClientSocketUtil;
+
+    int mServerOrClient;
 
     @SuppressLint("HandlerLeak")
     @Override
@@ -72,18 +80,26 @@ public class ConnectActivity extends AppCompatActivity implements View.OnClickLi
                         IpAddressServer = (String) msg.obj;
                         mClientSocketUtil = new ClientSocketUtil(IpAddress,IpAddressServer,mHandler);
                         mClientSocketUtil.startConnect();
+                        Toast.makeText(ConnectActivity.this, "StartConnect", Toast.LENGTH_SHORT).show();
                         break;
                     case START_ACCEPT:  //服务端开始接收客户端请求
+                        mServerOrClient = SERVER;
                         mServerSocketUtil = new ServerSocketUtil(IpAddress,mHandler);
                         mServerSocketUtil.startListener();
+                        Toast.makeText(ConnectActivity.this, "StartAccept", Toast.LENGTH_SHORT).show();
                         break;
                     case SOCKET_CONNECTED:  //客户端已经连接到服务端
+                        mServerOrClient = CLIENT;
                         clientDialog.dismiss();
                         Toast.makeText(ConnectActivity.this, "已连接到服务端", Toast.LENGTH_SHORT).show();
                         break;
                     case SOCKET_ACCEPTED:   //服务端已经接收了客户端
                         serverDialog.dismiss();
                         Toast.makeText(ConnectActivity.this, "已接收到客户端", Toast.LENGTH_SHORT).show();
+                        break;
+                    case RECEIVED_MESSAGE:
+                        received((String)msg.obj);
+                        Toast.makeText(ConnectActivity.this, " ReceivedMessage", Toast.LENGTH_SHORT).show();
                         break;
                 }
             }
@@ -130,6 +146,11 @@ public class ConnectActivity extends AppCompatActivity implements View.OnClickLi
         mIpAddress = findViewById(R.id.ipAddress);
         mServerButton.setOnClickListener(this);
         mClientButton.setOnClickListener(this);
+
+        mSend = findViewById(R.id.sent);
+        mSend.setOnClickListener(this);
+        mInputContent = findViewById(R.id.inputContent);
+        mReceivedContent = findViewById(R.id.receivedContent);
     }
 
     @Override
@@ -141,6 +162,9 @@ public class ConnectActivity extends AppCompatActivity implements View.OnClickLi
                 break;
             case R.id.client:
                 showClientDialog();
+                break;
+            case R.id.sent:
+                send();
                 break;
         }
     }
@@ -180,5 +204,36 @@ public class ConnectActivity extends AppCompatActivity implements View.OnClickLi
         if (clientDialog == null)
             clientDialog = new ClientDialog(this,R.style.Custom_Dialog_Style,mHandler);
         clientDialog.show();
+    }
+
+    void send() {
+        switch (mServerOrClient) {
+            case SERVER:
+                mServerSocketUtil.send(mInputContent.getText().toString());
+                break;
+            case CLIENT:
+                mClientSocketUtil.send(mInputContent.getText().toString());
+                break;
+        }
+        mInputContent.setText("");
+    }
+
+    void received(String message) {
+        if (message != null && !message.isEmpty())
+            mReceivedContent.setText("RECEIVED:"+message);
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (clientDialog != null) {
+            clientDialog.dismiss();
+            clientDialog = null;
+        }
+        if (serverDialog != null) {
+            serverDialog.dismiss();
+            serverDialog = null;
+        }
     }
 }
