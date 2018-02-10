@@ -22,7 +22,7 @@ public class ServerSocketUtil {
     private String mIpAddressServer;    //貌似不用这个也可以
     private ServerSocket mServerSocket;
     private Socket mSocket;
-    private int mPort = 7876;   //端口号
+    private int mPort = 8321;   //端口号
 
     private Handler mActivityHandler;
 

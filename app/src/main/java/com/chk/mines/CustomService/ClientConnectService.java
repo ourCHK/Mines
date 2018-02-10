@@ -8,6 +8,7 @@ import android.net.wifi.WifiManager;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
+import android.util.Log;
 
 import com.chk.mines.Utils.ClientSocketUtil;
 import com.chk.mines.Utils.ServerSocketUtil;
@@ -24,6 +25,7 @@ public class ClientConnectService extends Service {
     private Handler mHandler;
 
     public ClientConnectService() {
+        Log.i(TAG,"ClientConnectService init");
         init();
     }
 
@@ -41,6 +43,7 @@ public class ClientConnectService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        Log.i(TAG,"ClientConnectService Destory");
     }
 
     public void startConnect(String serverIpAddress) {

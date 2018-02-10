@@ -22,8 +22,8 @@ import android.widget.Toast;
 import com.chk.mines.CustomService.ClientConnectService;
 import com.chk.mines.CustomService.ServerConnectService;
 
-import CustomDialog.ClientDialog;
-import CustomDialog.ServerDialog;
+import com.chk.mines.CustomDialog.ClientDialog;
+import com.chk.mines.CustomDialog.ServerDialog;
 
 public class ConnectActivity extends AppCompatActivity implements View.OnClickListener{
     public final static String  TAG = ConnectActivity.class.getSimpleName();
@@ -46,6 +46,7 @@ public class ConnectActivity extends AppCompatActivity implements View.OnClickLi
 
     WifiManager mWifiManager;
     String IpAddress = "0.0.0.0";
+    String IpAddressServer; //用于客户端连接服务端时存储的服务端Ip地址
 
     Button mServerButton;
     Button mClientButton;
@@ -81,13 +82,12 @@ public class ConnectActivity extends AppCompatActivity implements View.OnClickLi
                         mIpAddress.setText("您的IP地址："+IpAddress);
                         break;
                     case START_CONNECT: //客户端开始连接服务端
+                        IpAddressServer = (String) msg.obj;
                         startBindClientService();
-//                        mClientConnectService.startConnect(IpAddress);
                         Toast.makeText(ConnectActivity.this, "StartConnect", Toast.LENGTH_SHORT).show();
                         break;
                     case START_ACCEPT:  //服务端开始接收客户端请求
                         startBindServerService();
-//                        mServerConnectService.startAccept();
                         Toast.makeText(ConnectActivity.this, "StartAccept", Toast.LENGTH_SHORT).show();
                         break;
                     case SOCKET_CONNECTED:  //客户端已经连接到服务端
@@ -185,8 +185,7 @@ public class ConnectActivity extends AppCompatActivity implements View.OnClickLi
      * 显示服务端Dialog
      */
     void showServerDialog() {
-        if (serverDialog == null)
-            serverDialog = new ServerDialog(this,R.style.Custom_Dialog_Style);
+        serverDialog = new ServerDialog(this,R.style.Custom_Dialog_Style,IpAddress);
         serverDialog.show();
     }
 
@@ -281,7 +280,7 @@ public class ConnectActivity extends AppCompatActivity implements View.OnClickLi
                 ClientConnectService.LocalBinder binder = (ClientConnectService.LocalBinder) service;
                 mClientConnectService = binder.getService();
                 mClientConnectService.setHandler(mHandler);
-                mClientConnectService.startConnect(IpAddress);
+                mClientConnectService.startConnect(IpAddressServer);
             }
 
             @Override
@@ -293,6 +292,5 @@ public class ConnectActivity extends AppCompatActivity implements View.OnClickLi
         };
         bindService(clientIntent,mClientConnection,BIND_AUTO_CREATE);
     }
-
 
 }

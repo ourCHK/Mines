@@ -19,7 +19,7 @@ import com.chk.mines.Beans.Mine;
 import com.chk.mines.Interfaces.GameState;
 import com.chk.mines.Interfaces.OnDialogButtonClickListener;
 
-import CustomDialog.CustomDialog;
+import com.chk.mines.CustomDialog.CustomDialog;
 import com.chk.mines.Views.MineView;
 import com.chk.mines.Views.MineViewType1;
 import com.chk.mines.Views.MineViewType2;

@@ -1,4 +1,4 @@
-package CustomDialog;
+package com.chk.mines.CustomDialog;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -60,7 +60,7 @@ public class CustomDialog extends Dialog {
         mLeftButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.i("CustomDialog","leftButtonClicked");
+                Log.i("com/chk/mines/CustomDialog","leftButtonClicked");
                 if (mOnDialogButtonClickListener != null) {
                     mOnDialogButtonClickListener.onLeftClickListener();
                 }
@@ -73,7 +73,7 @@ public class CustomDialog extends Dialog {
             public void onClick(View v) {
                 dismiss();
                 if (mOnDialogButtonClickListener != null) {
-                    Log.i("CustomDialog","RightButtonClicked");
+                    Log.i("com/chk/mines/CustomDialog","RightButtonClicked");
                     mOnDialogButtonClickListener.onRightClickListener();
                 }
                 dismiss();

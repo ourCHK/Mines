@@ -29,6 +29,7 @@ public class ServerConnectService extends Service {
     private Handler mHandler;
 
     public ServerConnectService() {
+        Log.i(TAG,"ServerConnectService inited");
         init();
     }
 
@@ -46,6 +47,7 @@ public class ServerConnectService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        Log.i(TAG,"ServerConnectService destory");
     }
 
     public void startAccept() {

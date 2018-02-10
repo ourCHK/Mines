@@ -20,7 +20,7 @@ public class ClientSocketUtil {
 
     private String mIpAddressServer;
     private Socket mSocket;
-    private int mPort = 7876;
+    private int mPort = 8321;
 
     private Handler mActivityHandler;
 
