@@ -94,11 +94,13 @@ public class ConnectActivity extends AppCompatActivity implements View.OnClickLi
                         mServerOrClient = CLIENT;
                         clientDialog.dismiss();
                         Toast.makeText(ConnectActivity.this, "已连接到服务端", Toast.LENGTH_SHORT).show();
+                        startChooseGameTypeActivity();
                         break;
                     case SOCKET_ACCEPTED:   //服务端已经接收了客户端
                         mServerOrClient = SERVER;
                         serverDialog.dismiss();
                         Toast.makeText(ConnectActivity.this, "已接收到客户端", Toast.LENGTH_SHORT).show();
+                        startChooseGameTypeActivity();
                         break;
                     case RECEIVED_MESSAGE:
                         received((String)msg.obj);
@@ -291,6 +293,13 @@ public class ConnectActivity extends AppCompatActivity implements View.OnClickLi
             }
         };
         bindService(clientIntent,mClientConnection,BIND_AUTO_CREATE);
+    }
+
+    void startChooseGameTypeActivity() {
+        Intent intent = new Intent(this,ChooseGameTypeActivity.class);
+        intent.putExtra("ServerOrClient",mServerOrClient);
+        startActivity(intent);
+        finish();
     }
 
 }

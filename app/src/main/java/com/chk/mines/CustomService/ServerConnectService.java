@@ -1,21 +1,15 @@
 package com.chk.mines.CustomService;
 
+import android.annotation.SuppressLint;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.util.Log;
 
-import com.chk.mines.Utils.ClientSocketUtil;
 import com.chk.mines.Utils.ServerSocketUtil;
-
-import java.net.ServerSocket;
-
-import static com.chk.mines.ConnectActivity.IP_CHANGED;
 
 /**
  * 服务端Wifi连接服务
@@ -26,15 +20,24 @@ public class ServerConnectService extends Service {
     private LocalBinder localBinder;
     private ServerSocketUtil mServerSocketUtil;
 
-    private Handler mHandler;
+    private Handler mActivityHandler;
+
+    private Handler mServiceHandler;
 
     public ServerConnectService() {
         Log.i(TAG,"ServerConnectService inited");
         init();
     }
 
+    @SuppressLint("HandlerLeak")
     void init() {
         localBinder = new LocalBinder();
+        mServiceHandler = new Handler(){
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+            }
+        };
     }
 
     @Override
@@ -53,7 +56,7 @@ public class ServerConnectService extends Service {
     public void startAccept() {
         Log.i(TAG,"startAccept");
         if (mServerSocketUtil == null)
-            mServerSocketUtil = new ServerSocketUtil(mHandler);
+            mServerSocketUtil = new ServerSocketUtil(mActivityHandler);
         mServerSocketUtil.startListener();
     }
 
@@ -62,7 +65,7 @@ public class ServerConnectService extends Service {
     }
 
     public void setHandler(Handler handler) {
-        this.mHandler = handler;
+        this.mActivityHandler = handler;
     }
 
     public class LocalBinder extends Binder {

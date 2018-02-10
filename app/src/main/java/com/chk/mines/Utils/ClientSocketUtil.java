@@ -4,12 +4,14 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import com.chk.mines.Beans.CommunicateData;
+import com.chk.mines.CustomService.ClientConnectService;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-import static com.chk.mines.ConnectActivity.RECEIVED_MESSAGE;
 import static com.chk.mines.ConnectActivity.SOCKET_CONNECTED;
 
 /**
@@ -23,13 +25,15 @@ public class ClientSocketUtil {
     private int mPort = 8321;
 
     private Handler mActivityHandler;
+    private Handler mServiceHandler;
 
     ConnectThread mConnectThread;
     ClientThread mClientThread;
 
-    public ClientSocketUtil(String ipAddressServer,Handler handler) {
+    public ClientSocketUtil(String ipAddressServer,Handler handler,Handler serviceHandler) {
         this.mIpAddressServer = ipAddressServer;
         this.mActivityHandler = handler;
+        this.mServiceHandler = serviceHandler;
         mConnectThread = new ConnectThread();
         mClientThread = new ClientThread();
     }
@@ -52,7 +56,7 @@ public class ClientSocketUtil {
         }
     }
 
-    class ClientThread extends Thread{  //用于接受消息的一个线程
+    class ClientThread extends Thread {  //用于接受消息的一个线程
         @Override
         public void run() {
             DataInputStream reader;
@@ -61,15 +65,26 @@ public class ClientSocketUtil {
                 reader = new DataInputStream(mSocket.getInputStream());
                 while (true) {
                     String message = reader.readUTF();
-                    Message msg = mActivityHandler.obtainMessage();
-                    msg.what = RECEIVED_MESSAGE;
-                    msg.obj = message;
-                    mActivityHandler.sendMessage(msg);
-                    Log.i("ServerSocketUtil",message);
+                    dealCommunicateData(message);
+//                    Message msg = mActivityHandler.obtainMessage();
+//                    msg.what = RECEIVED_MESSAGE;
+//                    msg.obj = message;
+//                    mActivityHandler.sendMessage(msg);
+//                    Log.i("ServerSocketUtil",message);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    void dealCommunicateData(String message) {
+        CommunicateData communicateData = GsonUtil.stringToCommunicateData(message);
+        if (communicateData != null) {
+            Message msg = mServiceHandler.obtainMessage();
+            msg.what = ClientConnectService.RECEIVED_MESSAGE;
+            msg.obj = communicateData;
+            mServiceHandler.sendMessage(msg);
         }
     }
 
@@ -95,4 +110,6 @@ public class ClientSocketUtil {
             mSocket.close();
         Log.i("ServerSocketUtil","客户端Socket关闭");
     }
+
+
 }
