@@ -1,9 +1,12 @@
 package com.chk.mines;
 
 import android.annotation.SuppressLint;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -14,12 +17,17 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.chk.mines.Beans.CommunicateData;
 import com.chk.mines.Beans.Mine;
+import com.chk.mines.CustomService.ClientConnectService;
+import com.chk.mines.CustomService.ServerConnectService;
 import com.chk.mines.Interfaces.GameState;
 import com.chk.mines.Interfaces.OnDialogButtonClickListener;
 
 import com.chk.mines.CustomDialog.CustomDialog;
+import com.chk.mines.Utils.GsonUtil;
 import com.chk.mines.Views.MineView;
 import com.chk.mines.Views.MineViewType1;
 import com.chk.mines.Views.MineViewType2;
@@ -31,12 +39,17 @@ import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import static com.chk.mines.ChooseGameTypeActivity.CLIENT;
+import static com.chk.mines.ChooseGameTypeActivity.SERVER;
+import static com.chk.mines.ChooseGameTypeActivity.readyForStart;
 import static com.chk.mines.GameActivity.PointType.DRAG;
 import static com.chk.mines.GameActivity.PointType.FLAG;
 
 public class GameActivity extends AppCompatActivity implements View.OnClickListener,GameState{
-
+    public final static String TAG = GameActivity.class.getSimpleName();
     public final static String GAME_TYPE = "GameType";
+    public final static String SERVER_OR_CLIENT = "ServerOrClient";
+
 
     public final static int TYPE_1 = 1; //8*8
     public final static int TYPE_2 = 1<<1; //16*16
@@ -51,8 +64,9 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
     public final static int GAME_START = 3;     //用于开始计时
     public final static int GAME_RESTART = 4;
     public final static int GAME_INIT = 5;  //初始化
+    public final static int RECEIVED_MESSAGE = 6;
     public final static int TIME_CHANGED = 8;
-    private  int GAME_STATE;  //游戏初始化
+    private int GAME_STATE;  //游戏初始化
 
     public final static int PointDown = 10; //接收View传来的消息
 
@@ -60,6 +74,7 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
     Timer timer;
     int time;
 
+    private int mServerOrClient;
     private int mChoosedGameType;
     private boolean isSingle;
 
@@ -68,6 +83,8 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
     int rows;
     int columns;
     int mMineCount;
+    private String mMinesString;    //多人游戏时存储的雷的数据
+
 
     public enum PointType {    //用于判断点击下去时是什么状态，挖雷状态还是标记状态,又或者是疑惑雷标记等等
         DRAG, FLAG, FLAG_CONFUSED
@@ -103,6 +120,12 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
 
 //    @BindView(R.id.pausedView)
     TextView mPausedView;
+
+    ServerConnectService mServerConnectService;
+    ServiceConnection mServerConnection;
+    ClientConnectService mClientConnectService;
+    ServiceConnection mClientConnection;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -153,7 +176,10 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
                         break;
                     case PointDown:
                         pointDownCube(msg.arg1,msg.arg2);
-                    break;
+                        break;
+                    case RECEIVED_MESSAGE:  //接收到网络消息
+                        receivedMessage(msg);
+                        break;
                 }
             }
         };
@@ -161,6 +187,7 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
 
         Intent intent = getIntent();
         int gameType = intent.getIntExtra(GAME_TYPE,-1);
+        mServerOrClient = intent.getIntExtra(SERVER_OR_CLIENT,-1);
         mChoosedGameType = gameType & (TYPE_1 | TYPE_2 | TYPE_3 | TYPE_4);
         isSingle = (gameType & FLAG_IS_SINGLE) == FLAG_IS_SINGLE;
 
@@ -189,17 +216,39 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
 
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         mMineViewContainer.addView(mMineView,lp);
-        initMines(mines, mMineCount);
-        mMineView.setMines(mines, mMineCount);
-        mMineView.setHandler(mHandler);
+
+        if (isSingle) { //单人游戏
+            initMines(mines, mMineCount);
+            mMineView.setMines(mines, mMineCount);
+            mMineView.setHandler(mHandler);
+            mHandler.sendEmptyMessage(GAME_INIT);
+        } else {    //双人游戏
+            switch (mServerOrClient) {
+                case SERVER:
+                    startBindServerService();   //启动服务
+                    initMines(mines, mMineCount);
+                    mMineView.setMines(mines, mMineCount);
+                    mMineView.setHandler(mHandler);
+
+                    mMinesString = GsonUtil.minesToString(mines);
+                    CommunicateData communicateData = new CommunicateData();
+                    communicateData.setType(CommunicateData.OTHER);
+                    communicateData.setMessage(mMinesString);
+                    while (mServerConnectService != null) {     //因为启动会比较慢所以等不为null时才进行操作
+                        mServerConnectService.sendMessage(communicateData); //调用服务端发送消息
+                    }
+                    break;
+                case CLIENT:    //客户端还需要等待服务端传数据过来
+                    startBindClientService();   //先启动服务
+                    break;
+            }
+        }
 
         mShovel.setOnClickListener(this);
         mFlag.setOnClickListener(this);
         mFlagConfused.setOnClickListener(this);
         mRestart.setOnClickListener(this);
         mStartAndPaused.setOnClickListener(this);
-
-        mHandler.sendEmptyMessage(GAME_INIT);
     }
 
     void initMines(Mine[][] mines,int mineCount) {
@@ -209,6 +258,10 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         int column;
         rows = mines.length;
         columns = mines[0].length;
+
+        if (mServerOrClient == CLIENT) {    //客户端只需要上面那些数据即可
+            return;
+        }
 
         for (int i=0; i<rows; i++) {
             for (int j=0; j<columns; j++) {
@@ -344,6 +397,7 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         }
         mMineView.invalidate();     //刷新界面
         setRemainMinesOrCheckResult();
+        //在这里也许应该加一个网络通信的东西
     }
 
     /**
@@ -533,6 +587,36 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
             timer.cancel();
     }
 
+    private void receivedMessage(Message message) {
+        CommunicateData communicateData = GsonUtil.stringToCommunicateData((String) message.obj);
+        switch (communicateData.getType()) {
+            case CommunicateData.USER_OPERATION:    //用户点击方块的操作
+                break;
+            case CommunicateData.GAME_STATE:    //游戏状态改变
+                switch (communicateData.getGame_state()) {
+                    case CommunicateData.GAME_INIT:
+                        mHandler.sendEmptyMessage(GAME_INIT);
+                        break;
+                }
+                break;
+            case CommunicateData.OTHER:     //其他的消息，准备接受服务端发来的消息
+                Mine[][] tempMines = GsonUtil.stringToMines(communicateData.getMessage());
+                for (int i=0 ;i<rows; i++) {
+                    for (int j=0; j<columns; j++) {
+                        mines[i][j] = tempMines[i][j];
+                    }
+                }
+//                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+//                mMineViewContainer.addView(mMineView,lp);
+
+                mMineView.setMines(mines, mMineCount);
+                mMineView.setHandler(mHandler);
+                mHandler.sendEmptyMessage(GAME_INIT);
+                break;
+        }
+    }
+
+
     void showView() {
         AlphaAnimation appearAnimation = new AlphaAnimation(0, 1);
         appearAnimation.setDuration(500);
@@ -553,7 +637,55 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
             mGameView.setVisibility(View.VISIBLE);
             mPausedView.setVisibility(View.GONE);
         }
+    }
 
+    void startBindServerService() {
+        Intent serverIntent = new Intent(this,ServerConnectService.class);
+        mServerConnection = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                Toast.makeText(GameActivity.this, "ClientService has Started", Toast.LENGTH_SHORT).show();
+                ServerConnectService.LocalBinder binder = (ServerConnectService.LocalBinder) service;
+                mServerConnectService = binder.getService();
+                mServerConnectService.setGameActivityHandler(mHandler);
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+                mServerConnectService = null;
+                Toast.makeText(GameActivity.this, "the ServiceService has Stopped", Toast.LENGTH_SHORT).show();
+                Log.i(TAG,"The ServiceService has Stopped!");
+            }
+        };
+        bindService(serverIntent,mServerConnection,BIND_AUTO_CREATE);
+    }
+
+    void startBindClientService() {
+        Intent clientIntent = new Intent(this,ClientConnectService.class);
+        mClientConnection = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                Toast.makeText(GameActivity.this, "ServiceService has Started", Toast.LENGTH_SHORT).show();
+                ClientConnectService.LocalBinder binder = (ClientConnectService.LocalBinder) service;
+                mClientConnectService = binder.getService();
+                mClientConnectService.setGameActivityHandler(mHandler);
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+                mClientConnectService = null;
+                Toast.makeText(GameActivity.this, "the ClientService has Stopped", Toast.LENGTH_SHORT).show();
+                Log.i(TAG,"The ClientService has Stopped!");
+            }
+        };
+        bindService(clientIntent,mClientConnection,BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unbindService(mClientConnection);
+        unbindService(mServerConnection);
     }
 
 }

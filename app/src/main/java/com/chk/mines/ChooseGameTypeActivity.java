@@ -1,9 +1,12 @@
 package com.chk.mines;
 
+import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayout;
@@ -15,9 +18,12 @@ import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.chk.mines.Beans.CommunicateData;
 import com.chk.mines.CustomService.ClientConnectService;
 import com.chk.mines.CustomService.ServerConnectService;
 
+import static com.chk.mines.GameActivity.GAME_TYPE;
+import static com.chk.mines.GameActivity.SERVER_OR_CLIENT;
 import static com.chk.mines.GameActivity.TYPE_1;
 import static com.chk.mines.GameActivity.TYPE_2;
 import static com.chk.mines.GameActivity.TYPE_3;
@@ -30,10 +36,13 @@ public class ChooseGameTypeActivity extends AppCompatActivity implements View.On
 
     public static final String TAG = ChooseGameTypeActivity.class.getSimpleName();
 
-    public static final int COOPERATOR = 1;
-    public static final int FIGHTER = 2;
+    public static final int readyForStart = 1;  //服务端类型已经选好了，准备开始;
+
+    public static final int COOPERATOR = 1<<6;
+    public static final int FIGHTER = 1<<7;
     public final static int SERVER = 4; //服务端
     public final static int CLIENT = 5; //客户端
+
 
     View mCurrentLayout;
     View mPreLayout;
@@ -62,6 +71,8 @@ public class ChooseGameTypeActivity extends AppCompatActivity implements View.On
     int mChoosedGameType;
     boolean isDoublePlayer = true;
 
+    Handler mHandler;
+
     ServerConnectService mServerConnectService;
     ServiceConnection mServerConnection;
     ClientConnectService mClientConnectService;
@@ -74,7 +85,21 @@ public class ChooseGameTypeActivity extends AppCompatActivity implements View.On
         init();
     }
 
+    @SuppressLint("HandlerLeak")
     void init() {
+        mHandler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                switch (msg.what) {
+                    case readyForStart: //客户端接收到服务端的开始命令
+                        mChoosedGameType = Integer.parseInt((String) msg.obj);
+                        Log.i(TAG,"client received message:"+mChoosedGameType);
+                        startGameActivity();
+                        break;
+                }
+            }
+        };
+
         viewInit();
         Intent intent = getIntent();
         mServerOrClient = intent.getIntExtra("ServerOrClient",-1);
@@ -127,26 +152,53 @@ public class ChooseGameTypeActivity extends AppCompatActivity implements View.On
                 openNewLayout(mGridLayout);
                 break;
             case R.id.type1:
-                mChoosedGameType = TYPE_1;
+                mChoosedGameType = TYPE_1 | mCooperatorOrFight;
                 startGameActivity();
                 break;
             case R.id.type2:
-                mChoosedGameType = TYPE_2;
+                mChoosedGameType = TYPE_2 | mCooperatorOrFight;
                 startGameActivity();
                 break;
             case R.id.type3:
-                mChoosedGameType = TYPE_3;
+                mChoosedGameType = TYPE_3 | mCooperatorOrFight;
                 startGameActivity();
                 break;
             case R.id.type4:
-                mChoosedGameType = TYPE_4;
+                mChoosedGameType = TYPE_4 | mCooperatorOrFight;
                 startGameActivity();
                 break;
         }
     }
 
     void startGameActivity() {
-
+        switch (mServerOrClient) {
+            case SERVER:
+                CommunicateData communicateData = new CommunicateData();
+                communicateData.setType(CommunicateData.OTHER);
+                communicateData.setMessage(mChoosedGameType+"");
+                mServerConnectService.sendMessage(communicateData); //调用服务端发送消息
+                break;
+            case CLIENT:
+                break;
+        }
+        Intent intent = new Intent(this,GameActivity.class);
+        intent.putExtra(GAME_TYPE,mChoosedGameType);
+        intent.putExtra(SERVER_OR_CLIENT,mServerOrClient);
+        startActivity(intent);
+//        CommunicateData communicateData = new CommunicateData();
+//        communicateData.setType(CommunicateData.OTHER);
+//        communicateData.setMessage(mChoosedGameType+"");
+//        mServerConnectService.sendMessage(communicateData); //调用服务端发送消息
+//        switch (mChoosedGameType) {
+//            case TYPE_1:
+//                break;
+//            case TYPE_2:
+//                break;
+//            case TYPE_3:
+//                break;
+//            case TYPE_4:
+//                break;
+//        }
     }
 
     void openNewLayout(View newLayout) {
@@ -214,6 +266,7 @@ public class ChooseGameTypeActivity extends AppCompatActivity implements View.On
                 Toast.makeText(ChooseGameTypeActivity.this, "ServiceService has Started", Toast.LENGTH_SHORT).show();
                 ClientConnectService.LocalBinder binder = (ClientConnectService.LocalBinder) service;
                 mClientConnectService = binder.getService();
+                mClientConnectService.setChoosedGameTypeActivityHandler(mHandler);
             }
 
             @Override
@@ -224,5 +277,12 @@ public class ChooseGameTypeActivity extends AppCompatActivity implements View.On
             }
         };
         bindService(clientIntent,mClientConnection,BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unbindService(mClientConnection);
+        unbindService(mServerConnection);
     }
 }

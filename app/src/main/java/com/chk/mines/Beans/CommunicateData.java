@@ -8,14 +8,16 @@ package com.chk.mines.Beans;
 public class CommunicateData {
     public static final int GAME_STATE = 1;    //动作，用于控制游戏的逻辑，比如开始，重新开始等等
     public static final int USER_OPERATION = 2; //用户点击方块的操作
+    public static final int OTHER = 3;  //其他的一些消息类型
 
+    public static final int GAME_INIT = 2;
     public static final int GAME_START = 3;
     public static final int GAME_RESTART = 4;
     public static final int GAME_OVER = 5;
     public static final int GAME_WIN = 6;
     public static final int GAME_LOSE = 7;
 
-    int type;   //Action Or OPERATION
+    int type;   //Action Or OPERATION Or Other
     int game_state; //GameState that above;
 
     int row = -1;   //默认都是-1
@@ -24,6 +26,8 @@ public class CommunicateData {
     int rows = -1;
     int columns = -1;
     String mines = null;   //将雷初始化的数据存储到mines
+
+    String message;    //其他类型的消息
 
     public CommunicateData() {
 
@@ -83,5 +87,13 @@ public class CommunicateData {
 
     public void setMines(String mines) {
         this.mines = mines;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

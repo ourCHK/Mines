@@ -220,10 +220,10 @@ public class ConnectActivity extends AppCompatActivity implements View.OnClickLi
     void sent() {
         switch (mServerOrClient) {
             case SERVER:
-                mServerConnectService.sent(mInputContent.getText().toString());
+                mServerConnectService.sendMessage(mInputContent.getText().toString());
                 break;
             case CLIENT:
-                mClientConnectService.sent(mInputContent.getText().toString());
+                mClientConnectService.sendMessage(mInputContent.getText().toString());
                 break;
         }
         mInputContent.setText("");

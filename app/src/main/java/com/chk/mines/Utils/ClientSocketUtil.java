@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.net.Socket;
 
 import static com.chk.mines.ConnectActivity.SOCKET_CONNECTED;
+import static com.chk.mines.CustomService.ClientConnectService.RECEIVED_MESSAGE;
 
 /**
  * Created by chk on 18-2-8.
@@ -65,12 +66,11 @@ public class ClientSocketUtil {
                 reader = new DataInputStream(mSocket.getInputStream());
                 while (true) {
                     String message = reader.readUTF();
-                    dealCommunicateData(message);
-//                    Message msg = mActivityHandler.obtainMessage();
-//                    msg.what = RECEIVED_MESSAGE;
-//                    msg.obj = message;
-//                    mActivityHandler.sendMessage(msg);
-//                    Log.i("ServerSocketUtil",message);
+                    Message msg = mServiceHandler.obtainMessage();
+                    msg.what = RECEIVED_MESSAGE;
+                    msg.obj = message;
+                    mServiceHandler.sendMessage(msg);
+                    Log.i("ClientSocketUtil","receivedMessage:"+message);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -82,7 +82,7 @@ public class ClientSocketUtil {
         CommunicateData communicateData = GsonUtil.stringToCommunicateData(message);
         if (communicateData != null) {
             Message msg = mServiceHandler.obtainMessage();
-            msg.what = ClientConnectService.RECEIVED_MESSAGE;
+            msg.what = RECEIVED_MESSAGE;
             msg.obj = communicateData;
             mServiceHandler.sendMessage(msg);
         }

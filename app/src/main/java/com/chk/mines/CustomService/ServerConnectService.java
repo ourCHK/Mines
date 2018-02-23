@@ -9,6 +9,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.util.Log;
 
+import com.chk.mines.Beans.CommunicateData;
 import com.chk.mines.Utils.ServerSocketUtil;
 
 /**
@@ -21,7 +22,7 @@ public class ServerConnectService extends Service {
     private ServerSocketUtil mServerSocketUtil;
 
     private Handler mActivityHandler;
-
+    private Handler mGameActivityHanlder;
     private Handler mServiceHandler;
 
     public ServerConnectService() {
@@ -60,12 +61,20 @@ public class ServerConnectService extends Service {
         mServerSocketUtil.startListener();
     }
 
-    public void sent(String message) {
+    public void sendMessage(String message) {
         mServerSocketUtil.send(message);
+    }
+
+    public void sendMessage(CommunicateData communicateData) {
+        mServerSocketUtil.send(communicateData);
     }
 
     public void setHandler(Handler handler) {
         this.mActivityHandler = handler;
+    }
+
+    public void setGameActivityHandler(Handler handler) {   //用于和游戏activity进行通信
+        mGameActivityHanlder = handler;
     }
 
     public class LocalBinder extends Binder {

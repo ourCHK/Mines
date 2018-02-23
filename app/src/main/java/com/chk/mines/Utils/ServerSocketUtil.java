@@ -4,6 +4,8 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import com.chk.mines.Beans.CommunicateData;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -84,6 +86,23 @@ public class ServerSocketUtil {
     }
 
     public void send(final String message) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                DataOutputStream writer = null;
+                try {
+                    writer = new DataOutputStream(mSocket.getOutputStream());
+                    writer.writeUTF(message); // 写一个UTF-8的信息
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    public void send(CommunicateData communicateData) {
+        final String message = GsonUtil.communicateDataToString(communicateData);
+        Log.i("ServerSocketUtil","sendMessage:"+message);
         new Thread(new Runnable() {
             @Override
             public void run() {

@@ -11,6 +11,9 @@ import android.util.Log;
 
 import com.chk.mines.Beans.CommunicateData;
 import com.chk.mines.Utils.ClientSocketUtil;
+import com.chk.mines.Utils.GsonUtil;
+
+import static com.chk.mines.ChooseGameTypeActivity.readyForStart;
 
 /**
  * 客户端Wifi连接服务
@@ -26,6 +29,8 @@ public class ClientConnectService extends Service {
 
     private Handler mActivityHandler;
     private Handler mServiceHandler;    //Service用来后台接收服务端发来的消息
+    private Handler mGameActivityHanlder;
+    private Handler mChoosedGameTypeActivityHandler;
 
     public ClientConnectService() {
         Log.i(TAG,"ClientConnectService init");
@@ -40,7 +45,7 @@ public class ClientConnectService extends Service {
             public void handleMessage(Message msg) {
                 switch (msg.what) {
                     case RECEIVED_MESSAGE:
-                        dealMessage(msg);
+                        receivedMessage(msg);
                         break;
                 }
             }
@@ -66,24 +71,39 @@ public class ClientConnectService extends Service {
         mClientSocketUtil.startConnect();
     }
 
-    public void sent(String message) {
-        mClientSocketUtil.send(message);
-    }
-
     public void setHandler(Handler handler) {
         this.mActivityHandler = handler;
     }
 
+    public void setGameActivityHandler(Handler handler) {   //用于和游戏activity进行通信
+        mGameActivityHanlder = handler;
+    }
+
+    public void setChoosedGameTypeActivityHandler(Handler handler) {    //用于和选择游戏类型activity进行通信
+        mChoosedGameTypeActivityHandler = handler;
+    }
+
+    public void sendMessage(String message) {
+        mClientSocketUtil.send(message);
+    }
+
     /**
      * 处理从ClientSocketUtil发来的信息
-     * @param msg
+     * @param message
      */
-    void dealMessage(Message msg) {
-        CommunicateData communicateData = (CommunicateData) msg.obj;
+    void receivedMessage(Message message) {
+        CommunicateData communicateData = GsonUtil.stringToCommunicateData((String) message.obj);
         switch (communicateData.getType()) {
-            case CommunicateData.USER_OPERATION:
+            case CommunicateData.USER_OPERATION:    //用户点击方块的操作
                 break;
-            case CommunicateData.GAME_STATE:
+            case CommunicateData.GAME_STATE:    //游戏状态改变
+                break;
+            case CommunicateData.OTHER:     //其他的消息，我们就知道应该是要跳转开始到游戏activity了
+                Log.i(TAG,communicateData.getMessage());
+                Message msg = mChoosedGameTypeActivityHandler.obtainMessage();
+                msg.what = readyForStart;
+                msg.obj = communicateData.getMessage();
+                mChoosedGameTypeActivityHandler.sendMessage(msg);
                 break;
         }
     }
