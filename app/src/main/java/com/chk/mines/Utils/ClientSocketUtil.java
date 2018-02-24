@@ -103,6 +103,23 @@ public class ClientSocketUtil {
         }).start();
     }
 
+    public void send(CommunicateData communicateData) {
+        final String message = GsonUtil.communicateDataToString(communicateData);
+        Log.i("ClientSocketUtil","sendMessage:"+message);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                DataOutputStream writer = null;
+                try {
+                    writer = new DataOutputStream(mSocket.getOutputStream());
+                    writer.writeUTF(message+""); // 写一个UTF-8的信息
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
     @Override
     protected void finalize() throws Throwable {
         super.finalize();

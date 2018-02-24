@@ -10,6 +10,8 @@ import android.os.Message;
 import android.util.Log;
 
 import com.chk.mines.Beans.CommunicateData;
+import com.chk.mines.CooperateGameActivity;
+import com.chk.mines.Utils.GsonUtil;
 import com.chk.mines.Utils.ServerSocketUtil;
 
 /**
@@ -25,6 +27,8 @@ public class ServerConnectService extends Service {
     private Handler mGameActivityHanlder;
     private Handler mServiceHandler;
 
+    public static final int RECEIVED_MESSAGE = 1;
+
     public ServerConnectService() {
         Log.i(TAG,"ServerConnectService inited");
         init();
@@ -33,10 +37,14 @@ public class ServerConnectService extends Service {
     @SuppressLint("HandlerLeak")
     void init() {
         localBinder = new LocalBinder();
-        mServiceHandler = new Handler(){
+        mServiceHandler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
-                super.handleMessage(msg);
+                switch (msg.what) {
+                    case RECEIVED_MESSAGE:
+                        receivedMessage(msg);
+                        break;
+                }
             }
         };
     }
@@ -75,6 +83,41 @@ public class ServerConnectService extends Service {
 
     public void setGameActivityHandler(Handler handler) {   //用于和游戏activity进行通信
         mGameActivityHanlder = handler;
+    }
+
+    /**
+     * 处理从ClientSocketUtil发来的信息
+     * @param message
+     */
+    void receivedMessage(Message message) {
+        CommunicateData communicateData = GsonUtil.stringToCommunicateData((String) message.obj);
+        switch (communicateData.getType()) {
+            case CommunicateData.USER_OPERATION:    //用户点击方块的操作
+                Message msg1 = mGameActivityHanlder.obtainMessage();
+                msg1.what = CooperateGameActivity.RECEIVED_MESSAGE_FROM_SERVER;
+                msg1.obj = communicateData;
+                mGameActivityHanlder.sendMessage(msg1);
+                break;
+            case CommunicateData.GAME_STATE:    //游戏状态改变
+//                switch (communicateData.getGame_state()) {
+//                    case CommunicateData.GAME_INIT: //收到初始化的消息
+//
+//                        break;
+//                }
+                Log.i(TAG,"GAME_STATE CHANGED");
+                Message msg2 = mGameActivityHanlder.obtainMessage();
+                msg2.what = CooperateGameActivity.RECEIVED_MESSAGE_FROM_SERVER;
+                msg2.obj = communicateData;
+                mGameActivityHanlder.sendMessage(msg2);
+                break;
+//            case CommunicateData.OTHER:     //其他的消息，我们就知道应该是要跳转开始到游戏activity了
+//                Log.i(TAG,communicateData.getMessage());
+//                Message msg3 = mChoosedGameTypeActivityHandler.obtainMessage();
+//                msg3.what = readyForStart;
+//                msg3.obj = communicateData.getMessage();
+//                mChoosedGameTypeActivityHandler.sendMessage(msg3);
+//                break;
+        }
     }
 
     public class LocalBinder extends Binder {

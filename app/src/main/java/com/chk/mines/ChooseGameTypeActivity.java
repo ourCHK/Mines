@@ -181,7 +181,12 @@ public class ChooseGameTypeActivity extends AppCompatActivity implements View.On
             case CLIENT:
                 break;
         }
-        Intent intent = new Intent(this,GameActivity.class);
+        Intent intent = null;
+        if ((mChoosedGameType & COOPERATOR) != 0) { //说明是Cooperator类型的
+            intent =  new Intent(this,CooperateGameActivity.class);
+        } else {    //说明是Fight类型的
+            intent =  new Intent(this,FightGameActivity.class);
+        }
         intent.putExtra(GAME_TYPE,mChoosedGameType);
         intent.putExtra(SERVER_OR_CLIENT,mServerOrClient);
         startActivity(intent);
@@ -243,7 +248,7 @@ public class ChooseGameTypeActivity extends AppCompatActivity implements View.On
         mServerConnection = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
-                Toast.makeText(ChooseGameTypeActivity.this, "ClientService has Started", Toast.LENGTH_SHORT).show();
+                Toast.makeText(ChooseGameTypeActivity.this, "ServerService has Started", Toast.LENGTH_SHORT).show();
                 ServerConnectService.LocalBinder binder = (ServerConnectService.LocalBinder) service;
                 mServerConnectService = binder.getService();
             }
@@ -251,7 +256,7 @@ public class ChooseGameTypeActivity extends AppCompatActivity implements View.On
             @Override
             public void onServiceDisconnected(ComponentName name) {
                 mServerConnectService = null;
-                Toast.makeText(ChooseGameTypeActivity.this, "the ServiceService has Stopped", Toast.LENGTH_SHORT).show();
+                Toast.makeText(ChooseGameTypeActivity.this, "the ServerService has Stopped", Toast.LENGTH_SHORT).show();
                 Log.i(TAG,"The ServiceService has Stopped!");
             }
         };
@@ -263,7 +268,7 @@ public class ChooseGameTypeActivity extends AppCompatActivity implements View.On
         mClientConnection = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
-                Toast.makeText(ChooseGameTypeActivity.this, "ServiceService has Started", Toast.LENGTH_SHORT).show();
+                Toast.makeText(ChooseGameTypeActivity.this, "ClientService has Started", Toast.LENGTH_SHORT).show();
                 ClientConnectService.LocalBinder binder = (ClientConnectService.LocalBinder) service;
                 mClientConnectService = binder.getService();
                 mClientConnectService.setChoosedGameTypeActivityHandler(mHandler);

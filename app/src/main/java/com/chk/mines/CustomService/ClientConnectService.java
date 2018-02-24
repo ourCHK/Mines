@@ -10,6 +10,7 @@ import android.os.Message;
 import android.util.Log;
 
 import com.chk.mines.Beans.CommunicateData;
+import com.chk.mines.CooperateGameActivity;
 import com.chk.mines.Utils.ClientSocketUtil;
 import com.chk.mines.Utils.GsonUtil;
 
@@ -87,6 +88,10 @@ public class ClientConnectService extends Service {
         mClientSocketUtil.send(message);
     }
 
+    public void sendMessage(CommunicateData communicateData) {
+        mClientSocketUtil.send(communicateData);
+    }
+
     /**
      * 处理从ClientSocketUtil发来的信息
      * @param message
@@ -95,15 +100,32 @@ public class ClientConnectService extends Service {
         CommunicateData communicateData = GsonUtil.stringToCommunicateData((String) message.obj);
         switch (communicateData.getType()) {
             case CommunicateData.USER_OPERATION:    //用户点击方块的操作
+                Message msg1 = mGameActivityHanlder.obtainMessage();
+                msg1.what = CooperateGameActivity.RECEIVED_MESSAGE_FROM_SERVER;
+                msg1.obj = communicateData;
+                mGameActivityHanlder.sendMessage(msg1);
                 break;
             case CommunicateData.GAME_STATE:    //游戏状态改变
+//                switch (communicateData.getGame_state()) {
+//                    case CommunicateData.GAME_INIT: //收到初始化的消息
+//
+//                        break;
+//                }
+                if (mGameActivityHanlder == null) {
+
+                }
+                Log.i(TAG,"GAME_STATE CHANGED");
+                Message msg2 = mGameActivityHanlder.obtainMessage();
+                msg2.what = CooperateGameActivity.RECEIVED_MESSAGE_FROM_SERVER;
+                msg2.obj = communicateData;
+                mGameActivityHanlder.sendMessage(msg2);
                 break;
             case CommunicateData.OTHER:     //其他的消息，我们就知道应该是要跳转开始到游戏activity了
                 Log.i(TAG,communicateData.getMessage());
-                Message msg = mChoosedGameTypeActivityHandler.obtainMessage();
-                msg.what = readyForStart;
-                msg.obj = communicateData.getMessage();
-                mChoosedGameTypeActivityHandler.sendMessage(msg);
+                Message msg3 = mChoosedGameTypeActivityHandler.obtainMessage();
+                msg3.what = readyForStart;
+                msg3.obj = communicateData.getMessage();
+                mChoosedGameTypeActivityHandler.sendMessage(msg3);
                 break;
         }
     }

@@ -109,7 +109,7 @@ public class ServerSocketUtil {
                 DataOutputStream writer = null;
                 try {
                     writer = new DataOutputStream(mSocket.getOutputStream());
-                    writer.writeUTF(message); // 写一个UTF-8的信息
+                    writer.writeUTF(message+""); // 写一个UTF-8的信息
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

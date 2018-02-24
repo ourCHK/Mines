@@ -17,6 +17,9 @@ public class CommunicateData {
     public static final int GAME_WIN = 6;
     public static final int GAME_LOSE = 7;
 
+    public static final int CLIENT_SERVICE_BIND = 11;   //客户端服务已经绑定，说明可开始发送数据了
+    public static final int CLIENT_RECEIVED_MESSAGE = 12;   //客户端已经接收到服务端的数据，说明游戏可以开始了
+
     int type;   //Action Or OPERATION Or Other
     int game_state; //GameState that above;
 
