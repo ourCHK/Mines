@@ -22,6 +22,7 @@ import android.widget.Toast;
 import com.chk.mines.Beans.CommunicateData;
 import com.chk.mines.Beans.Mine;
 import com.chk.mines.CustomDialog.CustomDialog;
+import com.chk.mines.CustomDialog.WaitingForSyncDialog;
 import com.chk.mines.CustomService.ClientConnectService;
 import com.chk.mines.CustomService.ServerConnectService;
 import com.chk.mines.Interfaces.GameState;
@@ -126,11 +127,14 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
     ClientConnectService mClientConnectService;
     ServiceConnection mClientConnection;
 
+    WaitingForSyncDialog syncDialog;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game_second);
         init();
+        showSyncDialog();
     }
 
     @SuppressLint("HandlerLeak")
@@ -182,6 +186,7 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
                         receivedMessageFromServer((CommunicateData)msg.obj);
                         break;
                     case RECEIVED_MESSAGE_FROM_CLIENT:
+                        Toast.makeText(CooperateGameActivity.this, "Received message from Client!", Toast.LENGTH_SHORT).show();
                         isReceivedMessage = true;
                         receivedMessageFromClient((CommunicateData)msg.obj);
                         break;
@@ -540,7 +545,6 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
                 case SERVER:
                     break;
                 case CLIENT:
-
                     break;
             }
         }
@@ -619,7 +623,7 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
         switch (communicateData.getType()) {
             case CommunicateData.GAME_STATE:
                 switch (communicateData.getGame_state()) {
-                    case CommunicateData.CLIENT_SERVICE_BIND:   //客户端服务已经绑定
+                    case CommunicateData.CLIENT_SERVICE_BIND:   //客户端服务已经绑定,我们可以开始传输雷的数据
                         mMinesString = GsonUtil.minesToString(mines);
                         CommunicateData cd1 = new CommunicateData();
                         cd1.setType(CommunicateData.GAME_STATE);
@@ -627,9 +631,13 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
                         cd1.setMessage(mMinesString);
                         mServerConnectService.sendMessage(cd1);
                         break;
+                    case CommunicateData.GAME_INIT:
+                        break;
                 }
-            case CommunicateData.CLIENT_RECEIVED_MESSAGE:   //客户端已经接收到消息
+            case CommunicateData.CLIENT_RECEIVED_MESSAGE:   //客户端已经接收到消息，已经可以准备开始游戏了
                 //这里应该得是有一个dialog关闭消失的操作
+                dismissSyncDialog();
+                Toast.makeText(CooperateGameActivity.this, "客户端已接受我们服务端发出的消息", Toast.LENGTH_SHORT).show();
                 break;
         }
     }
@@ -653,11 +661,13 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
                                 mines[i][j] = tempMines[i][j];
                             }
                         }
-                        mHandler.sendEmptyMessage(GAME_INIT);
-                        CommunicateData cd1 = new CommunicateData();    //通知服务端客户端已经接收到消息
+                        mHandler.sendEmptyMessage(GAME_INIT);   //通知服务端客户端已经接收到消息
+                        CommunicateData cd1 = new CommunicateData();
                         cd1.setType(CommunicateData.GAME_STATE);
                         cd1.setGame_state(CommunicateData.CLIENT_RECEIVED_MESSAGE);
                         mClientConnectService.sendMessage(cd1);
+
+                        dismissSyncDialog();
                         break;
                 }
                 break;
@@ -701,6 +711,17 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
         }
     }
 
+    void showSyncDialog() {
+        if (syncDialog == null)
+            syncDialog = new WaitingForSyncDialog(this,R.style.Custom_Dialog_Style);
+        syncDialog.show();
+    }
+
+    void dismissSyncDialog() {
+        if (syncDialog == null)
+            syncDialog.dismiss();
+    }
+
     void startBindServerService() {
         Intent serverIntent = new Intent(this,ServerConnectService.class);
         mServerConnection = new ServiceConnection() {
@@ -735,7 +756,7 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
         mClientConnection = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
-                Toast.makeText(CooperateGameActivity.this, "The ClientService has Started", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(CooperateGameActivity.this, "The ClientService has Started", Toast.LENGTH_SHORT).show();
                 ClientConnectService.LocalBinder binder = (ClientConnectService.LocalBinder) service;
                 mClientConnectService = binder.getService();
                 mClientConnectService.setGameActivityHandler(mHandler);
@@ -760,8 +781,14 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unbindService(mClientConnection);
-        unbindService(mServerConnection);
+        if (syncDialog != null) {
+            syncDialog.dismiss();
+            syncDialog = null;
+        }
+        if (mClientConnection != null)
+            unbindService(mClientConnection);
+        if (mServerConnection != null)
+            unbindService(mServerConnection);
     }
 
 }

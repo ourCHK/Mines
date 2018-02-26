@@ -42,6 +42,7 @@ public class ServerConnectService extends Service {
             public void handleMessage(Message msg) {
                 switch (msg.what) {
                     case RECEIVED_MESSAGE:
+                        Log.i(TAG,"ServerConnectService Received Message:"+msg.obj.toString());
                         receivedMessage(msg);
                         break;
                 }
@@ -65,7 +66,7 @@ public class ServerConnectService extends Service {
     public void startAccept() {
         Log.i(TAG,"startAccept");
         if (mServerSocketUtil == null)
-            mServerSocketUtil = new ServerSocketUtil(mActivityHandler);
+            mServerSocketUtil = new ServerSocketUtil(mActivityHandler,mServiceHandler);
         mServerSocketUtil.startListener();
     }
 
@@ -104,7 +105,7 @@ public class ServerConnectService extends Service {
 //
 //                        break;
 //                }
-                Log.i(TAG,"GAME_STATE CHANGED");
+                Log.i(TAG,"GAME_STATE CHANGED and Handler:"+(mGameActivityHanlder == null));
                 Message msg2 = mGameActivityHanlder.obtainMessage();
                 msg2.what = CooperateGameActivity.RECEIVED_MESSAGE_FROM_SERVER;
                 msg2.obj = communicateData;

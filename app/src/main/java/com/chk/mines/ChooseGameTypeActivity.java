@@ -287,7 +287,9 @@ public class ChooseGameTypeActivity extends AppCompatActivity implements View.On
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unbindService(mClientConnection);
-        unbindService(mServerConnection);
+        if (mClientConnection != null)
+            unbindService(mClientConnection);
+        if (mServerConnection != null)
+            unbindService(mServerConnection);
     }
 }

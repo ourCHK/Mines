@@ -111,9 +111,9 @@ public class ClientConnectService extends Service {
 //
 //                        break;
 //                }
-                if (mGameActivityHanlder == null) {
-
-                }
+//                if (mGameActivityHanlder == null) {
+//
+//                }
                 Log.i(TAG,"GAME_STATE CHANGED");
                 Message msg2 = mGameActivityHanlder.obtainMessage();
                 msg2.what = CooperateGameActivity.RECEIVED_MESSAGE_FROM_SERVER;

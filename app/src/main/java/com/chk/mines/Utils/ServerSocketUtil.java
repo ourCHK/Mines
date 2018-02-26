@@ -12,8 +12,8 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import static com.chk.mines.ConnectActivity.RECEIVED_MESSAGE;
 import static com.chk.mines.ConnectActivity.SOCKET_ACCEPTED;
+import static com.chk.mines.CustomService.ServerConnectService.RECEIVED_MESSAGE;
 
 /**
  * Created by chk on 18-2-8.
@@ -27,13 +27,15 @@ public class ServerSocketUtil {
     private int mPort = 8321;   //端口号
 
     private Handler mActivityHandler;
+    private Handler mServiceHandler;
 
     AcceptThread mAcceptThread;
     ServerThread mServerThread;
 
-    public ServerSocketUtil(Handler handler) {
+    public ServerSocketUtil(Handler handler,Handler serviceHandler) {
 //        this.mIpAddressServer = ipAddressClient;
         this.mActivityHandler = handler;
+        this.mServiceHandler = serviceHandler;
         mAcceptThread = new AcceptThread();
         mServerThread = new ServerThread();
 
@@ -73,10 +75,10 @@ public class ServerSocketUtil {
                 while (true) {
                     // 读取数据
                     String message = reader.readUTF();
-                    Message msg = mActivityHandler.obtainMessage();
+                    Message msg = mServiceHandler.obtainMessage();
                     msg.what = RECEIVED_MESSAGE;
                     msg.obj = message;
-                    mActivityHandler.sendMessage(msg);
+                    mServiceHandler.sendMessage(msg);
                     Log.i("ServerSocketUtil",message);
                 }
             } catch (IOException e) {

@@ -160,7 +160,7 @@ public class ConnectActivity extends AppCompatActivity implements View.OnClickLi
                 showClientDialog(); //在dialog点击连接按钮时会通知handler做相应操作
                 break;
             case R.id.sent:
-                sent();
+                send();
                 break;
         }
     }
@@ -217,7 +217,7 @@ public class ConnectActivity extends AppCompatActivity implements View.OnClickLi
             mReceivedContent.setText("RECEIVED:"+message);
     }
 
-    void sent() {
+    void send() {
         switch (mServerOrClient) {
             case SERVER:
                 mServerConnectService.sendMessage(mInputContent.getText().toString());
