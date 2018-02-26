@@ -85,7 +85,7 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
     int mMineCount;
     private String mMinesString;    //多人游戏时存储的雷的数据
 
-    boolean isReceivedMessage;    //用于判断是是否接收到了网络消息;
+    boolean isReceivedMessage = true;    //用于判断是是否接收到了网络消息; 暂时不要管这个
 
     public enum PointType {    //用于判断点击下去时是什么状态，挖雷状态还是标记状态,又或者是疑惑雷标记等等
         DRAG, FLAG, FLAG_CONFUSED
@@ -181,12 +181,12 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
                         pointDownCube(msg.arg1,msg.arg2);
                         break;
                     case RECEIVED_MESSAGE_FROM_SERVER:  //接收服务端传来的消息
-                        Toast.makeText(CooperateGameActivity.this, "Received message from Server!", Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(CooperateGameActivity.this, "Received message from Server!", Toast.LENGTH_SHORT).show();
                         isReceivedMessage = true;
                         receivedMessageFromServer((CommunicateData)msg.obj);
                         break;
                     case RECEIVED_MESSAGE_FROM_CLIENT:
-                        Toast.makeText(CooperateGameActivity.this, "Received message from Client!", Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(CooperateGameActivity.this, "Received message from Client!", Toast.LENGTH_SHORT).show();
                         isReceivedMessage = true;
                         receivedMessageFromClient((CommunicateData)msg.obj);
                         break;
@@ -234,11 +234,7 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
 //        } else {    //双人游戏
         switch (mServerOrClient) {
             case SERVER:
-                initMines(mines, mMineCount);
-                mMineView.setMines(mines, mMineCount);
-                mMineView.setHandler(mHandler);
                 mHandler.sendEmptyMessage(GAME_INIT);
-
                 startBindServerService();   //启动服务
 //                mMinesString = GsonUtil.minesToString(mines);
 //                CommunicateData communicateData = new CommunicateData();
@@ -260,6 +256,9 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
                 startBindClientService();   //先启动服务
                 break;
         }
+
+        initMines(mines, mMineCount);
+
 //        }
 
         mShovel.setOnClickListener(this);
@@ -399,23 +398,71 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
                 return;
         }
 
-        switch (mCurrentType) {
+        int currentType = -1;
+
+        switch (mCurrentType) {     //我之前干嘛要在这里用枚举啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊！！！
             case DRAG:
+                currentType = 1;
                 if (mines[row][column].isFlaged())  //flag状态下也不可点击
                     return;
                 else
                     openCube(row,column);
                 break;
             case FLAG:
+                currentType = 2;
                 flagCube(row, column);
                 break;
             case FLAG_CONFUSED:
+                currentType = 3;
                 confuseCube(row, column);
                 break;
         }
         mMineView.invalidate();     //刷新界面
         setRemainMinesOrCheckResult();
-        //在这里也许应该加一个网络通信的东西
+        //在这里也许应该加一个网络通信的东西，没错，我们准备加入了
+
+        CommunicateData communicateData = new CommunicateData();
+        communicateData.setType(CommunicateData.USER_OPERATION);
+        communicateData.setUser_operation(currentType);
+        communicateData.setRow(row);
+        communicateData.setColumn(column);
+        switch (mServerOrClient) {
+            case SERVER:
+                mServerConnectService.sendMessage(communicateData);
+                break;
+            case CLIENT:
+                mClientConnectService.sendMessage(communicateData);
+                break;
+        }
+    }
+
+    void pointDownCubeFromNetWork(CommunicateData communicateData) {
+        switch (GAME_STATE) {
+            case GAME_INIT:
+                mHandler.sendEmptyMessage(GAME_START);
+                break;
+            case GAME_PAUSED:
+            case GAME_OVER:
+            case GAME_SUCCESS:
+                return;
+        }
+        int user_operation = communicateData.getUser_operation();
+        int row = communicateData.getRow();
+        int column = communicateData.getColumn();
+
+        switch (user_operation) {
+            case CommunicateData.DRAG:
+                openCube(row,column);
+                break;
+            case CommunicateData.FLAG:
+                flagCube(row, column);
+                break;
+            case CommunicateData.FLAG_CONFUSED:
+                confuseCube(row, column);
+                break;
+        }
+        mMineView.invalidate();     //刷新界面
+        setRemainMinesOrCheckResult();
     }
 
     /**
@@ -543,8 +590,12 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
         if (isReceivedMessage) {    //如果有接到网络消息
             switch (mServerOrClient) {
                 case SERVER:
+                    mMineView.setMines(mines, mMineCount);
+                    mMineView.setHandler(mHandler);
                     break;
                 case CLIENT:
+                    mMineView.setMines(mines, mMineCount);
+                    mMineView.setHandler(mHandler);
                     break;
             }
         }
@@ -621,6 +672,9 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
     private void receivedMessageFromClient(CommunicateData message) {
         CommunicateData communicateData = message;
         switch (communicateData.getType()) {
+            case CommunicateData.USER_OPERATION:    //用户点击方块的操作
+                pointDownCubeFromNetWork(communicateData);
+                break;
             case CommunicateData.GAME_STATE:
                 switch (communicateData.getGame_state()) {
                     case CommunicateData.CLIENT_SERVICE_BIND:   //客户端服务已经绑定,我们可以开始传输雷的数据
@@ -650,6 +704,7 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
         CommunicateData communicateData = message;
         switch (communicateData.getType()) {
             case CommunicateData.USER_OPERATION:    //用户点击方块的操作
+                pointDownCubeFromNetWork(communicateData);
                 break;
             case CommunicateData.GAME_STATE:    //游戏状态改变
                 switch (communicateData.getGame_state()) {
@@ -657,17 +712,28 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
                         String arrayJson = communicateData.getMessage();
                         Mine[][] tempMines = GsonUtil.stringToMines(arrayJson);
                         for (int i=0; i<rows; i++) {
+                            String string = "";
                             for (int j=0; j<columns; j++) {
                                 mines[i][j] = tempMines[i][j];
+                                if (mines[i][j].getNum() == -1)
+                                    string += "*" + " ";
+                                else
+                                    string += mines[i][j].getNum() + " ";
                             }
+                            Log.i("GameActivity",string);
                         }
                         mHandler.sendEmptyMessage(GAME_INIT);   //通知服务端客户端已经接收到消息
-                        CommunicateData cd1 = new CommunicateData();
-                        cd1.setType(CommunicateData.GAME_STATE);
-                        cd1.setGame_state(CommunicateData.CLIENT_RECEIVED_MESSAGE);
-                        mClientConnectService.sendMessage(cd1);
+                        mHandler.postDelayed(new Runnable() {   //客户端延迟发送等待服务端服务开启
+                            @Override
+                            public void run() {
+                                CommunicateData cd1 = new CommunicateData();
+                                cd1.setType(CommunicateData.GAME_STATE);
+                                cd1.setGame_state(CommunicateData.CLIENT_RECEIVED_MESSAGE);
+                                mClientConnectService.sendMessage(cd1);
 
-                        dismissSyncDialog();
+                                dismissSyncDialog();
+                            }
+                        },2000);
                         break;
                 }
                 break;
@@ -718,7 +784,7 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
     }
 
     void dismissSyncDialog() {
-        if (syncDialog == null)
+        if (syncDialog != null)
             syncDialog.dismiss();
     }
 

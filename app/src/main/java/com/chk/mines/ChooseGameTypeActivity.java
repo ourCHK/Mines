@@ -235,8 +235,8 @@ public class ChooseGameTypeActivity extends AppCompatActivity implements View.On
 
     @Override
     public void onBackPressed() {
-        if (mWaitingForStart.isShown()) //客户端等待界面不给按返回键
-            return;
+//        if (mWaitingForStart.isShown()) //客户端等待界面不给按返回键
+//            return;
         if (mCurrentLayout != mPreLayout)
             backLayout();
         else

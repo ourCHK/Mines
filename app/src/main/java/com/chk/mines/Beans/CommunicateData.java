@@ -9,6 +9,8 @@ public class CommunicateData {
     public static final int GAME_STATE = 1;    //动作，用于控制游戏的逻辑，比如开始，重新开始等等
     public static final int USER_OPERATION = 2; //用户点击方块的操作
     public static final int OTHER = 3;  //其他的一些消息类型
+    int type;   //Action Or OPERATION Or Other
+
 
     public static final int GAME_INIT = 2;
     public static final int GAME_START = 3;
@@ -16,12 +18,14 @@ public class CommunicateData {
     public static final int GAME_OVER = 5;
     public static final int GAME_WIN = 6;
     public static final int GAME_LOSE = 7;
-
     public static final int CLIENT_SERVICE_BIND = 11;   //客户端服务已经绑定，说明可开始发送数据了
     public static final int CLIENT_RECEIVED_MESSAGE = 12;   //客户端已经接收到服务端的数据，说明游戏可以开始了
-
-    int type;   //Action Or OPERATION Or Other
     int game_state; //GameState that above;
+
+    public static final int DRAG = 1;
+    public static final int FLAG = 2;
+    public static final int FLAG_CONFUSED = 3;
+    int user_operation;
 
     int row = -1;   //默认都是-1
     int column = -1;
@@ -98,5 +102,13 @@ public class CommunicateData {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public int getUser_operation() {
+        return user_operation;
+    }
+
+    public void setUser_operation(int user_operation) {
+        this.user_operation = user_operation;
     }
 }

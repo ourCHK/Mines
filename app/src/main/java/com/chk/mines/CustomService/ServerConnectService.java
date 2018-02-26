@@ -95,7 +95,7 @@ public class ServerConnectService extends Service {
         switch (communicateData.getType()) {
             case CommunicateData.USER_OPERATION:    //用户点击方块的操作
                 Message msg1 = mGameActivityHanlder.obtainMessage();
-                msg1.what = CooperateGameActivity.RECEIVED_MESSAGE_FROM_SERVER;
+                msg1.what = CooperateGameActivity.RECEIVED_MESSAGE_FROM_CLIENT;
                 msg1.obj = communicateData;
                 mGameActivityHanlder.sendMessage(msg1);
                 break;
@@ -107,7 +107,7 @@ public class ServerConnectService extends Service {
 //                }
                 Log.i(TAG,"GAME_STATE CHANGED and Handler:"+(mGameActivityHanlder == null));
                 Message msg2 = mGameActivityHanlder.obtainMessage();
-                msg2.what = CooperateGameActivity.RECEIVED_MESSAGE_FROM_SERVER;
+                msg2.what = CooperateGameActivity.RECEIVED_MESSAGE_FROM_CLIENT;
                 msg2.obj = communicateData;
                 mGameActivityHanlder.sendMessage(msg2);
                 break;
