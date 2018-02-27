@@ -1,12 +1,15 @@
 package com.chk.mines;
 
 import android.annotation.SuppressLint;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -16,14 +19,14 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.chk.mines.Utils.ClientSocketUtil;
-import com.chk.mines.Utils.ServerSocketUtil;
-import com.chk.mines.Utils.SocketUtil;
+import com.chk.mines.CustomService.ClientConnectService;
+import com.chk.mines.CustomService.ServerConnectService;
 
-import CustomDialog.ClientDialog;
-import CustomDialog.ServerDialog;
+import com.chk.mines.CustomDialog.ClientDialog;
+import com.chk.mines.CustomDialog.ServerDialog;
 
 public class ConnectActivity extends AppCompatActivity implements View.OnClickListener{
+    public final static String  TAG = ConnectActivity.class.getSimpleName();
 
     public final static int WIFI = 0;
     public final static int BLUETOOTH = 1;
@@ -43,7 +46,7 @@ public class ConnectActivity extends AppCompatActivity implements View.OnClickLi
 
     WifiManager mWifiManager;
     String IpAddress = "0.0.0.0";
-    String IpAddressServer;   //用户客户端输入的服务端Ip地址
+    String IpAddressServer; //用于客户端连接服务端时存储的服务端Ip地址
 
     Button mServerButton;
     Button mClientButton;
@@ -59,10 +62,12 @@ public class ConnectActivity extends AppCompatActivity implements View.OnClickLi
     ServerDialog serverDialog;
     ClientDialog clientDialog;
 
-    ServerSocketUtil mServerSocketUtil;
-    ClientSocketUtil mClientSocketUtil;
-
     int mServerOrClient;
+
+    ServerConnectService mServerConnectService;
+    ServiceConnection mServerConnection;
+    ClientConnectService mClientConnectService;
+    ServiceConnection mClientConnection;
 
     @SuppressLint("HandlerLeak")
     @Override
@@ -73,29 +78,29 @@ public class ConnectActivity extends AppCompatActivity implements View.OnClickLi
             @Override
             public void handleMessage(Message msg) {
                 switch (msg.what) {
-                    case IP_CHANGED:
+                    case IP_CHANGED:    //IP改变时调用这里
                         mIpAddress.setText("您的IP地址："+IpAddress);
                         break;
                     case START_CONNECT: //客户端开始连接服务端
                         IpAddressServer = (String) msg.obj;
-                        mClientSocketUtil = new ClientSocketUtil(IpAddress,IpAddressServer,mHandler);
-                        mClientSocketUtil.startConnect();
+                        startBindClientService();
                         Toast.makeText(ConnectActivity.this, "StartConnect", Toast.LENGTH_SHORT).show();
                         break;
                     case START_ACCEPT:  //服务端开始接收客户端请求
-                        mServerOrClient = SERVER;
-                        mServerSocketUtil = new ServerSocketUtil(IpAddress,mHandler);
-                        mServerSocketUtil.startListener();
+                        startBindServerService();
                         Toast.makeText(ConnectActivity.this, "StartAccept", Toast.LENGTH_SHORT).show();
                         break;
                     case SOCKET_CONNECTED:  //客户端已经连接到服务端
                         mServerOrClient = CLIENT;
                         clientDialog.dismiss();
                         Toast.makeText(ConnectActivity.this, "已连接到服务端", Toast.LENGTH_SHORT).show();
+                        startChooseGameTypeActivity();
                         break;
                     case SOCKET_ACCEPTED:   //服务端已经接收了客户端
+                        mServerOrClient = SERVER;
                         serverDialog.dismiss();
                         Toast.makeText(ConnectActivity.this, "已接收到客户端", Toast.LENGTH_SHORT).show();
+                        startChooseGameTypeActivity();
                         break;
                     case RECEIVED_MESSAGE:
                         received((String)msg.obj);
@@ -112,15 +117,6 @@ public class ConnectActivity extends AppCompatActivity implements View.OnClickLi
         mWifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         Intent intent = getIntent();
         mConnectType = intent.getIntExtra("ConnectType",-1);
-        switch (mConnectType) {
-            case WIFI:
-                break;
-            case BLUETOOTH:
-                break;
-                default:
-                    break;
-        }
-
         mMonitorIpThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -161,7 +157,7 @@ public class ConnectActivity extends AppCompatActivity implements View.OnClickLi
                 mHandler.sendEmptyMessage(START_ACCEPT);
                 break;
             case R.id.client:
-                showClientDialog();
+                showClientDialog(); //在dialog点击连接按钮时会通知handler做相应操作
                 break;
             case R.id.sent:
                 send();
@@ -182,8 +178,7 @@ public class ConnectActivity extends AppCompatActivity implements View.OnClickLi
         return IPAddress;
     }
 
-    private String intToIp(int paramInt)
-    {
+    private String intToIp(int paramInt) {
         return (paramInt & 0xFF) + "." + (0xFF & paramInt >> 8) + "." + (0xFF & paramInt >> 16) + "."
                 + (0xFF & paramInt >> 24);
     }
@@ -192,8 +187,7 @@ public class ConnectActivity extends AppCompatActivity implements View.OnClickLi
      * 显示服务端Dialog
      */
     void showServerDialog() {
-        if (serverDialog == null)
-            serverDialog = new ServerDialog(this,R.style.Custom_Dialog_Style);
+        serverDialog = new ServerDialog(this,R.style.Custom_Dialog_Style,IpAddress);
         serverDialog.show();
     }
 
@@ -206,23 +200,34 @@ public class ConnectActivity extends AppCompatActivity implements View.OnClickLi
         clientDialog.show();
     }
 
-    void send() {
-        switch (mServerOrClient) {
-            case SERVER:
-                mServerSocketUtil.send(mInputContent.getText().toString());
-                break;
-            case CLIENT:
-                mClientSocketUtil.send(mInputContent.getText().toString());
-                break;
-        }
-        mInputContent.setText("");
-    }
+//    void send() {
+//        switch (mServerOrClient) {
+//            case SERVER:
+//                mServerSocketUtil.send(mInputContent.getText().toString());
+//                break;
+//            case CLIENT:
+//                mClientSocketUtil.send(mInputContent.getText().toString());
+//                break;
+//        }
+//        mInputContent.setText("");
+//    }
 
     void received(String message) {
         if (message != null && !message.isEmpty())
             mReceivedContent.setText("RECEIVED:"+message);
     }
 
+    void send() {
+        switch (mServerOrClient) {
+            case SERVER:
+                mServerConnectService.sendMessage(mInputContent.getText().toString());
+                break;
+            case CLIENT:
+                mClientConnectService.sendMessage(mInputContent.getText().toString());
+                break;
+        }
+        mInputContent.setText("");
+    }
 
     @Override
     protected void onDestroy() {
@@ -231,9 +236,70 @@ public class ConnectActivity extends AppCompatActivity implements View.OnClickLi
             clientDialog.dismiss();
             clientDialog = null;
         }
+
         if (serverDialog != null) {
             serverDialog.dismiss();
             serverDialog = null;
         }
+
+        if (mServerConnection != null) {
+            unbindService(mServerConnection);
+        }
+
+        if (mClientConnection != null) {
+            unbindService(mClientConnection);
+        }
     }
+
+    void startBindServerService() {
+        Intent serverIntent = new Intent(this,ServerConnectService.class);
+        mServerConnection = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                Toast.makeText(ConnectActivity.this, "ClientService has Started", Toast.LENGTH_SHORT).show();
+                ServerConnectService.LocalBinder binder = (ServerConnectService.LocalBinder) service;
+                mServerConnectService = binder.getService();
+                mServerConnectService.setHandler(mHandler);
+                mServerConnectService.startAccept();
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+                mServerConnectService = null;
+                Toast.makeText(ConnectActivity.this, "the ServiceService has Stopped", Toast.LENGTH_SHORT).show();
+                Log.i(TAG,"The ServiceService has Stopped!");
+            }
+        };
+        bindService(serverIntent,mServerConnection,BIND_AUTO_CREATE);
+    }
+
+    void startBindClientService() {
+        Intent clientIntent = new Intent(this,ClientConnectService.class);
+        mClientConnection = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                Toast.makeText(ConnectActivity.this, "ServiceService has Started", Toast.LENGTH_SHORT).show();
+                ClientConnectService.LocalBinder binder = (ClientConnectService.LocalBinder) service;
+                mClientConnectService = binder.getService();
+                mClientConnectService.setHandler(mHandler);
+                mClientConnectService.startConnect(IpAddressServer);
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+                mClientConnectService = null;
+                Toast.makeText(ConnectActivity.this, "the ClientService has Stopped", Toast.LENGTH_SHORT).show();
+                Log.i(TAG,"The ClientService has Stopped!");
+            }
+        };
+        bindService(clientIntent,mClientConnection,BIND_AUTO_CREATE);
+    }
+
+    void startChooseGameTypeActivity() {
+        Intent intent = new Intent(this,ChooseGameTypeActivity.class);
+        intent.putExtra("ServerOrClient",mServerOrClient);
+        startActivity(intent);
+        finish();
+    }
+
 }

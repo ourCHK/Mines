@@ -24,13 +24,26 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".ChooseGameTypeActivity">
+
+        </activity>
         <activity android:name=".GameActivity" />
+        <activity android:name=".CooperateGameActivity" />
+        <activity android:name=".FightGameActivity" />
         <activity android:name=".ConnectActivity" />
 
         <service
             android:name=".CustomService.ConnectService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
+        <service
+            android:name=".CustomService.ClientConnectService"
+            android:enabled="true"
+            android:exported="true" />
+        <service
+            android:name=".CustomService.ServerConnectService"
+            android:enabled="true"
+            android:exported="true" />
     </application>
 
 </manifest>

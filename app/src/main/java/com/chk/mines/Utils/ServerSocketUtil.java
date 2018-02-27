@@ -4,14 +4,17 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import com.chk.mines.Beans.CommunicateData;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Timer;
 
-import static com.chk.mines.ConnectActivity.RECEIVED_MESSAGE;
 import static com.chk.mines.ConnectActivity.SOCKET_ACCEPTED;
+import static com.chk.mines.CustomService.ServerConnectService.RECEIVED_MESSAGE;
 
 /**
  * Created by chk on 18-2-8.
@@ -22,16 +25,20 @@ public class ServerSocketUtil {
     private String mIpAddressServer;    //貌似不用这个也可以
     private ServerSocket mServerSocket;
     private Socket mSocket;
-    private int mPort = 7876;   //端口号
+    private int mPort = 8321;   //端口号
 
     private Handler mActivityHandler;
+    private Handler mServiceHandler;
 
     AcceptThread mAcceptThread;
     ServerThread mServerThread;
 
-    public ServerSocketUtil(String ipAddressServer,Handler handler) {
-        this.mIpAddressServer = ipAddressServer;
+    Timer timer;
+
+    public ServerSocketUtil(Handler handler,Handler serviceHandler) {
+//        this.mIpAddressServer = ipAddressClient;
         this.mActivityHandler = handler;
+        this.mServiceHandler = serviceHandler;
         mAcceptThread = new AcceptThread();
         mServerThread = new ServerThread();
 
@@ -71,10 +78,10 @@ public class ServerSocketUtil {
                 while (true) {
                     // 读取数据
                     String message = reader.readUTF();
-                    Message msg = mActivityHandler.obtainMessage();
+                    Message msg = mServiceHandler.obtainMessage();
                     msg.what = RECEIVED_MESSAGE;
                     msg.obj = message;
-                    mActivityHandler.sendMessage(msg);
+                    mServiceHandler.sendMessage(msg);
                     Log.i("ServerSocketUtil",message);
                 }
             } catch (IOException e) {
@@ -96,5 +103,32 @@ public class ServerSocketUtil {
                 }
             }
         }).start();
+    }
+
+    public void send(CommunicateData communicateData) {
+        final String message = GsonUtil.communicateDataToString(communicateData);
+        Log.i("ServerSocketUtil","sendMessage:"+message);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                DataOutputStream writer = null;
+                try {
+                    writer = new DataOutputStream(mSocket.getOutputStream());
+                    writer.writeUTF(message+""); // 写一个UTF-8的信息
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        if (mSocket != null)
+            mSocket.close();
+        if (mServerSocket != null)
+            mServerSocket.close();
+        Log.i("ServerSocketUtil","服务端Socket关闭");
     }
 }
