@@ -18,7 +18,7 @@ import com.chk.mines.Utils.ServerSocketUtil;
 /**
  * 服务端Wifi连接服务
  */
-public class ServerConnectService extends Service {
+public class ServerConnectService extends ConnectService {
 
     private static final String TAG = ServerConnectService.class.getSimpleName();
     private LocalBinder localBinder;
@@ -36,7 +36,7 @@ public class ServerConnectService extends Service {
 
 
     public ServerConnectService() {
-        Log.i(TAG,"ServerConnectService inited");
+        super();
         init();
     }
 
@@ -52,6 +52,7 @@ public class ServerConnectService extends Service {
                         receivedMessage(msg);
                         break;
                     case SOCKET_DISCONNECTED:   //我们这里可以发送一个广播出去
+                        sendSocketDisconnectedBroadcast();
                         Toast.makeText(ServerConnectService.this, "对方已从连接断开", Toast.LENGTH_SHORT).show();
                         break;
                 }

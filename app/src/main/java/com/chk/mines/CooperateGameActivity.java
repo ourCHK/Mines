@@ -1,13 +1,17 @@
 package com.chk.mines;
 
 import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -28,6 +32,7 @@ import com.chk.mines.CustomService.ClientConnectService;
 import com.chk.mines.CustomService.ServerConnectService;
 import com.chk.mines.Interfaces.GameState;
 import com.chk.mines.Interfaces.OnDialogButtonClickListener;
+import com.chk.mines.Utils.Constant;
 import com.chk.mines.Utils.GsonUtil;
 import com.chk.mines.Views.MineView;
 import com.chk.mines.Views.MineViewType1;
@@ -71,6 +76,10 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
     private int GAME_STATE;  //游戏初始化
 
     public final static int PointDown = 10; //接收View传来的消息
+
+    LocalBroadcastManager mLocalBroadcastManager;
+    LocalBroadcastReceiver mLocalBroadcastReceiver;
+    IntentFilter mIntentFilter;
 
     Handler mHandler;
     Timer timer;
@@ -136,6 +145,7 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game_second);
+
         init();
         showSyncDialog();
     }
@@ -272,6 +282,11 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
         mFlagConfused.setOnClickListener(this);
         mRestart.setOnClickListener(this);
         mStartAndPaused.setOnClickListener(this);
+
+        mLocalBroadcastManager = LocalBroadcastManager.getInstance(this);
+        mIntentFilter = new IntentFilter(Constant.SOCKET_DISCONNECTED_BROADCAST_ACTION);
+        mLocalBroadcastReceiver = new LocalBroadcastReceiver();
+        mLocalBroadcastManager.registerReceiver(mLocalBroadcastReceiver,mIntentFilter);
     }
 
     void initMines(Mine[][] mines,int mineCount) {
@@ -879,6 +894,7 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        mLocalBroadcastManager.unregisterReceiver(mLocalBroadcastReceiver);
         if (syncDialog != null) {
             syncDialog.dismiss();
             syncDialog = null;
@@ -887,6 +903,13 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
             unbindService(mClientConnection);
         if (mServerConnection != null)
             unbindService(mServerConnection);
+    }
+
+    private class LocalBroadcastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.i(TAG,"broadcast received");
+        }
     }
 
 }

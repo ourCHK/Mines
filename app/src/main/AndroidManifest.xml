@@ -32,6 +32,7 @@
         <activity android:name=".FightGameActivity" />
         <activity android:name=".ConnectActivity" />
 
+
         <service
             android:name=".CustomService.ConnectService"
             android:enabled="true"

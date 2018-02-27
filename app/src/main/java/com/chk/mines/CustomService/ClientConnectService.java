@@ -20,7 +20,7 @@ import static com.chk.mines.ChooseGameTypeActivity.readyForStart;
 /**
  * 客户端Wifi连接服务
  */
-public class ClientConnectService extends Service {
+public class ClientConnectService extends ConnectService{
 
     private static final String TAG = ClientConnectService.class.getSimpleName();
 
@@ -40,7 +40,7 @@ public class ClientConnectService extends Service {
     public static final int HEART_BEAT_TIME_OUT = 3 * 1000; //心跳包TimeOut时长
 
     public ClientConnectService() {
-        Log.i(TAG,"ClientConnectService init");
+        super();
         init();
     }
 
@@ -55,6 +55,7 @@ public class ClientConnectService extends Service {
                         receivedMessage(msg);
                         break;
                     case SOCKET_DISCONNECTED:   //我们这里可以发送一个广播出去
+                        sendSocketDisconnectedBroadcast();
                         Toast.makeText(ClientConnectService.this, "对方已从连接断开", Toast.LENGTH_SHORT).show();
                         break;
                     case SOCKET_CONNECTED:  //客户端连接上服务端的Socket的时候就开始发送心跳包
