@@ -11,6 +11,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Timer;
 
 import static com.chk.mines.ConnectActivity.SOCKET_ACCEPTED;
 import static com.chk.mines.CustomService.ServerConnectService.RECEIVED_MESSAGE;
@@ -31,6 +32,8 @@ public class ServerSocketUtil {
 
     AcceptThread mAcceptThread;
     ServerThread mServerThread;
+
+    Timer timer;
 
     public ServerSocketUtil(Handler handler,Handler serviceHandler) {
 //        this.mIpAddressServer = ipAddressClient;

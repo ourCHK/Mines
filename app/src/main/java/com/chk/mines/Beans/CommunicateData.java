@@ -9,6 +9,7 @@ public class CommunicateData {
     public static final int GAME_STATE = 1;    //动作，用于控制游戏的逻辑，比如开始，重新开始等等
     public static final int USER_OPERATION = 2; //用户点击方块的操作
     public static final int OTHER = 3;  //其他的一些消息类型
+    public static final int HEART_BEAT = 4;    //用于做心跳检测
     int type;   //Action Or OPERATION Or Other
 
 
@@ -26,6 +27,10 @@ public class CommunicateData {
     public static final int FLAG = 2;
     public static final int FLAG_CONFUSED = 3;
     int user_operation;
+
+    public static final int HEART_BEAT_SEND = 1;
+    public static final int HEART_BEAT_RECEIVED = 2;
+    int heart_beat;    //心跳检测类型
 
     int row = -1;   //默认都是-1
     int column = -1;
@@ -110,5 +115,13 @@ public class CommunicateData {
 
     public void setUser_operation(int user_operation) {
         this.user_operation = user_operation;
+    }
+
+    public int getHeart_beat() {
+        return heart_beat;
+    }
+
+    public void setHeart_beat(int heart_beat) {
+        this.heart_beat = heart_beat;
     }
 }

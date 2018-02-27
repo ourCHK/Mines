@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.chk.mines.Beans.CommunicateData;
 import com.chk.mines.CooperateGameActivity;
@@ -24,10 +25,15 @@ public class ServerConnectService extends Service {
     private ServerSocketUtil mServerSocketUtil;
 
     private Handler mActivityHandler;
-    private Handler mGameActivityHanlder;
+    private Handler mGameActivityHandler;
     private Handler mServiceHandler;
 
     public static final int RECEIVED_MESSAGE = 1;
+    public static final int SOCKET_DISCONNECTED = 2;
+
+    public static final int HEART_BEAT_SEND_TIME = 1000;    //发送时间间隔
+    public static final int HEART_BEAT_TIME_OUT = 4 * 1000; //心跳包TimeOut时长,服务端要加上客户端每秒的延迟
+
 
     public ServerConnectService() {
         Log.i(TAG,"ServerConnectService inited");
@@ -44,6 +50,9 @@ public class ServerConnectService extends Service {
                     case RECEIVED_MESSAGE:
                         Log.i(TAG,"ServerConnectService Received Message:"+msg.obj.toString());
                         receivedMessage(msg);
+                        break;
+                    case SOCKET_DISCONNECTED:   //我们这里可以发送一个广播出去
+                        Toast.makeText(ServerConnectService.this, "对方已从连接断开", Toast.LENGTH_SHORT).show();
                         break;
                 }
             }
@@ -83,7 +92,7 @@ public class ServerConnectService extends Service {
     }
 
     public void setGameActivityHandler(Handler handler) {   //用于和游戏activity进行通信
-        mGameActivityHanlder = handler;
+        mGameActivityHandler = handler;
     }
 
     /**
@@ -93,11 +102,27 @@ public class ServerConnectService extends Service {
     void receivedMessage(Message message) {
         CommunicateData communicateData = GsonUtil.stringToCommunicateData((String) message.obj);
         switch (communicateData.getType()) {
+            case CommunicateData.HEART_BEAT:    //检测到心跳包,我们也应该发送心跳包过去
+                Log.i(TAG,"服务端收到心跳包");
+                mServiceHandler.removeMessages(SOCKET_DISCONNECTED);    //先移除之前的这个为发送的消息，下面继续发送这个消息
+                CommunicateData cd = new CommunicateData();
+                cd.setType(CommunicateData.HEART_BEAT);
+                sendMessage(cd);
+                mServiceHandler.sendEmptyMessageDelayed(SOCKET_DISCONNECTED,HEART_BEAT_TIME_OUT);
+//                mServiceHandler.postDelayed(new Runnable() {    //如果没有3秒内没有收到心跳包回复就算是断开连接了
+//                    @Override
+//                    public void run() {
+//                        Message msg = mServiceHandler.obtainMessage();
+//                        msg.what = SOCKET_DISCONNECTED;
+//                        mServiceHandler.sendMessage(msg);
+//                    }
+//                },HEART_BEAT_TIME_OUT);
+                break;
             case CommunicateData.USER_OPERATION:    //用户点击方块的操作
-                Message msg1 = mGameActivityHanlder.obtainMessage();
+                Message msg1 = mGameActivityHandler.obtainMessage();
                 msg1.what = CooperateGameActivity.RECEIVED_MESSAGE_FROM_CLIENT;
                 msg1.obj = communicateData;
-                mGameActivityHanlder.sendMessage(msg1);
+                mGameActivityHandler.sendMessage(msg1);
                 break;
             case CommunicateData.GAME_STATE:    //游戏状态改变
 //                switch (communicateData.getGame_state()) {
@@ -105,11 +130,11 @@ public class ServerConnectService extends Service {
 //
 //                        break;
 //                }
-                Log.i(TAG,"GAME_STATE CHANGED and Handler:"+(mGameActivityHanlder == null));
-                Message msg2 = mGameActivityHanlder.obtainMessage();
+                Log.i(TAG,"GAME_STATE CHANGED and Handler:"+(mGameActivityHandler == null));
+                Message msg2 = mGameActivityHandler.obtainMessage();
                 msg2.what = CooperateGameActivity.RECEIVED_MESSAGE_FROM_CLIENT;
                 msg2.obj = communicateData;
-                mGameActivityHanlder.sendMessage(msg2);
+                mGameActivityHandler.sendMessage(msg2);
                 break;
 //            case CommunicateData.OTHER:     //其他的消息，我们就知道应该是要跳转开始到游戏activity了
 //                Log.i(TAG,communicateData.getMessage());

@@ -48,7 +48,8 @@ public class ClientSocketUtil {
         public void run() {
             try {
                 mSocket = new Socket(mIpAddressServer, mPort);
-                mActivityHandler.sendEmptyMessage(SOCKET_CONNECTED);
+                mActivityHandler.sendEmptyMessage(SOCKET_CONNECTED);    //其实这个地方最好就是把Activity的Handler从Socket的代码移除掉
+                mServiceHandler.sendEmptyMessage(ClientConnectService.SOCKET_CONNECTED);    //通知Service我们的Socket已经连接上去了
                 Log.i("SocketUtil","连接成功");
                 mClientThread.start();
             } catch (IOException e) {
@@ -127,6 +128,4 @@ public class ClientSocketUtil {
             mSocket.close();
         Log.i("ServerSocketUtil","客户端Socket关闭");
     }
-
-
 }

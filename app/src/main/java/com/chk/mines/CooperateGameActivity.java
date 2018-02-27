@@ -22,6 +22,7 @@ import android.widget.Toast;
 import com.chk.mines.Beans.CommunicateData;
 import com.chk.mines.Beans.Mine;
 import com.chk.mines.CustomDialog.CustomDialog;
+import com.chk.mines.CustomDialog.DisconnectDialog;
 import com.chk.mines.CustomDialog.WaitingForSyncDialog;
 import com.chk.mines.CustomService.ClientConnectService;
 import com.chk.mines.CustomService.ServerConnectService;
@@ -66,6 +67,7 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
     public final static int RECEIVED_MESSAGE_FROM_SERVER = 6;
     public final static int RECEIVED_MESSAGE_FROM_CLIENT = 7;
     public final static int TIME_CHANGED = 8;
+    public final static int SOCKET_DISCONNECTED = 9;
     private int GAME_STATE;  //游戏初始化
 
     public final static int PointDown = 10; //接收View传来的消息
@@ -128,6 +130,7 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
     ServiceConnection mClientConnection;
 
     WaitingForSyncDialog syncDialog;
+    DisconnectDialog disconnectDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -189,6 +192,9 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
 //                        Toast.makeText(CooperateGameActivity.this, "Received message from Client!", Toast.LENGTH_SHORT).show();
                         isReceivedMessage = true;
                         receivedMessageFromClient((CommunicateData)msg.obj);
+                        break;
+                    case SOCKET_DISCONNECTED:
+                        showDisconnectDialog();
                         break;
                 }
             }
@@ -777,17 +783,6 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
         }
     }
 
-    void showSyncDialog() {
-        if (syncDialog == null)
-            syncDialog = new WaitingForSyncDialog(this,R.style.Custom_Dialog_Style);
-        syncDialog.show();
-    }
-
-    void dismissSyncDialog() {
-        if (syncDialog != null)
-            syncDialog.dismiss();
-    }
-
     void startBindServerService() {
         Intent serverIntent = new Intent(this,ServerConnectService.class);
         mServerConnection = new ServiceConnection() {
@@ -842,6 +837,43 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
             }
         };
         bindService(clientIntent,mClientConnection,BIND_AUTO_CREATE);
+    }
+
+
+    void showSyncDialog() {
+        if (syncDialog == null)
+            syncDialog = new WaitingForSyncDialog(this,R.style.Custom_Dialog_Style);
+        syncDialog.show();
+    }
+
+    void dismissSyncDialog() {
+        if (syncDialog != null)
+            syncDialog.dismiss();
+    }
+
+    void showDisconnectDialog() {
+        if (disconnectDialog == null) {
+            disconnectDialog = new DisconnectDialog(this,R.style.Custom_Dialog_Style);
+            disconnectDialog.setOnDialogButtonClickListener(new OnDialogButtonClickListener() {
+                @Override
+                public void onLeftClickListener() {     //返回
+                    dismissDisconnectDialog();
+                    finish();
+                }
+
+                @Override
+                public void onRightClickListener() {    //继续
+                    mHandler.sendEmptyMessage(GAME_START);
+                    dismissDisconnectDialog();
+                }
+            });
+        }
+        disconnectDialog.show();
+    }
+
+    void dismissDisconnectDialog() {
+        if (disconnectDialog != null)
+            disconnectDialog.dismiss();
     }
 
     @Override
