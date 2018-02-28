@@ -21,7 +21,7 @@ import com.chk.mines.Utils.ServerSocketUtil;
 public class ConnectService extends Service {
 
     private static final String TAG = ConnectService.class.getSimpleName();
-    private LocalBroadcastManager mLocalBroadcastManager;
+//    private LocalBroadcastManager mLocalBroadcastManager;
 
     public ConnectService() {
         Log.i(TAG,"Service init");
@@ -30,7 +30,7 @@ public class ConnectService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        mLocalBroadcastManager = LocalBroadcastManager.getInstance(getApplicationContext());
+//        mLocalBroadcastManager = LocalBroadcastManager.getInstance(getApplicationContext());
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -46,7 +46,9 @@ public class ConnectService extends Service {
     }
 
     public void sendSocketDisconnectedBroadcast() {
+//        Log.i(TAG,"mLocalbroadcastManager is null:"+(mLocalBroadcastManager == null));
+//        mLocalBroadcastManager.sendBroadcast(intent);
         Intent intent = new Intent(Constant.SOCKET_DISCONNECTED_BROADCAST_ACTION);
-        mLocalBroadcastManager.sendBroadcast(intent);
+        sendBroadcast(intent);
     }
 }

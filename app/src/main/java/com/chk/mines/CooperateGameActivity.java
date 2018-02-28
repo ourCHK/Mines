@@ -77,9 +77,10 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
 
     public final static int PointDown = 10; //接收View传来的消息
 
-    LocalBroadcastManager mLocalBroadcastManager;
+//    LocalBroadcastManager mLocalBroadcastManager;
     LocalBroadcastReceiver mLocalBroadcastReceiver;
     IntentFilter mIntentFilter;
+    boolean mSocketDisconnected;
 
     Handler mHandler;
     Timer timer;
@@ -283,10 +284,11 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
         mRestart.setOnClickListener(this);
         mStartAndPaused.setOnClickListener(this);
 
-        mLocalBroadcastManager = LocalBroadcastManager.getInstance(this);
-        mIntentFilter = new IntentFilter(Constant.SOCKET_DISCONNECTED_BROADCAST_ACTION);
+//        mLocalBroadcastManager = LocalBroadcastManager.getInstance(this);
+//        mLocalBroadcastManager.registerReceiver(mLocalBroadcastReceiver,mIntentFilter);
         mLocalBroadcastReceiver = new LocalBroadcastReceiver();
-        mLocalBroadcastManager.registerReceiver(mLocalBroadcastReceiver,mIntentFilter);
+        mIntentFilter = new IntentFilter(Constant.SOCKET_DISCONNECTED_BROADCAST_ACTION);
+        registerReceiver(mLocalBroadcastReceiver,mIntentFilter);
     }
 
     void initMines(Mine[][] mines,int mineCount) {
@@ -440,8 +442,11 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
         }
         mMineView.invalidate();     //刷新界面
         setRemainMinesOrCheckResult();
-        //在这里也许应该加一个网络通信的东西，没错，我们准备加入了
 
+        if (mSocketDisconnected)    //如果socket已经断开连接了,那么直接返回即可
+            return;
+
+        //在这里也许应该加一个网络通信的东西，没错，我们准备加入了
         CommunicateData communicateData = new CommunicateData();
         communicateData.setType(CommunicateData.USER_OPERATION);
         communicateData.setUser_operation(currentType);
@@ -894,7 +899,7 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mLocalBroadcastManager.unregisterReceiver(mLocalBroadcastReceiver);
+        unregisterReceiver(mLocalBroadcastReceiver);
         if (syncDialog != null) {
             syncDialog.dismiss();
             syncDialog = null;
@@ -908,7 +913,10 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
     private class LocalBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.i(TAG,"broadcast received");
+//            Toast.makeText(context, "received the Broadcast", Toast.LENGTH_SHORT).show();
+//            Log.i(TAG,"broadcast received");
+            mSocketDisconnected = true; //设置socket断开标志位
+            showDisconnectDialog();
         }
     }
 
