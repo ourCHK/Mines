@@ -16,11 +16,12 @@ import com.chk.mines.Utils.ClientSocketUtil;
 import com.chk.mines.Utils.GsonUtil;
 
 import static com.chk.mines.ChooseGameTypeActivity.readyForStart;
+import static com.chk.mines.CooperateGameActivity.BIND_SERVICE;
 
 /**
  * 客户端Wifi连接服务
  */
-public class ClientConnectService extends ConnectService{
+public class ClientConnectService extends ConnectService {
 
     private static final String TAG = ClientConnectService.class.getSimpleName();
 
@@ -37,7 +38,7 @@ public class ClientConnectService extends ConnectService{
     public static final int SOCKET_CONNECTED = 3;   //socket刚连上去的时候
 
     public static final int HEART_BEAT_SEND_TIME = 1000;    //发送时间间隔
-    public static final int HEART_BEAT_TIME_OUT = 3 * 1000; //心跳包TimeOut时长
+    public static final int HEART_BEAT_TIME_OUT = 5 * 1000; //心跳包TimeOut时长
 
     public ClientConnectService() {
         super();
@@ -163,6 +164,16 @@ public class ClientConnectService extends ConnectService{
                 msg3.what = readyForStart;
                 msg3.obj = communicateData.getMessage();
                 mChooseGameTypeActivityHandler.sendMessage(msg3);
+                break;
+            case CommunicateData.BIND_SERVICE:  //客户端已经绑定服务了
+                if (mGameActivityHandler == null) {
+                    Message msg4 = new Message();
+                    msg4.what = message.what;
+                    msg4.obj = message.obj;
+                    mServiceHandler.sendMessageDelayed(msg4,1000);   //我们自己的服务还没有绑定，通知1秒后重新发送这个包
+                } else {    //mGameActivityHandler
+                    mGameActivityHandler.sendEmptyMessage(BIND_SERVICE);
+                }
                 break;
         }
     }

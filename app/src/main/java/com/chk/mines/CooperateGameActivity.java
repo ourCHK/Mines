@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -73,6 +72,7 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
     public final static int RECEIVED_MESSAGE_FROM_CLIENT = 7;
     public final static int TIME_CHANGED = 8;
     public final static int SOCKET_DISCONNECTED = 9;
+    public final static int BIND_SERVICE = 11;   //客户端已经绑定服务了
     private int GAME_STATE;  //游戏初始化
 
     public final static int PointDown = 10; //接收View传来的消息
@@ -148,7 +148,6 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
         setContentView(R.layout.activity_game_second);
 
         init();
-        showSyncDialog();
     }
 
     @SuppressLint("HandlerLeak")
@@ -206,6 +205,21 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
                         break;
                     case SOCKET_DISCONNECTED:
                         showDisconnectDialog();
+                        break;
+                    case BIND_SERVICE:  //对方已经绑定服务了，我们可以开始发送消息了
+//                        Toast.makeText(CooperateGameActivity.this, "对方服务已绑定", Toast.LENGTH_SHORT).show();
+                        switch (mServerOrClient) {
+                            case SERVER:
+                                mMinesString = GsonUtil.minesToString(mines);
+                                CommunicateData communicateData = new CommunicateData();
+                                communicateData.setType(CommunicateData.GAME_STATE);
+                                communicateData.setGame_state(CommunicateData.GAME_INIT);
+                                communicateData.setMessage(mMinesString);
+                                mServerConnectService.sendMessage(communicateData);
+                                break;
+                            case CLIENT:
+                                break;
+                        }
                         break;
                 }
             }
@@ -289,6 +303,8 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
         mLocalBroadcastReceiver = new LocalBroadcastReceiver();
         mIntentFilter = new IntentFilter(Constant.SOCKET_DISCONNECTED_BROADCAST_ACTION);
         registerReceiver(mLocalBroadcastReceiver,mIntentFilter);
+
+        showSyncDialog();   //显示同步消息的对话框
     }
 
     void initMines(Mine[][] mines,int mineCount) {
@@ -643,12 +659,41 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
 
     @Override
     public void gameStart() {
+        //这里应该发送一个消息过去
+//        if (!mSocketDisconnected) { //没有断开连接
+//            CommunicateData communicateData = new CommunicateData();
+//            communicateData.setType(CommunicateData.GAME_STATE);
+//            communicateData.setGame_state(CommunicateData.GAME_START);
+//            switch (mServerOrClient) {
+//                case SERVER:
+//                    mServerConnectService.sendMessage(communicateData);
+//                    break;
+//                case CLIENT:
+//                    mClientConnectService.sendMessage(communicateData);
+//                    break;
+//            }
+//        }
+
         GAME_STATE = GAME_START;
         mStartAndPaused.setImageResource(R.mipmap.start);
     }
 
     @Override
     public void gamePause() {
+//        if (!mSocketDisconnected) { //没有断开连接
+//            CommunicateData communicateData = new CommunicateData();
+//            communicateData.setType(CommunicateData.GAME_STATE);
+//            communicateData.setGame_state(CommunicateData.GAME_PAUSE);
+//            switch (mServerOrClient) {
+//                case SERVER:
+//                    mServerConnectService.sendMessage(communicateData);
+//                    break;
+//                case CLIENT:
+//                    mClientConnectService.sendMessage(communicateData);
+//                    break;
+//            }
+//        }
+
         GAME_STATE = GAME_PAUSED;
         mStartAndPaused.setImageResource(R.mipmap.pause);
     }
@@ -703,15 +748,21 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
                 break;
             case CommunicateData.GAME_STATE:
                 switch (communicateData.getGame_state()) {
-                    case CommunicateData.CLIENT_SERVICE_BIND:   //客户端服务已经绑定,我们可以开始传输雷的数据
-                        mMinesString = GsonUtil.minesToString(mines);
-                        CommunicateData cd1 = new CommunicateData();
-                        cd1.setType(CommunicateData.GAME_STATE);
-                        cd1.setGame_state(CommunicateData.GAME_INIT);
-                        cd1.setMessage(mMinesString);
-                        mServerConnectService.sendMessage(cd1);
-                        break;
+//                    case CommunicateData.CLIENT_SERVICE_BIND:   //客户端服务已经绑定,我们可以开始传输数据
+//                        mMinesString = GsonUtil.minesToString(mines);
+//                        CommunicateData cd1 = new CommunicateData();
+//                        cd1.setType(CommunicateData.GAME_STATE);
+//                        cd1.setGame_state(CommunicateData.GAME_INIT);
+//                        cd1.setMessage(mMinesString);
+//                        mServerConnectService.sendMessage(cd1);
+//                        break;
                     case CommunicateData.GAME_INIT:
+                        break;
+                    case CommunicateData.GAME_START:
+//                        startOrPauseGame();
+                        break;
+                    case CommunicateData.GAME_PAUSE:
+//                        startOrPauseGame();
                         break;
                 }
             case CommunicateData.CLIENT_RECEIVED_MESSAGE:   //客户端已经接收到消息，已经可以准备开始游戏了
@@ -749,17 +800,30 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
                             Log.i("GameActivity",string);
                         }
                         mHandler.sendEmptyMessage(GAME_INIT);   //通知服务端客户端已经接收到消息
-                        mHandler.postDelayed(new Runnable() {   //客户端延迟发送等待服务端服务开启
-                            @Override
-                            public void run() {
-                                CommunicateData cd1 = new CommunicateData();
-                                cd1.setType(CommunicateData.GAME_STATE);
-                                cd1.setGame_state(CommunicateData.CLIENT_RECEIVED_MESSAGE);
-                                mClientConnectService.sendMessage(cd1);
 
-                                dismissSyncDialog();
-                            }
-                        },2000);
+                        CommunicateData cd1 = new CommunicateData();
+                        cd1.setType(CommunicateData.GAME_STATE);
+                        cd1.setGame_state(CommunicateData.CLIENT_RECEIVED_MESSAGE);
+                        mClientConnectService.sendMessage(cd1);
+
+                        dismissSyncDialog();
+//                        mHandler.postDelayed(new Runnable() {   //客户端延迟发送等待服务端服务开启
+//                            @Override
+//                            public void run() {
+//                                CommunicateData cd1 = new CommunicateData();
+//                                cd1.setType(CommunicateData.GAME_STATE);
+//                                cd1.setGame_state(CommunicateData.CLIENT_RECEIVED_MESSAGE);
+//                                mClientConnectService.sendMessage(cd1);
+//
+//                                dismissSyncDialog();
+//                            }
+//                        },2000);
+                        break;
+                    case CommunicateData.GAME_START:
+//                        startOrPauseGame();
+                        break;
+                    case CommunicateData.GAME_PAUSE:
+//                        startOrPauseGame();
                         break;
                 }
                 break;
@@ -814,6 +878,9 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
                 mServerConnectService.setGameActivityHandler(mHandler);
                 Log.i(TAG,"The ServerService has started!!");
 
+                CommunicateData communicateData = new CommunicateData();    //通知客户端服务端已经绑定服务
+                communicateData.setType(CommunicateData.BIND_SERVICE);
+                mServerConnectService.sendMessage(communicateData);
 //                mMinesString = GsonUtil.minesToString(mines);
 //                CommunicateData communicateData = new CommunicateData();
 //                communicateData.setType(CommunicateData.GAME_STATE);
@@ -843,9 +910,8 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
                 mClientConnectService.setGameActivityHandler(mHandler);
                 Log.i(TAG,"The ClientService has started!!");
 
-                CommunicateData communicateData = new CommunicateData();    //通知服务已经绑定了
-                communicateData.setType(CommunicateData.GAME_STATE);
-                communicateData.setGame_state(CommunicateData.CLIENT_SERVICE_BIND);
+                CommunicateData communicateData = new CommunicateData();    //通知服务端客户端已经绑定服务
+                communicateData.setType(CommunicateData.BIND_SERVICE);
                 mClientConnectService.sendMessage(communicateData);
             }
 
@@ -859,7 +925,6 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
         bindService(clientIntent,mClientConnection,BIND_AUTO_CREATE);
     }
 
-
     void showSyncDialog() {
         if (syncDialog == null)
             syncDialog = new WaitingForSyncDialog(this,R.style.Custom_Dialog_Style);
@@ -867,8 +932,14 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
     }
 
     void dismissSyncDialog() {
-        if (syncDialog != null)
-            syncDialog.dismiss();
+        if (syncDialog != null) {
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    syncDialog.dismiss();
+                }
+            },1000);
+        }
     }
 
     void showDisconnectDialog() {

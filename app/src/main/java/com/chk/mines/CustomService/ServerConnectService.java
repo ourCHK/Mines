@@ -15,6 +15,8 @@ import com.chk.mines.CooperateGameActivity;
 import com.chk.mines.Utils.GsonUtil;
 import com.chk.mines.Utils.ServerSocketUtil;
 
+import static com.chk.mines.CooperateGameActivity.BIND_SERVICE;
+
 /**
  * 服务端Wifi连接服务
  */
@@ -31,8 +33,8 @@ public class ServerConnectService extends ConnectService {
     public static final int RECEIVED_MESSAGE = 1;
     public static final int SOCKET_DISCONNECTED = 2;
 
-    public static final int HEART_BEAT_SEND_TIME = 1000;    //发送时间间隔
-    public static final int HEART_BEAT_TIME_OUT = 4 * 1000; //心跳包TimeOut时长,服务端要加上客户端每秒的延迟
+    public static final int HEART_BEAT_SEND_TIME = 1000;    //发送时间间隔,其实不用这个，接到客户端的消息就直接发送回去就可以了
+    public static final int HEART_BEAT_TIME_OUT = 6 * 1000; //心跳包TimeOut时长,服务端要加上客户端每秒的延迟
 
 
     public ServerConnectService() {
@@ -70,7 +72,7 @@ public class ServerConnectService extends ConnectService {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.i(TAG,"ServerConnectService destory");
+        Log.i(TAG,"ServerConnectService destroy");
     }
 
     public void startAccept() {
@@ -144,6 +146,17 @@ public class ServerConnectService extends ConnectService {
 //                msg3.obj = communicateData.getMessage();
 //                mChoosedGameTypeActivityHandler.sendMessage(msg3);
 //                break;
+            case CommunicateData.BIND_SERVICE:  //客户端已经绑定服务了
+                if (mGameActivityHandler == null) {
+                    Message msg4 = new Message();
+                    msg4.what = message.what;
+                    msg4.obj = message.obj;
+                    mServiceHandler.sendMessageDelayed(msg4,1000);   //我们自己的服务还没有绑定，通知1秒后重新发送这个包
+                } else {    //mGameActivityHandler
+                    mGameActivityHandler.sendEmptyMessage(BIND_SERVICE);
+                }
+                break;
+
         }
     }
 

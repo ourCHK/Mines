@@ -10,6 +10,7 @@ public class CommunicateData {
     public static final int USER_OPERATION = 2; //用户点击方块的操作
     public static final int OTHER = 3;  //其他的一些消息类型
     public static final int HEART_BEAT = 4;    //用于做心跳检测
+    public static final int BIND_SERVICE = 5;    //用于判断对方是否绑定了服务
     int type;   //Action Or OPERATION Or Other
 
 
@@ -19,7 +20,7 @@ public class CommunicateData {
     public static final int GAME_OVER = 5;
     public static final int GAME_WIN = 6;
     public static final int GAME_LOSE = 7;
-    public static final int CLIENT_SERVICE_BIND = 11;   //客户端服务已经绑定，说明可开始发送数据了
+    public static final int GAME_PAUSE = 8;
     public static final int CLIENT_RECEIVED_MESSAGE = 12;   //客户端已经接收到服务端的数据，说明游戏可以开始了
     int game_state; //GameState that above;
 
