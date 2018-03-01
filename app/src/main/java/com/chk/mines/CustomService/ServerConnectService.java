@@ -15,10 +15,12 @@ import com.chk.mines.CooperateGameActivity;
 import com.chk.mines.Utils.GsonUtil;
 import com.chk.mines.Utils.ServerSocketUtil;
 
+import static com.chk.mines.CooperateGameActivity.BIND_SERVICE;
+
 /**
  * 服务端Wifi连接服务
  */
-public class ServerConnectService extends Service {
+public class ServerConnectService extends ConnectService {
 
     private static final String TAG = ServerConnectService.class.getSimpleName();
     private LocalBinder localBinder;
@@ -31,12 +33,12 @@ public class ServerConnectService extends Service {
     public static final int RECEIVED_MESSAGE = 1;
     public static final int SOCKET_DISCONNECTED = 2;
 
-    public static final int HEART_BEAT_SEND_TIME = 1000;    //发送时间间隔
-    public static final int HEART_BEAT_TIME_OUT = 4 * 1000; //心跳包TimeOut时长,服务端要加上客户端每秒的延迟
+    public static final int HEART_BEAT_SEND_TIME = 1000;    //发送时间间隔,其实不用这个，接到客户端的消息就直接发送回去就可以了
+    public static final int HEART_BEAT_TIME_OUT = 6 * 1000; //心跳包TimeOut时长,服务端要加上客户端每秒的延迟
 
 
     public ServerConnectService() {
-        Log.i(TAG,"ServerConnectService inited");
+        super();
         init();
     }
 
@@ -52,6 +54,7 @@ public class ServerConnectService extends Service {
                         receivedMessage(msg);
                         break;
                     case SOCKET_DISCONNECTED:   //我们这里可以发送一个广播出去
+                        sendSocketDisconnectedBroadcast();
                         Toast.makeText(ServerConnectService.this, "对方已从连接断开", Toast.LENGTH_SHORT).show();
                         break;
                 }
@@ -69,7 +72,7 @@ public class ServerConnectService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.i(TAG,"ServerConnectService destory");
+        Log.i(TAG,"ServerConnectService destroy");
     }
 
     public void startAccept() {
@@ -143,6 +146,17 @@ public class ServerConnectService extends Service {
 //                msg3.obj = communicateData.getMessage();
 //                mChoosedGameTypeActivityHandler.sendMessage(msg3);
 //                break;
+            case CommunicateData.BIND_SERVICE:  //客户端已经绑定服务了
+                if (mGameActivityHandler == null) {
+                    Message msg4 = new Message();
+                    msg4.what = message.what;
+                    msg4.obj = message.obj;
+                    mServiceHandler.sendMessageDelayed(msg4,1000);   //我们自己的服务还没有绑定，通知1秒后重新发送这个包
+                } else {    //mGameActivityHandler
+                    mGameActivityHandler.sendEmptyMessage(BIND_SERVICE);
+                }
+                break;
+
         }
     }
 
