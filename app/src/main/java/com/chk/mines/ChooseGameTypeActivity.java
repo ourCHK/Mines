@@ -183,7 +183,7 @@ public class ChooseGameTypeActivity extends AppCompatActivity implements View.On
         }
         Intent intent = null;
         if ((mChoosedGameType & COOPERATOR) != 0) { //说明是Cooperator类型的
-            intent =  new Intent(this,CooperateGameActivity.class);
+            intent =  new Intent(this,CooperateGameActivityWithThread.class);
         } else {    //说明是Fight类型的
             intent =  new Intent(this,FightGameActivity.class);
         }
@@ -192,9 +192,9 @@ public class ChooseGameTypeActivity extends AppCompatActivity implements View.On
         startActivity(intent);
 //        CommunicateData communicateData = new CommunicateData();
 //        communicateData.setType(CommunicateData.OTHER);
-//        communicateData.setMessage(mChoosedGameType+"");
+//        communicateData.setMessage(mChooseGameType+"");
 //        mServerConnectService.sendMessage(communicateData); //调用服务端发送消息
-//        switch (mChoosedGameType) {
+//        switch (mChooseGameType) {
 //            case TYPE_1:
 //                break;
 //            case TYPE_2:

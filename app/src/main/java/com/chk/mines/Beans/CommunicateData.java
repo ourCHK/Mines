@@ -25,6 +25,8 @@ public class CommunicateData {
     public static final int ACCEPTED = 13;  //接受重新开始
     public static final int REJECTED = 14;  //拒绝重新开始
     public static final int ASK_FOR_RESTART = 15;    //请求重新开始
+    public static final int RECEIVED_MINES_DATA = 16;   //接收到雷的数据
+    public static final int SEND_MINES_DATA = 17;    //发送雷的数据
 
     int game_state; //GameState that above;
 

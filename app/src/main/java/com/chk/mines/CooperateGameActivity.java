@@ -154,8 +154,6 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
 
     @SuppressLint("HandlerLeak")
     void init() {
-//        InitBindView.init(this);
-
         mMineViewContainer = findViewById(R.id.mineViewContainer);
         mShovel = findViewById(R.id.shovel);
         mFlag = findViewById(R.id.flag);

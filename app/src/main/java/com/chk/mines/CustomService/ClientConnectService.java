@@ -13,6 +13,7 @@ import android.widget.Toast;
 import com.chk.mines.Beans.CommunicateData;
 import com.chk.mines.CooperateGameActivity;
 import com.chk.mines.Utils.ClientSocketUtil;
+import com.chk.mines.Utils.Constant;
 import com.chk.mines.Utils.GsonUtil;
 
 import static com.chk.mines.ChooseGameTypeActivity.readyForStart;
@@ -141,7 +142,7 @@ public class ClientConnectService extends ConnectService {
                 break;
             case CommunicateData.USER_OPERATION:    //用户点击方块的操作
                 Message msg1 = mGameActivityHandler.obtainMessage();
-                msg1.what = CooperateGameActivity.RECEIVED_MESSAGE_FROM_SERVER;
+                msg1.what = Constant.RECEIVED_MESSAGE_FROM_SERVER;
                 msg1.obj = communicateData;
                 mGameActivityHandler.sendMessage(msg1);
                 break;
@@ -156,7 +157,7 @@ public class ClientConnectService extends ConnectService {
 //                }
                 Log.i(TAG,"GAME_STATE CHANGED");
                 Message msg2 = mGameActivityHandler.obtainMessage();
-                msg2.what = CooperateGameActivity.RECEIVED_MESSAGE_FROM_SERVER;
+                msg2.what = Constant.RECEIVED_MESSAGE_FROM_SERVER;
                 msg2.obj = communicateData;
                 mGameActivityHandler.sendMessage(msg2);
                 break;
