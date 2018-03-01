@@ -56,10 +56,12 @@ public class ClientConnectService extends ConnectService {
                         receivedMessage(msg);
                         break;
                     case SOCKET_DISCONNECTED:   //我们这里可以发送一个广播出去
+                        setSocketConnected(false);
                         sendSocketDisconnectedBroadcast();
                         Toast.makeText(ClientConnectService.this, "对方已从连接断开", Toast.LENGTH_SHORT).show();
                         break;
                     case SOCKET_CONNECTED:  //客户端连接上服务端的Socket的时候就开始发送心跳包
+                        setSocketConnected(true);
                         Log.i(TAG,"客户端开始发送心跳包");
                         CommunicateData cd = new CommunicateData();
                         cd.setType(CommunicateData.HEART_BEAT);

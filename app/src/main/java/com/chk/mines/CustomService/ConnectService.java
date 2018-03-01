@@ -21,7 +21,8 @@ import com.chk.mines.Utils.ServerSocketUtil;
 public class ConnectService extends Service {
 
     private static final String TAG = ConnectService.class.getSimpleName();
-//    private LocalBroadcastManager mLocalBroadcastManager;
+    private boolean isSocketConnected;  //用于判断Socket是否连接
+
 
     public ConnectService() {
         Log.i(TAG,"Service init");
@@ -50,5 +51,13 @@ public class ConnectService extends Service {
 //        mLocalBroadcastManager.sendBroadcast(intent);
         Intent intent = new Intent(Constant.SOCKET_DISCONNECTED_BROADCAST_ACTION);
         sendBroadcast(intent);
+    }
+
+    public boolean isSocketConnected() {
+        return isSocketConnected;
+    }
+
+    public void setSocketConnected(boolean socketConnected) {
+        isSocketConnected = socketConnected;
     }
 }

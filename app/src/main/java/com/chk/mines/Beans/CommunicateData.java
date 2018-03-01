@@ -15,13 +15,17 @@ public class CommunicateData {
 
 
     public static final int GAME_INIT = 2;
+    public static final int GAME_PAUSE = 8;
     public static final int GAME_START = 3;
     public static final int GAME_RESTART = 4;
     public static final int GAME_OVER = 5;
     public static final int GAME_WIN = 6;
     public static final int GAME_LOSE = 7;
-    public static final int GAME_PAUSE = 8;
     public static final int CLIENT_RECEIVED_MESSAGE = 12;   //客户端已经接收到服务端的数据，说明游戏可以开始了
+    public static final int ACCEPTED = 13;  //接受重新开始
+    public static final int REJECTED = 14;  //拒绝重新开始
+    public static final int ASK_FOR_RESTART = 15;    //请求重新开始
+
     int game_state; //GameState that above;
 
     public static final int DRAG = 1;
