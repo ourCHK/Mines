@@ -3,12 +3,14 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mainLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context="com.chk.mines.GameActivity"
     >
         <LinearLayout
+            android:id="@+id/operateLayout"
             android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -37,10 +39,10 @@
 
                                 <ImageView
                                     android:id="@+id/flag_confused"
-                                    android:layout_weight="1"
-                                    android:src="@mipmap/flag_confused"
                                     android:layout_width="40dp"
-                                    android:layout_height="40dp" />
+                                    android:layout_height="match_parent"
+                                    android:layout_weight="1"
+                                    android:src="@mipmap/flag_confused" />
                         </LinearLayout>
 
                         <LinearLayout
@@ -94,6 +96,8 @@
                 </LinearLayout>
         </LinearLayout>
 
+
+
         <ScrollView
             android:id="@+id/gameView"
             android:fillViewport="true"
@@ -101,12 +105,14 @@
             android:layout_width="match_parent"
             android:layout_height="0dp">
                 <HorizontalScrollView
+                    android:fillViewport="true"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
                         <LinearLayout
                             android:id="@+id/mineViewContainer"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
+                            android:gravity="center"
                             android:orientation="vertical">
                         </LinearLayout>
                 </HorizontalScrollView>

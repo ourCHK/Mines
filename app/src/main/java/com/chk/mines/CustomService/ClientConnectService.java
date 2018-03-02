@@ -175,7 +175,7 @@ public class ClientConnectService extends ConnectService {
                     msg4.obj = message.obj;
                     mServiceHandler.sendMessageDelayed(msg4,1000);   //我们自己的服务还没有绑定，通知1秒后重新发送这个包
                 } else {    //mGameActivityHandler
-                    mGameActivityHandler.sendEmptyMessage(BIND_SERVICE);
+                    mGameActivityHandler.sendEmptyMessage(Constant.BIND_SERVICE);
                 }
                 break;
         }
