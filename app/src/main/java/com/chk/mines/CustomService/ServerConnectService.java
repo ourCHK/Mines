@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import com.chk.mines.Beans.CommunicateData;
 import com.chk.mines.CooperateGameActivity;
+import com.chk.mines.Utils.Constant;
 import com.chk.mines.Utils.GsonUtil;
 import com.chk.mines.Utils.ServerSocketUtil;
 
@@ -123,7 +124,7 @@ public class ServerConnectService extends ConnectService {
                 break;
             case CommunicateData.USER_OPERATION:    //用户点击方块的操作
                 Message msg1 = mGameActivityHandler.obtainMessage();
-                msg1.what = CooperateGameActivity.RECEIVED_MESSAGE_FROM_CLIENT;
+                msg1.what = Constant.RECEIVED_MESSAGE_FROM_CLIENT;
                 msg1.obj = communicateData;
                 mGameActivityHandler.sendMessage(msg1);
                 break;
@@ -135,7 +136,7 @@ public class ServerConnectService extends ConnectService {
 //                }
                 Log.i(TAG,"GAME_STATE CHANGED and Handler:"+(mGameActivityHandler == null));
                 Message msg2 = mGameActivityHandler.obtainMessage();
-                msg2.what = CooperateGameActivity.RECEIVED_MESSAGE_FROM_CLIENT;
+                msg2.what = Constant.RECEIVED_MESSAGE_FROM_CLIENT;
                 msg2.obj = communicateData;
                 mGameActivityHandler.sendMessage(msg2);
                 break;
@@ -153,7 +154,7 @@ public class ServerConnectService extends ConnectService {
                     msg4.obj = message.obj;
                     mServiceHandler.sendMessageDelayed(msg4,1000);   //我们自己的服务还没有绑定，通知1秒后重新发送这个包
                 } else {    //mGameActivityHandler
-                    mGameActivityHandler.sendEmptyMessage(BIND_SERVICE);
+                    mGameActivityHandler.sendEmptyMessage(Constant.BIND_SERVICE);
                 }
                 break;
 

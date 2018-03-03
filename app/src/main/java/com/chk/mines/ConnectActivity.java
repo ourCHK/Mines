@@ -256,7 +256,7 @@ public class ConnectActivity extends AppCompatActivity implements View.OnClickLi
         mServerConnection = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
-                Toast.makeText(ConnectActivity.this, "ClientService has Started", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(ConnectActivity.this, "ServerService has Started", Toast.LENGTH_SHORT).show();
                 ServerConnectService.LocalBinder binder = (ServerConnectService.LocalBinder) service;
                 mServerConnectService = binder.getService();
                 mServerConnectService.setHandler(mHandler);
@@ -266,7 +266,7 @@ public class ConnectActivity extends AppCompatActivity implements View.OnClickLi
             @Override
             public void onServiceDisconnected(ComponentName name) {
                 mServerConnectService = null;
-                Toast.makeText(ConnectActivity.this, "the ServiceService has Stopped", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(ConnectActivity.this, "the ServerService has Stopped", Toast.LENGTH_SHORT).show();
                 Log.i(TAG,"The ServiceService has Stopped!");
             }
         };
@@ -278,7 +278,7 @@ public class ConnectActivity extends AppCompatActivity implements View.OnClickLi
         mClientConnection = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
-                Toast.makeText(ConnectActivity.this, "ServiceService has Started", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(ConnectActivity.this, "ClientService has Started", Toast.LENGTH_SHORT).show();
                 ClientConnectService.LocalBinder binder = (ClientConnectService.LocalBinder) service;
                 mClientConnectService = binder.getService();
                 mClientConnectService.setHandler(mHandler);
@@ -288,7 +288,7 @@ public class ConnectActivity extends AppCompatActivity implements View.OnClickLi
             @Override
             public void onServiceDisconnected(ComponentName name) {
                 mClientConnectService = null;
-                Toast.makeText(ConnectActivity.this, "the ClientService has Stopped", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(ConnectActivity.this, "the ClientService has Stopped", Toast.LENGTH_SHORT).show();
                 Log.i(TAG,"The ClientService has Stopped!");
             }
         };

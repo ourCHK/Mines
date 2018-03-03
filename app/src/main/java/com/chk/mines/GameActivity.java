@@ -91,6 +91,9 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
     }
     PointType mCurrentType = DRAG;    //默认是挖雷状态
 
+    LinearLayout mMainLayout;   //整个窗口的Layout
+    LinearLayout mOperateLayout;    //操作窗口的Layout
+
 //    @BindView(R.id.mineViewContainer)
     LinearLayout mMineViewContainer;
 
@@ -137,6 +140,23 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
     @SuppressLint("HandlerLeak")
     void init() {
 //        InitBindView.init(this);
+        mMainLayout = findViewById(R.id.mainLayout);
+//        mMainLayout.measure(0,0);
+        mOperateLayout = findViewById(R.id.operateLayout);
+//        mOperateLayout.measure(0,0);
+
+        int w = View.MeasureSpec.makeMeasureSpec(0,
+                View.MeasureSpec.EXACTLY);
+        int h = View.MeasureSpec.makeMeasureSpec(0,
+                View.MeasureSpec.EXACTLY);
+        mMainLayout.measure(w, h);
+        Log.i(TAG,"MainLayout Height:"+mMainLayout.getHeight()+"   "+mMainLayout.getMeasuredHeight());
+        Log.i(TAG,"OperateLayout Height:"+mOperateLayout.getHeight()+"  "+mOperateLayout.getMeasuredHeight());
+        Log.i(TAG,"MainLayout Height:"+mMainLayout.getLayoutParams().height+"   "+mMainLayout.getLayoutParams().width);
+
+
+//        int height = imageView.getMeasuredHeight();
+//        int width = imageView.getMeasuredWidth();
 
         mMineViewContainer = findViewById(R.id.mineViewContainer);
         mShovel = findViewById(R.id.shovel);
