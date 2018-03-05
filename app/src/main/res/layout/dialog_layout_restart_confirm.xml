@@ -29,14 +29,14 @@
                 android:orientation="horizontal">
                 <Button
                     android:id="@+id/leftButton"
-                    android:text="拒绝"
+                    android:text="拒绝(5)"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content" />
 
                 <Button
                     android:id="@+id/rightButton"
-                    android:text="接受"
+                    android:text="同意"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content" />

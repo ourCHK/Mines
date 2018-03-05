@@ -1,7 +1,6 @@
-package com.chk.mines.CustomService;
+package com.chk.mines.CustomServices;
 
 import android.annotation.SuppressLint;
-import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.Handler;
@@ -11,13 +10,11 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.chk.mines.Beans.CommunicateData;
-import com.chk.mines.CooperateGameActivity;
 import com.chk.mines.Utils.ClientSocketUtil;
 import com.chk.mines.Utils.Constant;
 import com.chk.mines.Utils.GsonUtil;
 
 import static com.chk.mines.ChooseGameTypeActivity.readyForStart;
-import static com.chk.mines.CooperateGameActivity.BIND_SERVICE;
 
 /**
  * 客户端Wifi连接服务

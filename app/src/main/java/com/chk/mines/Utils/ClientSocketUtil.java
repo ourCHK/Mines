@@ -5,7 +5,7 @@ import android.os.Message;
 import android.util.Log;
 
 import com.chk.mines.Beans.CommunicateData;
-import com.chk.mines.CustomService.ClientConnectService;
+import com.chk.mines.CustomServices.ClientConnectService;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.net.Socket;
 
 import static com.chk.mines.ConnectActivity.SOCKET_CONNECTED;
-import static com.chk.mines.CustomService.ClientConnectService.RECEIVED_MESSAGE;
+import static com.chk.mines.CustomServices.ClientConnectService.RECEIVED_MESSAGE;
 
 /**
  * Created by chk on 18-2-8.

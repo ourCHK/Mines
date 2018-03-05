@@ -1,4 +1,4 @@
-package com.chk.mines.CustomService;
+package com.chk.mines.CustomServices;
 
 import android.app.Service;
 

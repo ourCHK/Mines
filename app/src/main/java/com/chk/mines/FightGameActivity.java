@@ -21,18 +21,18 @@ import android.widget.Toast;
 
 import com.chk.mines.Beans.CommunicateData;
 import com.chk.mines.Beans.Mine;
-import com.chk.mines.CustomDialog.CustomDialog;
-import com.chk.mines.CustomService.ClientConnectService;
-import com.chk.mines.CustomService.ServerConnectService;
+import com.chk.mines.CustomDialogs.CustomDialog;
+import com.chk.mines.CustomServices.ClientConnectService;
+import com.chk.mines.CustomServices.ServerConnectService;
 import com.chk.mines.Interfaces.GameState;
 import com.chk.mines.Interfaces.OnDialogButtonClickListener;
 import com.chk.mines.Utils.GsonUtil;
-import com.chk.mines.Views.MineView;
-import com.chk.mines.Views.MineViewType1;
-import com.chk.mines.Views.MineViewType2;
-import com.chk.mines.Views.MineViewType3;
-import com.chk.mines.Views.MineViewType4;
-import com.chk.mines.Views.TimeTextView;
+import com.chk.mines.CustomViews.MineView;
+import com.chk.mines.CustomViews.MineViewType1;
+import com.chk.mines.CustomViews.MineViewType2;
+import com.chk.mines.CustomViews.MineViewType3;
+import com.chk.mines.CustomViews.MineViewType4;
+import com.chk.mines.CustomViews.TimeTextView;
 
 import java.util.Random;
 import java.util.Timer;
@@ -356,11 +356,11 @@ public class FightGameActivity extends AppCompatActivity implements View.OnClick
         if (dialog != null) {
             dialog.setOnDialogButtonClickListener(new OnDialogButtonClickListener() {
                 @Override
-                public void onLeftClickListener() {
+                public void onLeftClick() {
                 }
 
                 @Override
-                public void onRightClickListener() {
+                public void onRightClick() {
                     gameRestart();
                 }
             });

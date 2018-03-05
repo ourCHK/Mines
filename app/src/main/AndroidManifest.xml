@@ -31,15 +31,15 @@
         <activity android:name=".ConnectActivity" />
 
         <service
-            android:name=".CustomService.ConnectService"
+            android:name=".CustomServices.ConnectService"
             android:enabled="true"
             android:exported="true" />
         <service
-            android:name=".CustomService.ClientConnectService"
+            android:name=".CustomServices.ClientConnectService"
             android:enabled="true"
             android:exported="true" />
         <service
-            android:name=".CustomService.ServerConnectService"
+            android:name=".CustomServices.ServerConnectService"
             android:enabled="true"
             android:exported="true" />
 

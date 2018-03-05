@@ -1,4 +1,4 @@
-package com.chk.mines.Views;
+package com.chk.mines.CustomViews;
 
 import android.content.Context;
 import android.graphics.Bitmap;

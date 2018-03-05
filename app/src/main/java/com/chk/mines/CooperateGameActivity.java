@@ -24,22 +24,22 @@ import android.widget.Toast;
 
 import com.chk.mines.Beans.CommunicateData;
 import com.chk.mines.Beans.Mine;
-import com.chk.mines.CustomDialog.CustomDialog;
-import com.chk.mines.CustomDialog.DisconnectDialog;
-import com.chk.mines.CustomDialog.RestartDialog;
-import com.chk.mines.CustomDialog.WaitingForSyncDialog;
-import com.chk.mines.CustomService.ClientConnectService;
-import com.chk.mines.CustomService.ServerConnectService;
+import com.chk.mines.CustomDialogs.CustomDialog;
+import com.chk.mines.CustomDialogs.DisconnectDialog;
+import com.chk.mines.CustomDialogs.RestartDialog;
+import com.chk.mines.CustomDialogs.WaitingForSyncDialog;
+import com.chk.mines.CustomServices.ClientConnectService;
+import com.chk.mines.CustomServices.ServerConnectService;
 import com.chk.mines.Interfaces.GameState;
 import com.chk.mines.Interfaces.OnDialogButtonClickListener;
 import com.chk.mines.Utils.Constant;
 import com.chk.mines.Utils.GsonUtil;
-import com.chk.mines.Views.MineView;
-import com.chk.mines.Views.MineViewType1;
-import com.chk.mines.Views.MineViewType2;
-import com.chk.mines.Views.MineViewType3;
-import com.chk.mines.Views.MineViewType4;
-import com.chk.mines.Views.TimeTextView;
+import com.chk.mines.CustomViews.MineView;
+import com.chk.mines.CustomViews.MineViewType1;
+import com.chk.mines.CustomViews.MineViewType2;
+import com.chk.mines.CustomViews.MineViewType3;
+import com.chk.mines.CustomViews.MineViewType4;
+import com.chk.mines.CustomViews.TimeTextView;
 
 import java.util.Random;
 import java.util.Timer;
@@ -414,11 +414,11 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
         if (dialog != null) {
             dialog.setOnDialogButtonClickListener(new OnDialogButtonClickListener() {
                 @Override
-                public void onLeftClickListener() {
+                public void onLeftClick() {
                 }
 
                 @Override
-                public void onRightClickListener() {
+                public void onRightClick() {
                     gameRestart();
                 }
             });
@@ -854,11 +854,11 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
 //                        },2000);
                         break;
                     case CommunicateData.GAME_START:
-//                        mStartAndPaused.callOnClick();
+//                        mStartOrPaused.callOnClick();
                         startOrPauseGame();
                         break;
                     case CommunicateData.GAME_PAUSE:
-//                        mStartAndPaused.callOnClick();
+//                        mStartOrPaused.callOnClick();
                         startOrPauseGame();
                         break;
                 }
@@ -961,13 +961,13 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
             disconnectDialog = new DisconnectDialog(this,R.style.Custom_Dialog_Style);
             disconnectDialog.setOnDialogButtonClickListener(new OnDialogButtonClickListener() {
                 @Override
-                public void onLeftClickListener() {     //返回
+                public void onLeftClick() {     //返回
                     dismissDisconnectDialog();
                     finish();
                 }
 
                 @Override
-                public void onRightClickListener() {    //继续
+                public void onRightClick() {    //继续
                     mHandler.sendEmptyMessage(GAME_START);
                     dismissDisconnectDialog();
                 }
@@ -986,13 +986,13 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
             restartDialog = new RestartDialog(this,R.style.Custom_Dialog_Style);
             restartDialog.setOnDialogButtonClickListener(new OnDialogButtonClickListener() {
                 @Override
-                public void onLeftClickListener() {     //返回
+                public void onLeftClick() {     //返回
 //                    dismissDisconnectDialog();
 //                    finish();
                 }
 
                 @Override
-                public void onRightClickListener() {    //继续
+                public void onRightClick() {    //继续
 //                    mHandler.sendEmptyMessage(GAME_START);
 //                    dismissDisconnectDialog();
                 }

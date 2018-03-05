@@ -1,4 +1,4 @@
-package com.chk.mines.CustomDialog;
+package com.chk.mines.CustomDialogs;
 
 import android.app.Dialog;
 import android.content.Context;

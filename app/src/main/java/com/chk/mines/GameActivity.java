@@ -1,12 +1,9 @@
 package com.chk.mines;
 
 import android.annotation.SuppressLint;
-import android.content.ComponentName;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -17,31 +14,23 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.chk.mines.Beans.CommunicateData;
 import com.chk.mines.Beans.Mine;
-import com.chk.mines.CustomService.ClientConnectService;
-import com.chk.mines.CustomService.ServerConnectService;
 import com.chk.mines.Interfaces.GameState;
 import com.chk.mines.Interfaces.OnDialogButtonClickListener;
 
-import com.chk.mines.CustomDialog.CustomDialog;
-import com.chk.mines.Utils.GsonUtil;
-import com.chk.mines.Views.MineView;
-import com.chk.mines.Views.MineViewType1;
-import com.chk.mines.Views.MineViewType2;
-import com.chk.mines.Views.MineViewType3;
-import com.chk.mines.Views.MineViewType4;
-import com.chk.mines.Views.TimeTextView;
+import com.chk.mines.CustomDialogs.CustomDialog;
+import com.chk.mines.CustomViews.MineView;
+import com.chk.mines.CustomViews.MineViewType1;
+import com.chk.mines.CustomViews.MineViewType2;
+import com.chk.mines.CustomViews.MineViewType3;
+import com.chk.mines.CustomViews.MineViewType4;
+import com.chk.mines.CustomViews.TimeTextView;
 
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import static com.chk.mines.ChooseGameTypeActivity.CLIENT;
-import static com.chk.mines.ChooseGameTypeActivity.SERVER;
-import static com.chk.mines.ChooseGameTypeActivity.readyForStart;
 import static com.chk.mines.GameActivity.PointType.DRAG;
 import static com.chk.mines.GameActivity.PointType.FLAG;
 
@@ -350,11 +339,11 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         if (dialog != null) {
             dialog.setOnDialogButtonClickListener(new OnDialogButtonClickListener() {
                 @Override
-                public void onLeftClickListener() {
+                public void onLeftClick() {
                 }
 
                 @Override
-                public void onRightClickListener() {
+                public void onRightClick() {
                     gameRestart();
                 }
             });

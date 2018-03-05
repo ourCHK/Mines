@@ -14,7 +14,7 @@ import java.net.Socket;
 import java.util.Timer;
 
 import static com.chk.mines.ConnectActivity.SOCKET_ACCEPTED;
-import static com.chk.mines.CustomService.ServerConnectService.RECEIVED_MESSAGE;
+import static com.chk.mines.CustomServices.ServerConnectService.RECEIVED_MESSAGE;
 
 /**
  * Created by chk on 18-2-8.
