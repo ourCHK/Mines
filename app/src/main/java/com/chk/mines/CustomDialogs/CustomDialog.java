@@ -60,7 +60,6 @@ public class CustomDialog extends Dialog {
         mLeftButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.i("com/chk/mines/CustomDialogs","leftButtonClicked");
                 if (mOnDialogButtonClickListener != null) {
                     mOnDialogButtonClickListener.onLeftClick();
                 }
@@ -73,17 +72,12 @@ public class CustomDialog extends Dialog {
             public void onClick(View v) {
                 dismiss();
                 if (mOnDialogButtonClickListener != null) {
-                    Log.i("com/chk/mines/CustomDialogs","RightButtonClicked");
                     mOnDialogButtonClickListener.onRightClick();
                 }
                 dismiss();
             }
         });
 
-//        WindowManager.LayoutParams lp = getWindow().getAttributes();
-//        lp.width = display.getWidth() * 4 / 5 ; // 设置dialog宽度为屏幕的4/5
-//        lp.height = display.getHeight() * 2 / 5;
-//        getWindow().setAttributes(lp);
     }
 
     public void setOnDialogButtonClickListener(OnDialogButtonClickListener mOnDialogButtonClickListener) {

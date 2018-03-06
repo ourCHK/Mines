@@ -306,6 +306,9 @@ public class CustomMineView extends View{
             columns = mines[0].length;
             mMineCount = mineCount;
         }
+        //必须重新初始化变量
+        isGameOver = false;
+
         invalidate();
     }
 
