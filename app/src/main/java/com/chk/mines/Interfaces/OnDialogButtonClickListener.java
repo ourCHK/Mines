@@ -5,6 +5,6 @@ package com.chk.mines.Interfaces;
  */
 
 public interface OnDialogButtonClickListener {
-    void onLeftClickListener();
-    void onRightClickListener();
+    void onLeftClick();
+    void onRightClick();
 }

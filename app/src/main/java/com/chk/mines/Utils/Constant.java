@@ -23,7 +23,7 @@ public class Constant {
 
     public final static int GAME_OVER = -1;
     public final static int GAME_SUCCESS = 1;
-    public final static int GAME_PAUSED = 2;
+    public final static int GAME_PAUSE = 2;
     public final static int GAME_START = 3;     //用于开始计时
     public final static int GAME_RESTART = 4;
     public final static int GAME_INIT = 5;  //初始化
@@ -33,8 +33,8 @@ public class Constant {
     public final static int SOCKET_DISCONNECTED = 9;
     public final static int BIND_SERVICE = 11;   //客户端已经绑定服务了
 
-    public final static int DRAG = 0;
-    public final static int FLAG = 1;
-    public final static int FLAG_CONFUSED = 2;
+    public final static int DRAG = 1;
+    public final static int FLAG = 2;
+    public final static int FLAG_CONFUSED = 3;
     public final static int PointDown = 10; //接收View传来的消息
 }

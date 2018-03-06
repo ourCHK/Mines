@@ -19,8 +19,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.chk.mines.Beans.CommunicateData;
-import com.chk.mines.CustomService.ClientConnectService;
-import com.chk.mines.CustomService.ServerConnectService;
+import com.chk.mines.CustomServices.ClientConnectService;
+import com.chk.mines.CustomServices.ServerConnectService;
 
 import static com.chk.mines.GameActivity.GAME_TYPE;
 import static com.chk.mines.GameActivity.SERVER_OR_CLIENT;

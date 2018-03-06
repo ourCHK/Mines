@@ -15,6 +15,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -23,20 +24,23 @@ import android.widget.Toast;
 
 import com.chk.mines.Beans.CommunicateData;
 import com.chk.mines.Beans.Mine;
-import com.chk.mines.CustomDialog.DisconnectDialog;
-import com.chk.mines.CustomDialog.RestartDialog;
-import com.chk.mines.CustomDialog.WaitingForSyncDialog;
-import com.chk.mines.CustomService.ClientConnectService;
-import com.chk.mines.CustomService.ServerConnectService;
+import com.chk.mines.CustomDialogs.CustomDialog;
+import com.chk.mines.CustomDialogs.DisconnectDialog;
+import com.chk.mines.CustomDialogs.RestartDialog;
+import com.chk.mines.CustomDialogs.WaitingForConfirmDialog;
+import com.chk.mines.CustomDialogs.WaitingForSyncDialog;
+import com.chk.mines.CustomServices.ClientConnectService;
+import com.chk.mines.CustomServices.ServerConnectService;
 import com.chk.mines.Interfaces.GameState;
 import com.chk.mines.Interfaces.OnDialogButtonClickListener;
 import com.chk.mines.Utils.Constant;
 import com.chk.mines.Utils.GsonUtil;
-import com.chk.mines.Views.CustomMineView;
-import com.chk.mines.Views.MineView;
-import com.chk.mines.Views.TimeTextView;
+import com.chk.mines.CustomViews.CustomMineView;
+import com.chk.mines.CustomViews.TimeTextView;
 
 import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -51,17 +55,21 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
     Runnable gameRunnable;
     boolean isRunning = true;
 
+    Timer timer;
+    int time;   //游戏时间
+
     int mServerOrClient;
     int mChooseGameType;
     Handler mGameHandler;
 
+    LinearLayout.LayoutParams lp;
     LinearLayout mMineViewContainer;
     ImageView mShovel;
     ImageView mFlag;
     ImageView mFlagConfused;
     TimeTextView mTimeView;
     ImageView mRestart;
-    ImageView mStartAndPaused;
+    ImageView mStartOrPaused;
     TextView mRemainMines;
     ScrollView mGameView;
     TextView mPausedView;
@@ -76,7 +84,7 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
     int curGameState;
     int preGameState;
 
-    int mCurrentType = Constant.DRAG;   //默认是这个
+    int mCurrentType = Constant.DRAG;   //默认是这个,挖掘的类型
 
     ServerConnectService mServerConnectService;
     ServiceConnection mServerConnection;
@@ -85,11 +93,14 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
 
     LocalBroadcastReceiver mLocalBroadcastReceiver;
     IntentFilter mIntentFilter;
-    boolean mSocketDisconnected;
+    boolean mSocketDisconnected; //默认是连接的，因为已经走到这里说明socket已经是连接好的，
 
     WaitingForSyncDialog syncDialog;
     DisconnectDialog disconnectDialog;
     RestartDialog restartDialog;
+    WaitingForConfirmDialog waitingConfirmDialog;
+    CustomDialog successDialog;
+    CustomDialog failDialog;
 
     @SuppressLint("HandlerLeak")
     @Override
@@ -103,17 +114,20 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
                     case Constant.GAME_INIT:
                         gameInit();
                         break;
-                    case Constant.GAME_PAUSED:
-                        curGameState = Constant.GAME_PAUSED;
+                    case Constant.GAME_PAUSE:
+                        gamePause();
                         break;
                     case Constant.GAME_START:
-                        curGameState = Constant.GAME_START;
+                        gameStart();
                         break;
                     case Constant.GAME_SUCCESS:
-                        curGameState = Constant.GAME_SUCCESS;
+                        gameSuccess();
                         break;
                     case Constant.GAME_OVER:
-                        curGameState = Constant.GAME_OVER;
+                        gameOver();
+                        break;
+                    case Constant.GAME_RESTART:
+                        gameRestart();
                         break;
                     case Constant.PointDown:
                         pointDownCube(msg.arg1,msg.arg2);
@@ -122,8 +136,10 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
                         serviceBound();
                         break;
                     case Constant.SOCKET_DISCONNECTED:
+                        mSocketDisconnected = true;
                         break;
                     case Constant.TIME_CHANGED:
+                        mTimeView.setText("TIME:"+ time);
                         break;
                     case Constant.RECEIVED_MESSAGE_FROM_SERVER:
                         receivedMessageFromServer((CommunicateData) msg.obj);
@@ -154,7 +170,7 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
         mFlagConfused = findViewById(R.id.flag_confused);
         mTimeView = findViewById(R.id.timeView);
         mRestart = findViewById(R.id.restart);
-        mStartAndPaused = findViewById(R.id.startAndPaused);
+        mStartOrPaused = findViewById(R.id.startAndPaused);
         mRemainMines = findViewById(R.id.remainMines);
         mGameView = findViewById(R.id.gameView);
         mPausedView = findViewById(R.id.pausedView);
@@ -163,7 +179,27 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
         mFlag.setOnClickListener(this);
         mFlagConfused.setOnClickListener(this);
         mRestart.setOnClickListener(this);
-        mStartAndPaused.setOnClickListener(this);
+        mStartOrPaused.setOnClickListener(this);
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.restart:
+                askForRestart();
+                break;
+            case R.id.showDialog:
+                break;
+            case R.id.flag:     //这里对按钮背景或则资源进行设置
+            case R.id.flag_confused:
+            case R.id.shovel:
+                setBackgroundAndCurrentType(v.getId());
+                break;
+            case R.id.startAndPaused:
+                startOrPauseGame(); //暂停或者开始游戏
+                sendGameState();    //发送游戏状态到对方过去
+                break;
+        }
     }
 
     void dataInit() {
@@ -173,9 +209,16 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
             public void run() {
                 Log.i(TAG,"GameThread is Running");
                 while (isRunning) {
+                    long startTime = System.currentTimeMillis();
                     if (curGameState != preGameState) { //状态发生改变的时候
                         mGameHandler.sendEmptyMessage(curGameState);    //通知主线程状态发生改变
                         preGameState = curGameState;    //更新至当前的状态
+                    }
+                    long endTime = System.currentTimeMillis();
+                    try {
+                        Thread.sleep(30-endTime+startTime); //休息30ms
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
                 }
             }
@@ -217,6 +260,7 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
         }
 
         mMineView = new CustomMineView(this,rows,columns);
+        mMineView.setHandler(mGameHandler);
 
         switch (mServerOrClient) {
             case Constant.SERVER:
@@ -336,7 +380,6 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
 
         //这边可以发送Init消息??
 //        mGameHandler.sendEmptyMessage(Constant.GAME_INIT);
-
         curGameState = Constant.GAME_INIT;
 
         //还需要给对方发送一个接收到消息的信息
@@ -354,61 +397,107 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
     }
 
 
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.flagButton:
-//                mMineView.setCurrentType();
-                break;
-            case R.id.restart:
-                gameRestart();
-                break;
-            case R.id.showDialog:
-                break;
-            case R.id.flag:     //这里对按钮背景或则资源进行设置
-            case R.id.flag_confused:
-            case R.id.shovel:
-//                setBackgroundOrSrc(v.getId());
-                break;
-            case R.id.startAndPaused:
-//                startOrPauseGame();
-//                sendGameState();
-                break;
+    void startOrPauseGame() {
+        if (curGameState == Constant.GAME_START) {
+            curGameState = Constant.GAME_PAUSE;
+        } else if (curGameState == Constant.GAME_PAUSE) {
+            curGameState = Constant.GAME_START;
+        }
+    }
+
+
+    /**
+     * 设置按钮的背景和设置当前挖雷的类型
+     * @param id 按钮id
+     */
+    void setBackgroundAndCurrentType(int id) {
+        if (mFlag.getId() == id)  {
+            mFlag.setBackgroundResource(R.drawable.image_background);
+            mFlagConfused.setBackgroundResource(0);
+            mShovel.setBackgroundResource(0);
+            mCurrentType = Constant.FLAG;
+        } else if (mFlagConfused.getId() == id) {
+            mFlagConfused.setBackgroundResource(R.drawable.image_background);
+            mFlag.setBackgroundResource(0);
+            mShovel.setBackgroundResource(0);
+            mCurrentType = Constant.FLAG_CONFUSED;
+        } else if (mShovel.getId() == id) {
+            mShovel.setBackgroundResource(R.drawable.image_background);
+            mFlagConfused.setBackgroundResource(0);
+            mFlag.setBackgroundResource(0);
+            mCurrentType = Constant.DRAG;
         }
     }
 
     @Override
     public void gameInit() {
+        dismissAllDialog();
+        mShovel.performClick();   //设置默认为点击挖掘背景
         mMineView.setMines(mines,mMineCount);
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
-        mMineViewContainer.addView(mMineView,lp);
+        if (mMineViewContainer.getChildCount() == 0) {   //mMineViewContainer不能重复添加同一个View，判断内部View是否为0
+            lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT);
+            mMineViewContainer.addView(mMineView, lp);
+        } else {
+            mMineView.setMines(mines,mMineCount);   //否则直接刷新
+        }
+
+        if (timer != null) {    //防止多个计时器一起并发
+            timer.cancel();
+            timer = null;
+            time = 0;   //跟新ui至0
+            mGameHandler.sendEmptyMessage(Constant.TIME_CHANGED);
+        }
+
+        timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                if (curGameState == Constant.GAME_START) {
+                    time++;
+                    mGameHandler.sendEmptyMessage(Constant.TIME_CHANGED);
+                }
+            }
+        },1000,1000);
+
+        mStartOrPaused.setImageResource(R.mipmap.pause);
         dismissSyncDialog();
+        showView();
         Log.i(TAG,"GAME_INIT");
     }
 
     @Override
     public void gameStart() {
+        mStartOrPaused.setImageResource(R.mipmap.start);
+        showView();
         Log.i(TAG,"GAME_START");
     }
 
     @Override
     public void gamePause() {
+        mStartOrPaused.setImageResource(R.mipmap.pause);
+        showView();
         Log.i(TAG,"GAME_PAUSE");
     }
 
     @Override
     public void gameOver() {
+        mStartOrPaused.setImageResource(R.mipmap.pause);
+        showFailDialog();
         Log.i(TAG,"GAME_OVER");
     }
 
     @Override
     public void gameRestart() {
+        resetMines();
+        sendMinesData();
         Log.i(TAG,"GAME_RESTART");
     }
 
     @Override
     public void gameSuccess() {
+        mStartOrPaused.setImageResource(R.mipmap.pause);
+        showSuccessDialog();
         Log.i(TAG,"GAME_SUCCESS");
     }
 
@@ -420,7 +509,7 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
         CommunicateData communicateData = message;
         switch (communicateData.getType()) {
             case CommunicateData.USER_OPERATION:    //用户点击方块的操作
-//                pointDownCubeFromNetWork(communicateData);
+                pointDownCubeFromNetWork(communicateData);
                 break;
             case CommunicateData.GAME_STATE:
                 switch (communicateData.getGame_state()) {
@@ -435,22 +524,33 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
                     case CommunicateData.GAME_INIT:
                         break;
                     case CommunicateData.GAME_START:
-//                        startOrPauseGame();
+                        curGameState = Constant.GAME_START;
                         break;
                     case CommunicateData.GAME_PAUSE:
-//                        startOrPauseGame();
+                        curGameState = Constant.GAME_PAUSE;
+                        break;
+                    case CommunicateData.ASK_FOR_RESTART:   //对方请求重新开始
+                        curGameState = Constant.GAME_PAUSE; //那么我们的状态也要暂时改为暂停游戏
+                        showRestartDialog();
+                        break;
+                    case CommunicateData.ACCEPTED:      //对方已经接受了说明可以开始初始化了，我们这边初始化？？
+                        curGameState = Constant.GAME_RESTART;   //对方同意，说明可以重新开始了
+                        dismissWaitingConfirmDialog();
+                        break;
+                    case CommunicateData.REJECTED:      //对方拒绝，弹出一个Toast说明拒绝
+                        dismissWaitingConfirmDialog();
+                        curGameState = Constant.GAME_START; //对方拒绝，那么继续开始游戏
+                        Toast.makeText(CooperateGameActivityWithThread.this, "对方拒绝重新开始", Toast.LENGTH_SHORT).show();
                         break;
                     case CommunicateData.SEND_MINES_DATA:   //客户端发送雷数据
                         resetMinesFromSocket(communicateData);
                         break;
                     case CommunicateData.RECEIVED_MINES_DATA:   //对方接收到我们的雷的数据
-                        mGameHandler.sendEmptyMessage(Constant.GAME_INIT);
+                        curGameState = Constant.GAME_INIT;  //服务端可以开始初始化了
                         break;
                 }
             case CommunicateData.CLIENT_RECEIVED_MESSAGE:   //客户端已经接收到消息，已经可以准备开始游戏了
-                //这里应该得是有一个dialog关闭消失的操作
-//                dismissSyncDialog();
-                Toast.makeText(CooperateGameActivityWithThread.this, "客户端已接受我们服务端发出的消息", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(CooperateGameActivityWithThread.this, "客户端已接受我们服务端发出的消息", Toast.LENGTH_SHORT).show();
                 break;
         }
     }
@@ -463,57 +563,36 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
         CommunicateData communicateData = message;
         switch (communicateData.getType()) {
             case CommunicateData.USER_OPERATION:    //用户点击方块的操作
-//                pointDownCubeFromNetWork(communicateData);
+                pointDownCubeFromNetWork(communicateData);
                 break;
             case CommunicateData.GAME_STATE:    //游戏状态改变
                 switch (communicateData.getGame_state()) {
                     case CommunicateData.GAME_INIT:
-//                        String arrayJson = communicateData.getMessage();
-//                        Mine[][] tempMines = GsonUtil.stringToMines(arrayJson);
-//                        for (int i=0; i<rows; i++) {
-//                            String string = "";
-//                            for (int j=0; j<columns; j++) {
-//                                mines[i][j] = tempMines[i][j];
-//                                if (mines[i][j].getNum() == -1)
-//                                    string += "*" + " ";
-//                                else
-//                                    string += mines[i][j].getNum() + " ";
-//                            }
-//                            Log.i("GameActivity",string);
-//                        }
-////                        mHandler.sendEmptyMessage(GAME_INIT);   //通知服务端客户端已经接收到消息
-//
-//                        CommunicateData cd1 = new CommunicateData();
-//                        cd1.setType(CommunicateData.GAME_STATE);
-//                        cd1.setGame_state(CommunicateData.CLIENT_RECEIVED_MESSAGE);
-//                        mClientConnectService.sendMessage(cd1);
-//
-//                        dismissSyncDialog();
-//                        mHandler.postDelayed(new Runnable() {   //客户端延迟发送等待服务端服务开启
-//                            @Override
-//                            public void run() {
-//                                CommunicateData cd1 = new CommunicateData();
-//                                cd1.setType(CommunicateData.GAME_STATE);
-//                                cd1.setGame_state(CommunicateData.CLIENT_RECEIVED_MESSAGE);
-//                                mClientConnectService.sendMessage(cd1);
-//
-//                                dismissSyncDialog();
-//                            }
-//                        },2000);
                         break;
                     case CommunicateData.GAME_START:
-//                        mStartAndPaused.callOnClick();
-//                        startOrPauseGame();
+                        curGameState = Constant.GAME_START;
                         break;
                     case CommunicateData.GAME_PAUSE:
-//                        mStartAndPaused.callOnClick();
-//                        startOrPauseGame();
+                        curGameState = Constant.GAME_PAUSE;
                         break;
                     case CommunicateData.SEND_MINES_DATA:   //服务端发送雷数据过来
                         resetMinesFromSocket(communicateData);
                         break;
                     case CommunicateData.RECEIVED_MINES_DATA:   //对方接收到我们的雷的数据
-                        curGameState = Constant.GAME_INIT;  //说明初始化成功
+                        curGameState = Constant.GAME_INIT;  //说明初始化成功,我们当前状态改为初始化
+                        break;
+                    case CommunicateData.ASK_FOR_RESTART:   //对方请求重新开始
+                        curGameState = Constant.GAME_PAUSE; //那么我们的状态也要暂时改为暂停游戏
+                        showRestartDialog();
+                        break;
+                    case CommunicateData.ACCEPTED:      //对方已经接受了说明可以开始初始化了，我们这边初始化？？
+                        curGameState = Constant.GAME_RESTART;   //对方同意，说明可以重新开始了
+                        dismissWaitingConfirmDialog();
+                        break;
+                    case CommunicateData.REJECTED:      //对方拒绝，弹出一个Toast说明拒绝
+                        dismissWaitingConfirmDialog();
+                        curGameState = Constant.GAME_START; //对方拒绝，那么继续开始游戏
+                        Toast.makeText(CooperateGameActivityWithThread.this, "对方拒绝重新开始", Toast.LENGTH_SHORT).show();
                         break;
 
                 }
@@ -525,12 +604,6 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
                         mines[i][j] = tempMines[i][j];
                     }
                 }
-//                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-//                mMineViewContainer.addView(mMineView,lp);
-
-//                mMineView.setMines(mines, mMineCount);
-//                mMineView.setHandler(mHandler);
-//                mHandler.sendEmptyMessage(GAME_INIT);
                 break;
         }
     }
@@ -538,9 +611,9 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
     void pointDownCube(int row,int column) {
         switch (curGameState) {
             case Constant.GAME_INIT:
-                mGameHandler.sendEmptyMessage(Constant.GAME_START);
+                curGameState = Constant.GAME_START;
                 break;
-            case Constant.GAME_PAUSED:
+            case Constant.GAME_PAUSE:
             case Constant.GAME_OVER:
             case Constant.GAME_SUCCESS:
                 return;
@@ -580,6 +653,35 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
                 mClientConnectService.sendMessage(communicateData);
                 break;
         }
+    }
+
+    void pointDownCubeFromNetWork(CommunicateData communicateData) {
+        switch (curGameState) {
+            case Constant.GAME_INIT:
+                curGameState = Constant.GAME_START;
+                break;
+            case Constant.GAME_PAUSE:
+            case Constant.GAME_OVER:
+            case Constant.GAME_SUCCESS:
+                return;
+        }
+        int user_operation = communicateData.getUser_operation();
+        int row = communicateData.getRow();
+        int column = communicateData.getColumn();
+
+        switch (user_operation) {
+            case CommunicateData.DRAG:
+                openCube(row,column);
+                break;
+            case CommunicateData.FLAG:
+                flagCube(row, column);
+                break;
+            case CommunicateData.FLAG_CONFUSED:
+                confuseCube(row, column);
+                break;
+        }
+        mMineView.invalidate();     //刷新界面
+        setRemainMinesOrCheckResult();
     }
 
     /**
@@ -650,6 +752,9 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
             mines[row][column].setConfused(true);
     }
 
+    /**
+     * 检查已标记的雷或者检查是否排雷成功
+     */
     void setRemainMinesOrCheckResult() {
         int flagMines = 0;
         int openedCount = 0;
@@ -673,6 +778,96 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
         Log.i("MineView","GameOver");
     }
 
+    /**
+     * 发送游戏状态到对方
+     */
+    void sendGameState() {
+        if (!mSocketDisconnected) {
+            CommunicateData communicateData = new CommunicateData();
+            communicateData.setType(CommunicateData.GAME_STATE);
+            switch (curGameState) {
+                case Constant.GAME_PAUSE:
+                    communicateData.setGame_state(CommunicateData.GAME_PAUSE);
+                    break;
+                case Constant.GAME_START:
+                    communicateData.setGame_state(CommunicateData.GAME_START);
+                    break;
+            }
+            switch (mServerOrClient) {
+                case SERVER:
+                    mServerConnectService.sendMessage(communicateData);
+                    break;
+                case CLIENT:
+                    mClientConnectService.sendMessage(communicateData);
+                    break;
+            }
+        }
+    }
+
+    /**
+     * 请求重新开始
+     */
+    void askForRestart() {
+        curGameState = Constant.GAME_PAUSE; //请求重新开始的时候也要暂停
+        showWaitingConfirmDialog();
+
+        CommunicateData communicateData = new CommunicateData();
+        communicateData.setType(CommunicateData.GAME_STATE);
+        communicateData.setGame_state(CommunicateData.ASK_FOR_RESTART);
+        switch (mServerOrClient) {
+            case Constant.SERVER:
+                mServerConnectService.sendMessage(communicateData);
+                break;
+            case Constant.CLIENT:
+                mClientConnectService.sendMessage(communicateData);
+                break;
+        }
+    }
+
+    void showView() {
+        AlphaAnimation appearAnimation = new AlphaAnimation(0, 1);
+        appearAnimation.setDuration(500);
+        AlphaAnimation disappearAnimation = new AlphaAnimation(1, 0);
+        disappearAnimation.setDuration(500);
+
+        if (curGameState == Constant.GAME_START) {
+            if (!mGameView.isShown()) { //不在显示的情况之下
+                mGameView.setAnimation(appearAnimation);
+                mGameView.setVisibility(View.VISIBLE);
+                mPausedView.setAnimation(disappearAnimation);
+                mPausedView.setVisibility(View.GONE);
+            }
+        } else if (curGameState ==  Constant.GAME_PAUSE) {
+            if (!mPausedView.isShown()) { //不在显示的情况之下
+                mPausedView.setAnimation(appearAnimation);
+                mPausedView.setVisibility(View.VISIBLE);
+                mGameView.setAnimation(disappearAnimation);
+                mGameView.setVisibility(View.GONE);
+            }
+        } else if (curGameState ==  Constant.GAME_RESTART) {
+            if (!mGameView.isShown()) { //不在显示的情况之下
+                mGameView.setVisibility(View.VISIBLE);
+                mPausedView.setVisibility(View.GONE);
+            }
+        } else if (curGameState == Constant.GAME_INIT) {
+            if (!mGameView.isShown()) {
+                mGameView.setVisibility(View.VISIBLE);
+                mPausedView.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    /**
+     * 关闭所有正在显示的Dialog
+     */
+    void dismissAllDialog() {
+        dismissSyncDialog();
+        dismissWaitingConfirmDialog();
+        dismissDisconnectDialog();
+        dismissRestartDialog();
+        dismissSuccessDialog();
+        dismissFailDialog();
+    }
 
     void showSyncDialog() {
         if (syncDialog == null)
@@ -681,7 +876,7 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
     }
 
     void dismissSyncDialog() {
-        if (syncDialog != null) {
+        if (syncDialog != null && syncDialog.isShowing()) {
             syncDialog.dismiss();
         }
     }
@@ -691,13 +886,13 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
             disconnectDialog = new DisconnectDialog(this,R.style.Custom_Dialog_Style);
             disconnectDialog.setOnDialogButtonClickListener(new OnDialogButtonClickListener() {
                 @Override
-                public void onLeftClickListener() {     //返回
+                public void onLeftClick() {     //拒绝
                     dismissDisconnectDialog();
                     finish();
                 }
 
                 @Override
-                public void onRightClickListener() {    //继续
+                public void onRightClick() {    //继续
 //                    mHandler.sendEmptyMessage(GAME_START);
 //                    dismissDisconnectDialog();
                 }
@@ -707,24 +902,44 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
     }
 
     void dismissDisconnectDialog() {
-        if (disconnectDialog != null)
+        if (disconnectDialog != null && disconnectDialog.isShowing())
             disconnectDialog.dismiss();
     }
 
     void showRestartDialog() {
         if (restartDialog == null) {
             restartDialog = new RestartDialog(this,R.style.Custom_Dialog_Style);
+            restartDialog.setCancelable(false);
             restartDialog.setOnDialogButtonClickListener(new OnDialogButtonClickListener() {
                 @Override
-                public void onLeftClickListener() {     //返回
-//                    dismissDisconnectDialog();
-//                    finish();
+                public void onLeftClick() {     //返回    //这里发送一个拒绝的消息
+                    CommunicateData communicateData = new CommunicateData();
+                    communicateData.setType(CommunicateData.GAME_STATE);
+                    communicateData.setGame_state(CommunicateData.REJECTED);
+                    switch (mServerOrClient) {
+                        case Constant.SERVER:
+                            mServerConnectService.sendMessage(communicateData);
+                            break;
+                        case Constant.CLIENT:
+                            mClientConnectService.sendMessage(communicateData);
+                            break;
+                    }
+                    curGameState = Constant.GAME_START; //继续开始游戏
                 }
 
                 @Override
-                public void onRightClickListener() {    //继续
-//                    mHandler.sendEmptyMessage(GAME_START);
-//                    dismissDisconnectDialog();
+                public void onRightClick() {    //继续    //这里发送一个同意的消息
+                    CommunicateData communicateData = new CommunicateData();
+                    communicateData.setType(CommunicateData.GAME_STATE);
+                    communicateData.setGame_state(CommunicateData.ACCEPTED);
+                    switch (mServerOrClient) {
+                        case Constant.SERVER:
+                            mServerConnectService.sendMessage(communicateData);
+                            break;
+                        case Constant.CLIENT:
+                            mClientConnectService.sendMessage(communicateData);
+                            break;
+                    }
                 }
             });
         }
@@ -732,23 +947,91 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
     }
 
     void dismissRestartDialog() {
-        if (restartDialog != null)
+        if (restartDialog != null && restartDialog.isShowing())
             restartDialog.dismiss();
     }
 
+
+    void showSuccessDialog() {
+        if (successDialog == null) {
+            successDialog = new CustomDialog(this,R.style.Custom_Dialog_Style,R.layout.dialog_layout_success,time);
+            successDialog.setOnDialogButtonClickListener(new OnDialogButtonClickListener() {
+                @Override
+                public void onLeftClick() {
+                }
+
+                @Override
+                public void onRightClick() {
+                    curGameState = Constant.GAME_RESTART;
+                }
+            });
+        }
+        successDialog.show();
+    }
+
+    void dismissSuccessDialog() {
+        if (successDialog != null && successDialog.isShowing()) {
+            successDialog.dismiss();
+        }
+    }
+
+    void showFailDialog() {
+        if (failDialog == null) {
+            failDialog = new CustomDialog(this,R.style.Custom_Dialog_Style,R.layout.dialog_layout_fail,-1);
+            failDialog.setOnDialogButtonClickListener(new OnDialogButtonClickListener() {
+                @Override
+                public void onLeftClick() {
+
+                }
+
+                @Override
+                public void onRightClick() {
+                    curGameState = Constant.GAME_RESTART;
+                }
+            });
+        }
+        failDialog.show();
+    }
+
+    void dismissFailDialog() {
+        if (failDialog != null && failDialog.isShowing()) {
+            failDialog.dismiss();
+        }
+    }
+
+    void showWaitingConfirmDialog() {
+        if (waitingConfirmDialog == null)
+            waitingConfirmDialog = new WaitingForConfirmDialog(this,R.style.Custom_Dialog_Style);
+        waitingConfirmDialog.show();
+    }
+
+    void dismissWaitingConfirmDialog() {
+        if (waitingConfirmDialog != null && waitingConfirmDialog.isShowing())
+            waitingConfirmDialog.dismiss();
+    }
+
     /**
-     * 双方服务绑定之后
+     * 双方服务绑定之后,就可以开始发送数据了,服务绑定后就可以开始发送数据了
      */
     void serviceBound() {
+        sendMinesData();
+    }
+
+    /**
+     * 发送数据
+     */
+    void sendMinesData() {
+        CommunicateData cd1 = new CommunicateData();
+        cd1.setType(CommunicateData.GAME_STATE);
+        cd1.setGame_state(CommunicateData.SEND_MINES_DATA);
+        cd1.setMessage(mMinesString);
         switch (mServerOrClient) {
             case Constant.SERVER:   //服务端应该发送雷的数据
-                CommunicateData cd1 = new CommunicateData();
-                cd1.setType(CommunicateData.GAME_STATE);
-                cd1.setGame_state(CommunicateData.SEND_MINES_DATA);
-                cd1.setMessage(mMinesString);
                 mServerConnectService.sendMessage(cd1);
                 break;
             case Constant.CLIENT:
+                if (curGameState == Constant.GAME_RESTART)  //客户端只有处于Restart状态时，才能发送数据，防止第一次打开发送数据
+                    mClientConnectService.sendMessage(cd1);
                 break;
         }
     }
@@ -807,6 +1090,7 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        isRunning = false;
         unregisterReceiver(mLocalBroadcastReceiver);
         if (syncDialog != null) {
             syncDialog.dismiss();
@@ -821,8 +1105,6 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
     private class LocalBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-//            Toast.makeText(context, "received the Broadcast", Toast.LENGTH_SHORT).show();
-//            Log.i(TAG,"broadcast received");
             mSocketDisconnected = true; //设置socket断开标志位
             showDisconnectDialog();
         }

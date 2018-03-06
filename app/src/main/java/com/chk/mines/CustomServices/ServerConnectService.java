@@ -1,7 +1,6 @@
-package com.chk.mines.CustomService;
+package com.chk.mines.CustomServices;
 
 import android.annotation.SuppressLint;
-import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.Handler;
@@ -11,12 +10,9 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.chk.mines.Beans.CommunicateData;
-import com.chk.mines.CooperateGameActivity;
 import com.chk.mines.Utils.Constant;
 import com.chk.mines.Utils.GsonUtil;
 import com.chk.mines.Utils.ServerSocketUtil;
-
-import static com.chk.mines.CooperateGameActivity.BIND_SERVICE;
 
 /**
  * 服务端Wifi连接服务
@@ -129,24 +125,12 @@ public class ServerConnectService extends ConnectService {
                 mGameActivityHandler.sendMessage(msg1);
                 break;
             case CommunicateData.GAME_STATE:    //游戏状态改变
-//                switch (communicateData.getGame_state()) {
-//                    case CommunicateData.GAME_INIT: //收到初始化的消息
-//
-//                        break;
-//                }
                 Log.i(TAG,"GAME_STATE CHANGED and Handler:"+(mGameActivityHandler == null));
                 Message msg2 = mGameActivityHandler.obtainMessage();
                 msg2.what = Constant.RECEIVED_MESSAGE_FROM_CLIENT;
                 msg2.obj = communicateData;
                 mGameActivityHandler.sendMessage(msg2);
                 break;
-//            case CommunicateData.OTHER:     //其他的消息，我们就知道应该是要跳转开始到游戏activity了
-//                Log.i(TAG,communicateData.getMessage());
-//                Message msg3 = mChoosedGameTypeActivityHandler.obtainMessage();
-//                msg3.what = readyForStart;
-//                msg3.obj = communicateData.getMessage();
-//                mChoosedGameTypeActivityHandler.sendMessage(msg3);
-//                break;
             case CommunicateData.BIND_SERVICE:  //客户端已经绑定服务了
                 if (mGameActivityHandler == null) {
                     Message msg4 = new Message();

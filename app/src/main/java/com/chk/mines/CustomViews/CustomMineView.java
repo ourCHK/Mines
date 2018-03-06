@@ -1,4 +1,4 @@
-package com.chk.mines.Views;
+package com.chk.mines.CustomViews;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -25,6 +25,7 @@ import static com.chk.mines.GameActivity.PointDown;
 
 /**
  * Created by chk on 18-3-2.
+ * 可自定义的MineView，其实后面可以全部按这个来
  */
 
 public class CustomMineView extends View{
@@ -305,6 +306,9 @@ public class CustomMineView extends View{
             columns = mines[0].length;
             mMineCount = mineCount;
         }
+        //必须重新初始化变量
+        isGameOver = false;
+
         invalidate();
     }
 

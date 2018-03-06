@@ -8,7 +8,10 @@ import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.widget.Button;
 import android.widget.TableLayout;
+import android.widget.Toast;
 
+import com.chk.mines.CustomDialogs.RestartDialog;
+import com.chk.mines.Interfaces.OnDialogButtonClickListener;
 import com.chk.mines.Utils.BindView;
 import com.chk.mines.Utils.InitBindView;
 
@@ -24,47 +27,50 @@ import static com.chk.mines.GameActivity.TYPE_4;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
+    RestartDialog restartDialog;
+
     View mCurrentLayout;
     View mPreLayout;
 
-//    @BindView(R.id.tableLayout)
+    //    @BindView(R.id.tableLayout)
     TableLayout mTableLayout;
 
-//    @BindView(R.id.gridView)
+    //    @BindView(R.id.gridView)
     GridLayout mGridLayout;
 
-//    @BindView(R.id.connectType)
+    //    @BindView(R.id.connectType)
     TableLayout mConnectType;
 
-//    @BindView(R.id.doublePlayer)
+    //    @BindView(R.id.doublePlayer)
     Button doublePlayer;
 
-//    @BindView(R.id.singlePlayer)
+    //    @BindView(R.id.singlePlayer)
     Button singlePlayer;
 
-//    @BindView(R.id.type1)
+    //    @BindView(R.id.type1)
     Button mType1;
 
-//    @BindView(R.id.type2)
+    //    @BindView(R.id.type2)
     Button mType2;
 
-//    @BindView(R.id.type3)
+    //    @BindView(R.id.type3)
     Button mType3;
 
-//    @BindView(R.id.type4)
+    //    @BindView(R.id.type4)
     Button mType4;
 
-//    @BindView(R.id.wifiConnector)
+    //    @BindView(R.id.wifiConnector)
     Button mWifiConnector;
 
-//    @BindView(R.id.bluetoothConnector)
+    //    @BindView(R.id.bluetoothConnector)
     Button mBlueConnector;
+
+    Button mAbout;
 
     int mConnectorType = -1;
 
     int mChoosedGameType;
     boolean isSingleGame = true;
-
 
 
     @Override
@@ -81,6 +87,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mConnectType = findViewById(R.id.connectType);
         doublePlayer = findViewById(R.id.doublePlayer);
         singlePlayer = findViewById(R.id.singlePlayer);
+        mAbout = findViewById(R.id.about);
         mType1 = findViewById(R.id.type1);
         mType2 = findViewById(R.id.type2);
         mType3 = findViewById(R.id.type3);
@@ -99,6 +106,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mType4.setOnClickListener(this);
         mWifiConnector.setOnClickListener(this);
         mBlueConnector.setOnClickListener(this);
+        mAbout.setOnClickListener(this);
     }
 
     @Override
@@ -134,6 +142,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mConnectorType = BLUETOOTH;
                 startConnectActivity();
                 break;
+            case R.id.about:
+                showRestartDialog();
+                break;
 
         }
     }
@@ -141,14 +152,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     void startGameActivity() {
         mChoosedGameType = mChoosedGameType | FLAG_IS_SINGLE;
 
-        Intent intent = new Intent(this,GameActivity.class);
-        intent.putExtra(GAME_TYPE,mChoosedGameType);
+        Intent intent = new Intent(this, GameActivity.class);
+        intent.putExtra(GAME_TYPE, mChoosedGameType);
         startActivity(intent);
     }
 
     void startConnectActivity() {
-        Intent intent  = new Intent(this,ConnectActivity.class);
-        intent.putExtra("ConnectType",mConnectorType);
+        Intent intent = new Intent(this, ConnectActivity.class);
+        intent.putExtra("ConnectType", mConnectorType);
         startActivity(intent);
     }
 
@@ -185,5 +196,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             backLayout();
         else
             super.onBackPressed();
+    }
+
+    void showRestartDialog() {  //测试
+        if (restartDialog == null) {
+            restartDialog = new RestartDialog(this, R.style.Custom_Dialog_Style);
+            restartDialog.setOnDialogButtonClickListener(new OnDialogButtonClickListener() {
+                @Override
+                public void onLeftClick() {     //返回
+                    Toast.makeText(MainActivity.this, "CLick the left", Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onRightClick() {    //继续
+                }
+            });
+        }
+        restartDialog.show();
+
     }
 }

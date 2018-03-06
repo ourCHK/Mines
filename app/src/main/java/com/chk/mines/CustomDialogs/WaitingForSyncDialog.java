@@ -1,4 +1,4 @@
-package com.chk.mines.CustomDialog;
+package com.chk.mines.CustomDialogs;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -6,38 +6,34 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 
 import com.chk.mines.Interfaces.OnDialogButtonClickListener;
+import com.chk.mines.R;
 
 /**
- * Created by chk on 18-2-3.
+ * Created by chk on 18-2-26.
  */
 
-public class WaitingDialog extends Dialog {
+public class WaitingForSyncDialog extends Dialog {
 
     Context mContext;
     int mLayoutId;
 
     OnDialogButtonClickListener mOnDialogButtonClickListener;
 
-    public WaitingDialog(@NonNull Context context) {
+    public WaitingForSyncDialog(@NonNull Context context) {
         super(context);
         this.mContext = context;
     }
 
-    public WaitingDialog(@NonNull Context context, int themeResId) {
+    public WaitingForSyncDialog(@NonNull Context context, int themeResId) {
         super(context, themeResId);
         this.mContext = context;
     }
 
-    public WaitingDialog(@NonNull Context context, int themeResId, int layoutId) {
-        super(context,themeResId);
-        this.mContext = context;
-        this.mLayoutId = layoutId;
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(mLayoutId);
+        setContentView(R.layout.dialog_layout_waiting_for_sync);
 
 //        WindowManager.LayoutParams lp = getWindow().getAttributes();
 //        lp.width = display.getWidth() * 4 / 5 ; // 设置dialog宽度为屏幕的4/5

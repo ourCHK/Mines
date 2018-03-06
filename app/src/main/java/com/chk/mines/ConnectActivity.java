@@ -19,11 +19,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.chk.mines.CustomService.ClientConnectService;
-import com.chk.mines.CustomService.ServerConnectService;
+import com.chk.mines.CustomServices.ClientConnectService;
+import com.chk.mines.CustomServices.ServerConnectService;
 
-import com.chk.mines.CustomDialog.ClientDialog;
-import com.chk.mines.CustomDialog.ServerDialog;
+import com.chk.mines.CustomDialogs.ClientDialog;
+import com.chk.mines.CustomDialogs.ServerDialog;
 
 public class ConnectActivity extends AppCompatActivity implements View.OnClickListener{
     public final static String  TAG = ConnectActivity.class.getSimpleName();
