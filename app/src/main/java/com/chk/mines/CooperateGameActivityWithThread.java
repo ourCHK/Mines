@@ -531,7 +531,8 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
                         curGameState = Constant.GAME_PAUSE;
                         break;
                     case CommunicateData.ASK_FOR_RESTART:   //对方请求重新开始
-                        curGameState = Constant.GAME_PAUSE; //那么我们的状态也要暂时改为暂停游戏
+                        if (curGameState != Constant.GAME_OVER && curGameState != Constant.GAME_INIT)
+                            curGameState = Constant.GAME_PAUSE; //那么我们的状态也要暂时改为暂停游戏
                         showRestartDialog();
                         break;
                     case CommunicateData.ACCEPTED:      //对方已经接受了说明可以开始初始化了，我们这边初始化？？
@@ -540,7 +541,8 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
                         break;
                     case CommunicateData.REJECTED:      //对方拒绝，弹出一个Toast说明拒绝
                         dismissWaitingConfirmDialog();
-                        curGameState = Constant.GAME_START; //对方拒绝，那么继续开始游戏
+                        if (curGameState != Constant.GAME_OVER && curGameState != Constant.GAME_INIT) //处于OVER状态不用Start
+                            curGameState = Constant.GAME_START; //对方拒绝，那么继续开始游戏
                         Toast.makeText(CooperateGameActivityWithThread.this, "对方拒绝重新开始", Toast.LENGTH_SHORT).show();
                         break;
                     case CommunicateData.SEND_MINES_DATA:   //客户端发送雷数据
@@ -584,7 +586,8 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
                         curGameState = Constant.GAME_INIT;  //说明初始化成功,我们当前状态改为初始化
                         break;
                     case CommunicateData.ASK_FOR_RESTART:   //对方请求重新开始
-                        curGameState = Constant.GAME_PAUSE; //那么我们的状态也要暂时改为暂停游戏
+                        if (curGameState != Constant.GAME_OVER && curGameState != Constant.GAME_INIT)
+                            curGameState = Constant.GAME_PAUSE; //那么我们的状态也要暂时改为暂停游戏
                         showRestartDialog();
                         break;
                     case CommunicateData.ACCEPTED:      //对方已经接受了说明可以开始初始化了，我们这边初始化？？
@@ -593,10 +596,10 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
                         break;
                     case CommunicateData.REJECTED:      //对方拒绝，弹出一个Toast说明拒绝
                         dismissWaitingConfirmDialog();
-                        curGameState = Constant.GAME_START; //对方拒绝，那么继续开始游戏
+                        if (curGameState != Constant.GAME_OVER && curGameState != Constant.GAME_INIT) //处于OVER状态不用Start
+                            curGameState = Constant.GAME_START; //对方拒绝，那么继续开始游戏
                         Toast.makeText(CooperateGameActivityWithThread.this, "对方拒绝重新开始", Toast.LENGTH_SHORT).show();
                         break;
-
                 }
                 break;
             case CommunicateData.OTHER:     //其他的消息，准备接受服务端发来的消息
@@ -812,7 +815,8 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
      * 请求重新开始
      */
     void askForRestart() {
-        curGameState = Constant.GAME_PAUSE; //请求重新开始的时候也要暂停
+        if (curGameState != Constant.GAME_OVER && curGameState != Constant.GAME_INIT) //处于GAME_OVER状态不需要GAME_PAUSE
+            curGameState = Constant.GAME_PAUSE; //请求重新开始的时候也要暂停
         showWaitingConfirmDialog();
 
         CommunicateData communicateData = new CommunicateData();
@@ -928,7 +932,8 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
                             mClientConnectService.sendMessage(communicateData);
                             break;
                     }
-                    curGameState = Constant.GAME_START; //继续开始游戏
+                    if (curGameState != Constant.GAME_OVER && curGameState != Constant.GAME_INIT) //OVer状态无需变成Start状态
+                        curGameState = Constant.GAME_START; //继续开始游戏
                 }
 
                 @Override
@@ -966,7 +971,7 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
 
                 @Override
                 public void onRightClick() {
-                    curGameState = Constant.GAME_RESTART;
+                    mRestart.performClick();
                 }
             });
         }
@@ -990,7 +995,7 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
 
                 @Override
                 public void onRightClick() {
-                    curGameState = Constant.GAME_RESTART;
+                    mRestart.performClick();
                 }
             });
         }

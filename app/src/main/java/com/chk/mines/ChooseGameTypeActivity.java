@@ -68,7 +68,7 @@ public class ChooseGameTypeActivity extends AppCompatActivity implements View.On
     int mServerOrClient;    //判断是服务端还是客户端
     int mCooperatorOrFight; //判断是合作还是对战
 
-    int mChoosedGameType;
+    int mChooseGameType = COOPERATOR;   //默认是合作，不做对战了
     boolean isDoublePlayer = true;
 
     Handler mHandler;
@@ -92,8 +92,8 @@ public class ChooseGameTypeActivity extends AppCompatActivity implements View.On
             public void handleMessage(Message msg) {
                 switch (msg.what) {
                     case readyForStart: //客户端接收到服务端的开始命令
-                        mChoosedGameType = Integer.parseInt((String) msg.obj);
-                        Log.i(TAG,"client received message:"+mChoosedGameType);
+                        mChooseGameType = Integer.parseInt((String) msg.obj);
+                        Log.i(TAG,"client received message:"+ mChooseGameType);
                         startGameActivity();
                         break;
                 }
@@ -152,19 +152,19 @@ public class ChooseGameTypeActivity extends AppCompatActivity implements View.On
                 openNewLayout(mGridLayout);
                 break;
             case R.id.type1:
-                mChoosedGameType = TYPE_1 | mCooperatorOrFight;
+                mChooseGameType = TYPE_1 | mCooperatorOrFight;
                 startGameActivity();
                 break;
             case R.id.type2:
-                mChoosedGameType = TYPE_2 | mCooperatorOrFight;
+                mChooseGameType = TYPE_2 | mCooperatorOrFight;
                 startGameActivity();
                 break;
             case R.id.type3:
-                mChoosedGameType = TYPE_3 | mCooperatorOrFight;
+                mChooseGameType = TYPE_3 | mCooperatorOrFight;
                 startGameActivity();
                 break;
             case R.id.type4:
-                mChoosedGameType = TYPE_4 | mCooperatorOrFight;
+                mChooseGameType = TYPE_4 | mCooperatorOrFight;
                 startGameActivity();
                 break;
         }
@@ -175,35 +175,21 @@ public class ChooseGameTypeActivity extends AppCompatActivity implements View.On
             case SERVER:
                 CommunicateData communicateData = new CommunicateData();
                 communicateData.setType(CommunicateData.OTHER);
-                communicateData.setMessage(mChoosedGameType+"");
+                communicateData.setMessage(mChooseGameType +"");
                 mServerConnectService.sendMessage(communicateData); //调用服务端发送消息
                 break;
             case CLIENT:
                 break;
         }
         Intent intent = null;
-        if ((mChoosedGameType & COOPERATOR) != 0) { //说明是Cooperator类型的
+        if ((mChooseGameType & COOPERATOR) != 0) { //说明是Cooperator类型的
             intent =  new Intent(this,CooperateGameActivityWithThread.class);
         } else {    //说明是Fight类型的
             intent =  new Intent(this,FightGameActivity.class);
         }
-        intent.putExtra(GAME_TYPE,mChoosedGameType);
+        intent.putExtra(GAME_TYPE, mChooseGameType);
         intent.putExtra(SERVER_OR_CLIENT,mServerOrClient);
         startActivity(intent);
-//        CommunicateData communicateData = new CommunicateData();
-//        communicateData.setType(CommunicateData.OTHER);
-//        communicateData.setMessage(mChooseGameType+"");
-//        mServerConnectService.sendMessage(communicateData); //调用服务端发送消息
-//        switch (mChooseGameType) {
-//            case TYPE_1:
-//                break;
-//            case TYPE_2:
-//                break;
-//            case TYPE_3:
-//                break;
-//            case TYPE_4:
-//                break;
-//        }
     }
 
     void openNewLayout(View newLayout) {
