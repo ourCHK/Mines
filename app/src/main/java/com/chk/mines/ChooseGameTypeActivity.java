@@ -271,7 +271,7 @@ public class ChooseGameTypeActivity extends AppCompatActivity implements View.On
                 Toast.makeText(ChooseGameTypeActivity.this, "ClientService has Started", Toast.LENGTH_SHORT).show();
                 ClientConnectService.LocalBinder binder = (ClientConnectService.LocalBinder) service;
                 mClientConnectService = binder.getService();
-                mClientConnectService.setChoosedGameTypeActivityHandler(mHandler);
+                mClientConnectService.setChooseGameTypeActivityHandler(mHandler);
             }
 
             @Override

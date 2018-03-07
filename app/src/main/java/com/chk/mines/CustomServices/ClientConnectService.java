@@ -80,7 +80,7 @@ public class ClientConnectService extends ConnectService {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.i(TAG,"ClientConnectService Destory");
+        Log.i(TAG,"ClientConnectService Destroy");
     }
 
     public void startConnect(String serverIpAddress) {
@@ -97,7 +97,7 @@ public class ClientConnectService extends ConnectService {
         mGameActivityHandler = handler;
     }
 
-    public void setChoosedGameTypeActivityHandler(Handler handler) {    //用于和选择游戏类型activity进行通信
+    public void setChooseGameTypeActivityHandler(Handler handler) {    //用于和选择游戏类型activity进行通信
         mChooseGameTypeActivityHandler = handler;
     }
 

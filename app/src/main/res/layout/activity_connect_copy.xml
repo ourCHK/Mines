@@ -27,11 +27,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
         <TextView
+            android:visibility="gone"
             android:id="@+id/receivedContent"
             android:text="RECEIVED:"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
         <LinearLayout
+            android:visibility="gone"
             android:orientation="horizontal"
             android:layout_alignParentBottom="true"
             android:layout_width="match_parent"

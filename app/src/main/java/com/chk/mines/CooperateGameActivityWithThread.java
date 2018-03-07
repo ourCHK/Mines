@@ -47,14 +47,12 @@ import java.util.concurrent.Executors;
 import static com.chk.mines.ChooseGameTypeActivity.CLIENT;
 import static com.chk.mines.ChooseGameTypeActivity.SERVER;
 
-public class CooperateGameActivityWithThread extends AppCompatActivity implements GameState,View.OnClickListener{
+public class CooperateGameActivityWithThread extends AppCompatActivity implements GameState, View.OnClickListener {
 
     private final static String TAG = CooperateGameActivityWithThread.class.getSimpleName();
-
     ExecutorService executorService;
     Runnable gameRunnable;
     boolean isRunning = true;
-
     Timer timer;
     int time;   //游戏时间
 
@@ -107,7 +105,7 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game_second);
-        mGameHandler = new Handler(){
+        mGameHandler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
                 switch (msg.what) {
@@ -130,7 +128,7 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
                         gameRestart();
                         break;
                     case Constant.PointDown:
-                        pointDownCube(msg.arg1,msg.arg2);
+                        pointDownCube(msg.arg1, msg.arg2);
                         break;
                     case Constant.BIND_SERVICE: //对方已经绑定好Service，走到这里说明我们自己也已经是绑定了服务，走到这里就说明其实双方都已经是绑定服务了
                         serviceBound();
@@ -139,7 +137,7 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
                         mSocketDisconnected = true;
                         break;
                     case Constant.TIME_CHANGED:
-                        mTimeView.setText("TIME:"+ time);
+                        mTimeView.setText("TIME:" + time);
                         break;
                     case Constant.RECEIVED_MESSAGE_FROM_SERVER:
                         receivedMessageFromServer((CommunicateData) msg.obj);
@@ -207,7 +205,7 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
         gameRunnable = new Runnable() {
             @Override
             public void run() {
-                Log.i(TAG,"GameThread is Running");
+                Log.i(TAG, "GameThread is Running");
                 while (isRunning) {
                     long startTime = System.currentTimeMillis();
                     if (curGameState != preGameState) { //状态发生改变的时候
@@ -216,7 +214,7 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
                     }
                     long endTime = System.currentTimeMillis();
                     try {
-                        Thread.sleep(30-endTime+startTime); //休息30ms
+                        Thread.sleep(30 - endTime + startTime); //休息30ms
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -226,13 +224,13 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
         executorService.execute(gameRunnable);  //启动线程
 
         Intent intent = getIntent();
-        int gameType = intent.getIntExtra(Constant.GAME_TYPE,-1);
-        mServerOrClient = intent.getIntExtra(Constant.SERVER_OR_CLIENT,-1);
+        int gameType = intent.getIntExtra(Constant.GAME_TYPE, -1);
+        mServerOrClient = intent.getIntExtra(Constant.SERVER_OR_CLIENT, -1);
         mChooseGameType = gameType & (Constant.TYPE_1 | Constant.TYPE_2 | Constant.TYPE_3 | Constant.TYPE_4);
 
         mLocalBroadcastReceiver = new LocalBroadcastReceiver();
         mIntentFilter = new IntentFilter(Constant.SOCKET_DISCONNECTED_BROADCAST_ACTION);
-        registerReceiver(mLocalBroadcastReceiver,mIntentFilter);
+        registerReceiver(mLocalBroadcastReceiver, mIntentFilter);
     }
 
     void minesInit() {
@@ -259,7 +257,7 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
                 break;
         }
 
-        mMineView = new CustomMineView(this,rows,columns);
+        mMineView = new CustomMineView(this, rows, columns);
         mMineView.setHandler(mGameHandler);
 
         switch (mServerOrClient) {
@@ -289,8 +287,8 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
         Random random = new Random(System.currentTimeMillis());
         int createdMines = 0;
         mines = new Mine[rows][columns];
-        for (int i=0; i<rows; i++) {
-            for (int j=0; j<columns; j++) {
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
                 mines[i][j] = new Mine();
             }
         }
@@ -308,39 +306,39 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
         }
 
         //下面开始生成雷周围的数字
-        for (int i=0; i<rows; i++) {
-            for (int j=0; j<columns; j++) {
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
                 if (mines[i][j].isMine()) {
-                    if (i-1 >= 0 && j-1 >= 0 && !mines[i-1][j-1].isMine())
-                        mines[i-1][j-1].setNum(mines[i-1][j-1].getNum()+1);
+                    if (i - 1 >= 0 && j - 1 >= 0 && !mines[i - 1][j - 1].isMine())
+                        mines[i - 1][j - 1].setNum(mines[i - 1][j - 1].getNum() + 1);
 
-                    if (i-1 >= 0 && !mines[i-1][j].isMine())
-                        mines[i-1][j].setNum(mines[i-1][j].getNum()+1);
+                    if (i - 1 >= 0 && !mines[i - 1][j].isMine())
+                        mines[i - 1][j].setNum(mines[i - 1][j].getNum() + 1);
 
-                    if (i-1 >= 0 && j+1 < columns && !mines[i-1][j+1].isMine())
-                        mines[i-1][j+1].setNum(mines[i-1][j+1].getNum()+1);
+                    if (i - 1 >= 0 && j + 1 < columns && !mines[i - 1][j + 1].isMine())
+                        mines[i - 1][j + 1].setNum(mines[i - 1][j + 1].getNum() + 1);
 
-                    if (j-1 >= 0 && !mines[i][j-1].isMine())
-                        mines[i][j-1].setNum(mines[i][j-1].getNum()+1);
+                    if (j - 1 >= 0 && !mines[i][j - 1].isMine())
+                        mines[i][j - 1].setNum(mines[i][j - 1].getNum() + 1);
 
-                    if (j+1 < columns && !mines[i][j+1].isMine())
-                        mines[i][j+1].setNum(mines[i][j+1].getNum()+1);
+                    if (j + 1 < columns && !mines[i][j + 1].isMine())
+                        mines[i][j + 1].setNum(mines[i][j + 1].getNum() + 1);
 
-                    if (i+1 < rows && j-1 >= 0 && !mines[i+1][j-1].isMine())
-                        mines[i+1][j-1].setNum(mines[i+1][j-1].getNum()+1);
+                    if (i + 1 < rows && j - 1 >= 0 && !mines[i + 1][j - 1].isMine())
+                        mines[i + 1][j - 1].setNum(mines[i + 1][j - 1].getNum() + 1);
 
-                    if (i+1 < rows && !mines[i+1][j].isMine())
-                        mines[i+1][j].setNum(mines[i+1][j].getNum()+1);
+                    if (i + 1 < rows && !mines[i + 1][j].isMine())
+                        mines[i + 1][j].setNum(mines[i + 1][j].getNum() + 1);
 
-                    if (i+1 < rows && j+1 < columns && !mines[i+1][j+1].isMine())
-                        mines[i+1][j+1].setNum(mines[i+1][j+1].getNum()+1);
+                    if (i + 1 < rows && j + 1 < columns && !mines[i + 1][j + 1].isMine())
+                        mines[i + 1][j + 1].setNum(mines[i + 1][j + 1].getNum() + 1);
                 }
             }
         }
 
         mMinesString = GsonUtil.minesToString(mines);   //将雷的数组转化为Json数据
 
-        for (int i=0; i<rows; i++) {    //打印雷的数据
+        for (int i = 0; i < rows; i++) {    //打印雷的数据
             String string = new String();
             for (int j = 0; j < columns; j++) {
                 if (mines[i][j].getNum() == -1)
@@ -348,34 +346,35 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
                 else
                     string += mines[i][j].getNum() + " ";
             }
-            Log.i("GameActivity",string);
+            Log.i("GameActivity", string);
         }
     }
 
     /**
      * 通过Socket传输的数据来初始化雷的数据
+     *
      * @param minesData
      */
     void resetMinesFromSocket(CommunicateData minesData) {
         mines = new Mine[rows][columns];
-        for (int i=0; i<rows; i++) {
-            for (int j=0; j<columns; j++) {
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
                 mines[i][j] = new Mine();
             }
         }
 
         String arrayJson = minesData.getMessage();
         Mine[][] tempMines = GsonUtil.stringToMines(arrayJson);
-        for (int i=0; i<rows; i++) {
+        for (int i = 0; i < rows; i++) {
             String string = "";
-            for (int j=0; j<columns; j++) {
+            for (int j = 0; j < columns; j++) {
                 mines[i][j] = tempMines[i][j];
                 if (mines[i][j].getNum() == -1)
                     string += "*" + " ";
                 else
                     string += mines[i][j].getNum() + " ";
             }
-            Log.i("GameActivity",string);
+            Log.i("GameActivity", string);
         }
 
         //这边可以发送Init消息??
@@ -408,10 +407,11 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
 
     /**
      * 设置按钮的背景和设置当前挖雷的类型
+     *
      * @param id 按钮id
      */
     void setBackgroundAndCurrentType(int id) {
-        if (mFlag.getId() == id)  {
+        if (mFlag.getId() == id) {
             mFlag.setBackgroundResource(R.drawable.image_background);
             mFlagConfused.setBackgroundResource(0);
             mShovel.setBackgroundResource(0);
@@ -433,13 +433,13 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
     public void gameInit() {
         dismissAllDialog();
         mShovel.performClick();   //设置默认为点击挖掘背景
-        mMineView.setMines(mines,mMineCount);
+        mMineView.setMines(mines, mMineCount);
         if (mMineViewContainer.getChildCount() == 0) {   //mMineViewContainer不能重复添加同一个View，判断内部View是否为0
             lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT);
             mMineViewContainer.addView(mMineView, lp);
         } else {
-            mMineView.setMines(mines,mMineCount);   //否则直接刷新
+            mMineView.setMines(mines, mMineCount);   //否则直接刷新
         }
 
         if (timer != null) {    //防止多个计时器一起并发
@@ -458,51 +458,52 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
                     mGameHandler.sendEmptyMessage(Constant.TIME_CHANGED);
                 }
             }
-        },1000,1000);
+        }, 1000, 1000);
 
         mStartOrPaused.setImageResource(R.mipmap.pause);
         dismissSyncDialog();
         showView();
-        Log.i(TAG,"GAME_INIT");
+        Log.i(TAG, "GAME_INIT");
     }
 
     @Override
     public void gameStart() {
         mStartOrPaused.setImageResource(R.mipmap.start);
         showView();
-        Log.i(TAG,"GAME_START");
+        Log.i(TAG, "GAME_START");
     }
 
     @Override
     public void gamePause() {
         mStartOrPaused.setImageResource(R.mipmap.pause);
         showView();
-        Log.i(TAG,"GAME_PAUSE");
+        Log.i(TAG, "GAME_PAUSE");
     }
 
     @Override
     public void gameOver() {
         mStartOrPaused.setImageResource(R.mipmap.pause);
         showFailDialog();
-        Log.i(TAG,"GAME_OVER");
+        Log.i(TAG, "GAME_OVER");
     }
 
     @Override
     public void gameRestart() {
         resetMines();
         sendMinesData();
-        Log.i(TAG,"GAME_RESTART");
+        Log.i(TAG, "GAME_RESTART");
     }
 
     @Override
     public void gameSuccess() {
         mStartOrPaused.setImageResource(R.mipmap.pause);
         showSuccessDialog();
-        Log.i(TAG,"GAME_SUCCESS");
+        Log.i(TAG, "GAME_SUCCESS");
     }
 
     /**
      * 处理客户端传来的消息
+     *
      * @param message
      */
     private void receivedMessageFromClient(CommunicateData message) {
@@ -557,6 +558,7 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
 
     /**
      * 处理服务端传来的消息
+     *
      * @param message
      */
     private void receivedMessageFromServer(CommunicateData message) {
@@ -599,8 +601,8 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
                 break;
             case CommunicateData.OTHER:     //其他的消息，准备接受服务端发来的消息
                 Mine[][] tempMines = GsonUtil.stringToMines(communicateData.getMessage());
-                for (int i=0 ;i<rows; i++) {
-                    for (int j=0; j<columns; j++) {
+                for (int i = 0; i < rows; i++) {
+                    for (int j = 0; j < columns; j++) {
                         mines[i][j] = tempMines[i][j];
                     }
                 }
@@ -608,7 +610,7 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
         }
     }
 
-    void pointDownCube(int row,int column) {
+    void pointDownCube(int row, int column) {
         switch (curGameState) {
             case Constant.GAME_INIT:
                 curGameState = Constant.GAME_START;
@@ -624,7 +626,7 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
                 if (mines[row][column].isFlaged())  //flag状态下也不可点击
                     return;
                 else
-                    openCube(row,column);
+                    openCube(row, column);
                 break;
             case Constant.FLAG:
                 flagCube(row, column);
@@ -671,7 +673,7 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
 
         switch (user_operation) {
             case CommunicateData.DRAG:
-                openCube(row,column);
+                openCube(row, column);
                 break;
             case CommunicateData.FLAG:
                 flagCube(row, column);
@@ -686,6 +688,7 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
 
     /**
      * 对周围进行递归找出可以打开的方块
+     *
      * @param row
      * @param column
      */
@@ -705,27 +708,28 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
         if (mines[row][column].getNum() != 0) {    //如果打开的不是0，结束
             return;
         } else {     //如果打开的是0， 判断边界是否合法，对周围8个方向进行递归
-            if (row-1 >= 0 && column-1 >= 0)
-                openCube(row-1,column-1);
-            if (row-1 >= 0)
-                openCube(row-1,column);
-            if (row-1 >= 0 && column+1 < columns)
-                openCube(row-1,column+1);
-            if (column-1 >= 0)
-                openCube(row,column-1);
-            if (column+1 < columns)
-                openCube(row,column+1);
-            if (row+1 < rows && column-1 >= 0 )
-                openCube(row+1,column-1);
-            if (row+1 < rows)
-                openCube(row+1,column);
-            if (row+1 < rows && column+1 < columns)
-                openCube(row+1,column+1);
+            if (row - 1 >= 0 && column - 1 >= 0)
+                openCube(row - 1, column - 1);
+            if (row - 1 >= 0)
+                openCube(row - 1, column);
+            if (row - 1 >= 0 && column + 1 < columns)
+                openCube(row - 1, column + 1);
+            if (column - 1 >= 0)
+                openCube(row, column - 1);
+            if (column + 1 < columns)
+                openCube(row, column + 1);
+            if (row + 1 < rows && column - 1 >= 0)
+                openCube(row + 1, column - 1);
+            if (row + 1 < rows)
+                openCube(row + 1, column);
+            if (row + 1 < rows && column + 1 < columns)
+                openCube(row + 1, column + 1);
         }
     }
 
     /**
      * 标记雷
+     *
      * @param row
      * @param column
      */
@@ -758,8 +762,8 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
     void setRemainMinesOrCheckResult() {
         int flagMines = 0;
         int openedCount = 0;
-        for (int i=0; i<rows; i++) {
-            for (int j=0; j<columns; j++) {
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
                 if (mines[i][j].isFlaged())
                     flagMines++;
                 if (!mines[i][j].isMine() && mines[i][j].isOpen())
@@ -769,13 +773,13 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
         }
         if (openedCount == rows * columns - mMineCount)     //说明成功了
             curGameState = Constant.GAME_SUCCESS;    //通知GameActivity
-        mRemainMines.setText("Mines:"+flagMines+"/"+mMineCount);
+        mRemainMines.setText("Mines:" + flagMines + "/" + mMineCount);
     }
 
     void setGameOver() {
         curGameState = Constant.GAME_OVER;
         mMineView.setGameOver();
-        Log.i("MineView","GameOver");
+        Log.i("MineView", "GameOver");
     }
 
     /**
@@ -837,14 +841,14 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
                 mPausedView.setAnimation(disappearAnimation);
                 mPausedView.setVisibility(View.GONE);
             }
-        } else if (curGameState ==  Constant.GAME_PAUSE) {
+        } else if (curGameState == Constant.GAME_PAUSE) {
             if (!mPausedView.isShown()) { //不在显示的情况之下
                 mPausedView.setAnimation(appearAnimation);
                 mPausedView.setVisibility(View.VISIBLE);
                 mGameView.setAnimation(disappearAnimation);
                 mGameView.setVisibility(View.GONE);
             }
-        } else if (curGameState ==  Constant.GAME_RESTART) {
+        } else if (curGameState == Constant.GAME_RESTART) {
             if (!mGameView.isShown()) { //不在显示的情况之下
                 mGameView.setVisibility(View.VISIBLE);
                 mPausedView.setVisibility(View.GONE);
@@ -871,7 +875,7 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
 
     void showSyncDialog() {
         if (syncDialog == null)
-            syncDialog = new WaitingForSyncDialog(this,R.style.Custom_Dialog_Style);
+            syncDialog = new WaitingForSyncDialog(this, R.style.Custom_Dialog_Style);
         syncDialog.show();
     }
 
@@ -883,7 +887,7 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
 
     void showDisconnectDialog() {
         if (disconnectDialog == null) {
-            disconnectDialog = new DisconnectDialog(this,R.style.Custom_Dialog_Style);
+            disconnectDialog = new DisconnectDialog(this, R.style.Custom_Dialog_Style);
             disconnectDialog.setOnDialogButtonClickListener(new OnDialogButtonClickListener() {
                 @Override
                 public void onLeftClick() {     //拒绝
@@ -908,7 +912,7 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
 
     void showRestartDialog() {
         if (restartDialog == null) {
-            restartDialog = new RestartDialog(this,R.style.Custom_Dialog_Style);
+            restartDialog = new RestartDialog(this, R.style.Custom_Dialog_Style);
             restartDialog.setCancelable(false);
             restartDialog.setOnDialogButtonClickListener(new OnDialogButtonClickListener() {
                 @Override
@@ -954,7 +958,7 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
 
     void showSuccessDialog() {
         if (successDialog == null) {
-            successDialog = new CustomDialog(this,R.style.Custom_Dialog_Style,R.layout.dialog_layout_success,time);
+            successDialog = new CustomDialog(this, R.style.Custom_Dialog_Style, R.layout.dialog_layout_success, time);
             successDialog.setOnDialogButtonClickListener(new OnDialogButtonClickListener() {
                 @Override
                 public void onLeftClick() {
@@ -977,7 +981,7 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
 
     void showFailDialog() {
         if (failDialog == null) {
-            failDialog = new CustomDialog(this,R.style.Custom_Dialog_Style,R.layout.dialog_layout_fail,-1);
+            failDialog = new CustomDialog(this, R.style.Custom_Dialog_Style, R.layout.dialog_layout_fail, -1);
             failDialog.setOnDialogButtonClickListener(new OnDialogButtonClickListener() {
                 @Override
                 public void onLeftClick() {
@@ -1001,7 +1005,7 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
 
     void showWaitingConfirmDialog() {
         if (waitingConfirmDialog == null)
-            waitingConfirmDialog = new WaitingForConfirmDialog(this,R.style.Custom_Dialog_Style);
+            waitingConfirmDialog = new WaitingForConfirmDialog(this, R.style.Custom_Dialog_Style);
         waitingConfirmDialog.show();
     }
 
@@ -1037,7 +1041,7 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
     }
 
     void startBindServerService() {
-        Intent serverIntent = new Intent(this,ServerConnectService.class);
+        Intent serverIntent = new Intent(this, ServerConnectService.class);
         mServerConnection = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
@@ -1045,7 +1049,7 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
                 ServerConnectService.LocalBinder binder = (ServerConnectService.LocalBinder) service;
                 mServerConnectService = binder.getService();
                 mServerConnectService.setGameActivityHandler(mGameHandler);
-                Log.i(TAG,"The ServerService has started!!");
+                Log.i(TAG, "The ServerService has started!!");
 
                 CommunicateData communicateData = new CommunicateData();    //通知客户端服务端已经绑定服务
                 communicateData.setType(CommunicateData.BIND_SERVICE);
@@ -1056,21 +1060,21 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
             public void onServiceDisconnected(ComponentName name) {
                 mServerConnectService = null;
                 Toast.makeText(CooperateGameActivityWithThread.this, "the ServerService has Stopped", Toast.LENGTH_SHORT).show();
-                Log.i(TAG,"The ServiceService has Stopped!");
+                Log.i(TAG, "The ServiceService has Stopped!");
             }
         };
-        bindService(serverIntent,mServerConnection,BIND_AUTO_CREATE);
+        bindService(serverIntent, mServerConnection, BIND_AUTO_CREATE);
     }
 
     void startBindClientService() {
-        Intent clientIntent = new Intent(this,ClientConnectService.class);
+        Intent clientIntent = new Intent(this, ClientConnectService.class);
         mClientConnection = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
                 ClientConnectService.LocalBinder binder = (ClientConnectService.LocalBinder) service;
                 mClientConnectService = binder.getService();
                 mClientConnectService.setGameActivityHandler(mGameHandler);
-                Log.i(TAG,"The ClientService has started!!");
+                Log.i(TAG, "The ClientService has started!!");
 
                 CommunicateData communicateData = new CommunicateData();    //通知服务端客户端已经绑定服务
                 communicateData.setType(CommunicateData.BIND_SERVICE);
@@ -1081,10 +1085,10 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
             public void onServiceDisconnected(ComponentName name) {
                 mClientConnectService = null;
                 Toast.makeText(CooperateGameActivityWithThread.this, "the ClientService has Stopped", Toast.LENGTH_SHORT).show();
-                Log.i(TAG,"The ClientService has Stopped!");
+                Log.i(TAG, "The ClientService has Stopped!");
             }
         };
-        bindService(clientIntent,mClientConnection,BIND_AUTO_CREATE);
+        bindService(clientIntent, mClientConnection, BIND_AUTO_CREATE);
     }
 
     @Override

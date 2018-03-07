@@ -39,12 +39,14 @@ public class ConnectService extends Service {
     }
 
     public void sendSocketDisconnectedBroadcast() {
-//        Log.i(TAG,"mLocalbroadcastManager is null:"+(mLocalBroadcastManager == null));
-//        mLocalBroadcastManager.sendBroadcast(intent);
         Intent intent = new Intent(Constant.SOCKET_DISCONNECTED_BROADCAST_ACTION);
         sendBroadcast(intent);
     }
 
+    /**
+     * 检查Socket是否连接
+     * @return
+     */
     public boolean isSocketConnected() {
         return isSocketConnected;
     }
