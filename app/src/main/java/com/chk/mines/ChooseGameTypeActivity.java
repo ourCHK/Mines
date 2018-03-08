@@ -32,7 +32,7 @@ import static com.chk.mines.GameActivity.TYPE_4;
 /**
  * 选择游戏类型和对战类型
  */
-public class ChooseGameTypeActivity extends AppCompatActivity implements View.OnClickListener {
+public class ChooseGameTypeActivity extends BaseActivity implements View.OnClickListener {
 
     public static final String TAG = ChooseGameTypeActivity.class.getSimpleName();
 
@@ -66,12 +66,13 @@ public class ChooseGameTypeActivity extends AppCompatActivity implements View.On
     Button mType4;
 
     int mServerOrClient;    //判断是服务端还是客户端
-    int mCooperatorOrFight; //判断是合作还是对战
+    int mCooperatorOrFight = COOPERATOR; //默认是合作，不做对战了
 
-    int mChooseGameType = COOPERATOR;   //默认是合作，不做对战了
-    boolean isDoublePlayer = true;
+    int mChooseGameType;
 
     Handler mHandler;
+
+    boolean isFirstOpenActivity;    //用于判断是不是第一次打开Activity
 
     ServerConnectService mServerConnectService;
     ServiceConnection mServerConnection;
@@ -106,15 +107,18 @@ public class ChooseGameTypeActivity extends AppCompatActivity implements View.On
         switch (mServerOrClient) {
             case CLIENT:
                 mWaitingForStart.setVisibility(View.VISIBLE);
-                mCurrentLayout.setVisibility(View.GONE);
+                mGridLayout.setVisibility(View.GONE);
                 startBindClientService();
                 break;
             case SERVER:
+                mGridLayout.setVisibility(View.VISIBLE);
+                mWaitingForStart.setVisibility(View.GONE);
                 startBindServerService();
                 break;
             default:
                 break;
         }
+        isFirstOpenActivity = true;
     }
 
     void viewInit() {
@@ -223,10 +227,21 @@ public class ChooseGameTypeActivity extends AppCompatActivity implements View.On
     public void onBackPressed() {
 //        if (mWaitingForStart.isShown()) //客户端等待界面不给按返回键
 //            return;
-        if (mCurrentLayout != mPreLayout)
-            backLayout();
-        else
-            super.onBackPressed();
+//        if (mCurrentLayout != mPreLayout)
+//            backLayout();
+//        else
+        CommunicateData cd = new CommunicateData(); //通知对方已退出多人游戏
+        cd.setType(CommunicateData.GAME_STATE);
+        cd.setGame_state(CommunicateData.QUIT_GAME);
+        switch (mServerOrClient) {
+            case SERVER:
+                mServerConnectService.sendMessage(cd);
+                break;
+            case CLIENT:
+                mClientConnectService.sendMessage(cd);
+                break;
+        }
+        super.onBackPressed();
     }
 
     void startBindServerService() {
