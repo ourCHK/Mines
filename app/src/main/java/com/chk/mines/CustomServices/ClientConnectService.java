@@ -6,11 +6,14 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.chk.mines.BaseActivity;
 import com.chk.mines.Beans.CommunicateData;
+import com.chk.mines.ChooseGameTypeActivity;
+import com.chk.mines.CooperateGameActivityWithThread;
 import com.chk.mines.Utils.ClientSocketUtil;
 import com.chk.mines.Utils.Constant;
 import com.chk.mines.Utils.GsonUtil;
@@ -31,6 +34,11 @@ public class ClientConnectService extends ConnectService {
     private Handler mServiceHandler;    //Service用来后台接收服务端发来的消息
     private Handler mGameActivityHandler;
     private Handler mChooseGameTypeActivityHandler;
+
+    /**
+     * 当前正在交互Activity的Handler
+     */
+    private Handler mCurActivityHandler;
 
     public static final int RECEIVED_MESSAGE = 1;
     public static final int SOCKET_DISCONNECTED = 2;    //socket断开连接
@@ -118,7 +126,7 @@ public class ClientConnectService extends ConnectService {
         CommunicateData communicateData = GsonUtil.stringToCommunicateData((String) message.obj);
         switch (communicateData.getType()) {
             case CommunicateData.HEART_BEAT:    //检测到心跳包,我们也应该发送心跳包过去
-                Log.i(TAG,"客户端收到心跳包");
+//                Log.i(TAG,"客户端收到心跳包");
                 mServiceHandler.removeMessages(SOCKET_DISCONNECTED);    //先移除之前的这个为发送的消息，下面继续发送这个消息
                 mServiceHandler.postDelayed(new Runnable() {
                     @Override
@@ -145,11 +153,15 @@ public class ClientConnectService extends ConnectService {
                 mGameActivityHandler.sendMessage(msg1);
                 break;
             case CommunicateData.GAME_STATE:    //游戏状态改变
-                Log.i(TAG,"GAME_STATE CHANGED");
-                Message msg2 = mGameActivityHandler.obtainMessage();
-                msg2.what = Constant.RECEIVED_MESSAGE_FROM_SERVER;
-                msg2.obj = communicateData;
-                mGameActivityHandler.sendMessage(msg2);
+                if ((mCurActivityHandler = getCurActivityHandler())== null) {
+                    Toast.makeText(this, "出现未知错误，请重启游戏", Toast.LENGTH_SHORT).show();
+                } else {
+                    Log.i(TAG,"GAME_STATE CHANGED");
+                    Message msg2 = mCurActivityHandler.obtainMessage();
+                    msg2.what = Constant.RECEIVED_MESSAGE_FROM_SERVER;
+                    msg2.obj = communicateData;
+                    mCurActivityHandler.sendMessage(msg2);
+                }
                 break;
             case CommunicateData.OTHER:     //其他的消息，我们就知道应该是要跳转开始到游戏activity了
                 Log.i(TAG,communicateData.getMessage());
@@ -169,6 +181,22 @@ public class ClientConnectService extends ConnectService {
                 }
                 break;
         }
+    }
+
+    /**
+     * 获取当前交互的Activity
+     * @return
+     */
+    Handler getCurActivityHandler() {
+        AppCompatActivity activity = BaseActivity.getCurResumeActivity();
+        if (activity instanceof ChooseGameTypeActivity) {
+            Log.i("TAG","curShowActivity："+ChooseGameTypeActivity.class.getSimpleName());
+            return ((ChooseGameTypeActivity) activity).getHandler();
+        } else if (activity instanceof CooperateGameActivityWithThread) {
+            Log.i("TAG","curShowActivity："+CooperateGameActivityWithThread.class.getSimpleName());
+            return ((CooperateGameActivityWithThread) activity).getHandler();
+        }
+        return null;
     }
 
     public class LocalBinder extends Binder {

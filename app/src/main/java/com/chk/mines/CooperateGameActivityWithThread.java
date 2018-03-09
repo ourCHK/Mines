@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,12 +30,12 @@ import com.chk.mines.CustomDialogs.WaitingForConfirmDialog;
 import com.chk.mines.CustomDialogs.WaitingForSyncDialog;
 import com.chk.mines.CustomServices.ClientConnectService;
 import com.chk.mines.CustomServices.ServerConnectService;
+import com.chk.mines.CustomViews.CustomMineView;
+import com.chk.mines.CustomViews.TimeTextView;
 import com.chk.mines.Interfaces.GameState;
 import com.chk.mines.Interfaces.OnDialogButtonClickListener;
 import com.chk.mines.Utils.Constant;
 import com.chk.mines.Utils.GsonUtil;
-import com.chk.mines.CustomViews.CustomMineView;
-import com.chk.mines.CustomViews.TimeTextView;
 
 import java.util.Random;
 import java.util.Timer;
@@ -150,6 +149,14 @@ public class CooperateGameActivityWithThread extends BaseActivity implements Gam
         };
 
         init();
+    }
+
+    /**
+     * 返回activity的Handler
+     * @return
+     */
+    public Handler getHandler() {
+        return mGameHandler;
     }
 
     void init() {
@@ -832,6 +839,29 @@ public class CooperateGameActivityWithThread extends BaseActivity implements Gam
         }
     }
 
+    /**
+     * 退出时发送消息退出
+     */
+    @Override
+    public void onBackPressed() {
+//        if (mWaitingForStart.isShown()) //客户端等待界面不给按返回键
+//            return;
+//        if (mCurrentLayout != mPreLayout)
+//            backLayout();
+//        else
+        CommunicateData cd = new CommunicateData(); //通知对方已退出多人游戏
+        cd.setType(CommunicateData.GAME_STATE);
+        cd.setGame_state(CommunicateData.LEAVE_CUR_GAME);
+        switch (mServerOrClient) {
+            case Constant.SERVER:
+                mServerConnectService.sendMessage(cd);
+                break;
+            case Constant.CLIENT:
+                mClientConnectService.sendMessage(cd);
+                break;
+        }
+        super.onBackPressed();
+    }
 
     void showView() {
         AlphaAnimation appearAnimation = new AlphaAnimation(0, 1);

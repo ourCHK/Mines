@@ -7,7 +7,6 @@ import android.content.ServiceConnection;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayout;
 import android.util.Log;
@@ -99,39 +98,13 @@ public class ChooseGameTypeActivity extends BaseActivity implements View.OnClick
                         Log.i(TAG,"client received message:"+ mChooseGameType);
                         startGameActivity();
                         break;
+                    case Constant.RECEIVED_MESSAGE_FROM_SERVER:
+                        receivedMessageFromServer((CommunicateData)msg.obj);
+                        break;
+                    case Constant.RECEIVED_MESSAGE_FROM_CLIENT:
+                        receivedMessageFromClient((CommunicateData)msg.obj);
+                        break;
                     case Constant.ASK_FOR_NEW_GAME:
-                        //显示请求开始新游戏的Dialog,左右键的操作
-                        showStartNewGameRequestDialog(new OnDialogButtonClickListener() {
-                            @Override
-                            public void onLeftClick() {
-                                CommunicateData communicateData = new CommunicateData();
-                                communicateData.setType(CommunicateData.GAME_STATE);
-                                communicateData.setGame_state(CommunicateData.REJECTE_NEW_GAME);
-                                switch (mServerOrClient) {
-                                    case Constant.SERVER:
-                                        mServerConnectService.sendMessage(communicateData);
-                                        break;
-                                    case Constant.CLIENT:
-                                        mClientConnectService.sendMessage(communicateData);
-                                        break;
-                                }
-                            }
-
-                            @Override
-                            public void onRightClick() {
-                                CommunicateData communicateData = new CommunicateData();
-                                communicateData.setType(CommunicateData.GAME_STATE);
-                                communicateData.setGame_state(CommunicateData.ACCEPT_NEW_GAME);
-                                switch (mServerOrClient) {
-                                    case Constant.SERVER:
-                                        mServerConnectService.sendMessage(communicateData);
-                                        break;
-                                    case Constant.CLIENT:
-                                        mClientConnectService.sendMessage(communicateData);
-                                        break;
-                                }
-                            }
-                        });
                         break;
                     case Constant.ACCEPT_NEW_GAME:
                         dismissWaitingAcceptNewGameDialog();
@@ -163,6 +136,14 @@ public class ChooseGameTypeActivity extends BaseActivity implements View.OnClick
                 break;
         }
         isFirstOpenActivity = true;
+    }
+
+    /**
+     * 返回activity的Handler
+     * @return
+     */
+    public Handler getHandler() {
+            return mHandler;
     }
 
     void viewInit() {
@@ -222,6 +203,78 @@ public class ChooseGameTypeActivity extends BaseActivity implements View.OnClick
         }
     }
 
+    /**
+     * 处理服务端传来的消息
+     *
+     * @param message
+     */
+    private void receivedMessageFromServer(CommunicateData message) {
+        CommunicateData communicateData = message;
+        switch (communicateData.getType()) {
+            case CommunicateData.GAME_STATE: {
+                switch (communicateData.getGame_state()) {
+                    case CommunicateData.ASK_FOR_NEW_GAME:
+                        //显示请求开始新游戏的Dialog,左右键的操作
+                        showStartNewGameRequestDialog(new OnDialogButtonClickListener() {
+                            @Override
+                            public void onLeftClick() {
+                                CommunicateData communicateData = new CommunicateData();
+                                communicateData.setType(CommunicateData.GAME_STATE);
+                                communicateData.setGame_state(CommunicateData.REJECT_NEW_GAME);
+                                switch (mServerOrClient) {
+                                    case Constant.SERVER:
+                                        mServerConnectService.sendMessage(communicateData);
+                                        break;
+                                    case Constant.CLIENT:
+                                        mClientConnectService.sendMessage(communicateData);
+                                        break;
+                                }
+                            }
+
+                            @Override
+                            public void onRightClick() {
+                                CommunicateData communicateData = new CommunicateData();
+                                communicateData.setType(CommunicateData.GAME_STATE);
+                                communicateData.setGame_state(CommunicateData.ACCEPT_NEW_GAME);
+                                switch (mServerOrClient) {
+                                    case Constant.SERVER:
+                                        mServerConnectService.sendMessage(communicateData);
+                                        break;
+                                    case Constant.CLIENT:
+                                        mClientConnectService.sendMessage(communicateData);
+                                        break;
+                                }
+                            }
+                        });
+                        break;
+                }
+            }
+        }
+    }
+
+    /**
+     * 处理服务端传来的消息
+     *
+     * @param message
+     */
+    private void receivedMessageFromClient(CommunicateData message) {
+        CommunicateData communicateData = message;
+        switch (communicateData.getType()) {
+            case CommunicateData.GAME_STATE:
+                switch (communicateData.getGame_state()) {
+                    case CommunicateData.ACCEPT_NEW_GAME:   //对方同意开始新游戏
+                        dismissWaitingAcceptNewGameDialog();
+                        startGameActivity();
+                        break;
+                    case CommunicateData.REJECT_NEW_GAME:  //对方拒绝开始新游戏
+                        dismissWaitingAcceptNewGameDialog();
+                        Toast.makeText(ChooseGameTypeActivity.this, "对方拒绝开始新游戏", Toast.LENGTH_SHORT).show();
+                        break;
+                }
+                break;
+        }
+    }
+
     void startGameActivity() {
         switch (mServerOrClient) {
             case SERVER:
@@ -249,11 +302,12 @@ public class ChooseGameTypeActivity extends BaseActivity implements View.OnClick
      */
     void askForNewGame() {
         //这里可以加一个判断对方是否退出游戏的判断
+        showWaitingAcceptNewGameDialog();
+
         CommunicateData communicateData = new CommunicateData();
         communicateData.setType(CommunicateData.GAME_STATE);
         communicateData.setGame_state(CommunicateData.ASK_FOR_NEW_GAME);
         mServerConnectService.sendMessage(communicateData);
-        showWaitingAcceptNewGameDialog();
     }
 
     void openNewLayout(View newLayout) {
@@ -292,7 +346,7 @@ public class ChooseGameTypeActivity extends BaseActivity implements View.OnClick
 //        else
         CommunicateData cd = new CommunicateData(); //通知对方已退出多人游戏
         cd.setType(CommunicateData.GAME_STATE);
-        cd.setGame_state(CommunicateData.QUIT_GAME);
+        cd.setGame_state(CommunicateData.LEAVE_MUTIPLE_GAME);
         switch (mServerOrClient) {
             case SERVER:
                 mServerConnectService.sendMessage(cd);

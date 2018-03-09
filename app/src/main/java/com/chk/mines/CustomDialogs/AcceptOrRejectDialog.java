@@ -60,6 +60,7 @@ public class AcceptOrRejectDialog extends Dialog implements OnTimeEnd {
         super(context, themeResId);
         this.mContext = context;
         this.layoutId = layoutId;
+        this.showText = showText;
         this.time = time;
     }
 

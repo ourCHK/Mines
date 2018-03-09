@@ -31,9 +31,10 @@ public class CommunicateData {
 
     public static final int ASK_FOR_NEW_GAME = 18;  //服务端请求新游戏
     public static final int ACCEPT_NEW_GAME = 19;
-    public static final int REJECTE_NEW_GAME = 20;
+    public static final int REJECT_NEW_GAME = 20;
 
-    public static final int QUIT_GAME = 21; //对方退出多人游戏
+    public static final int LEAVE_CUR_GAME = 21; //对方退出当前游戏
+    public static final int LEAVE_MUTIPLE_GAME = 22;    //对方离开多人游戏
 
     int game_state; //GameState that above;
 

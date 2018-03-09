@@ -5,6 +5,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 
 import com.chk.mines.CustomDialogs.AcceptOrRejectDialog;
+import com.chk.mines.CustomDialogs.LeaveForDialog;
 import com.chk.mines.CustomDialogs.WaitingForDialog;
 import com.chk.mines.Interfaces.OnDialogButtonClickListener;
 
@@ -21,6 +22,8 @@ public class BaseActivity extends AppCompatActivity {
 
     private AcceptOrRejectDialog acceptOrRejectDialog;
     private WaitingForDialog waitingForNewGameDialog;
+    private LeaveForDialog leaveForCurGameDialog;   //离开当前游戏
+    private LeaveForDialog leaveForMutipleGameDialog;   //离开多人游戏
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -75,10 +78,9 @@ public class BaseActivity extends AppCompatActivity {
 
     /**
      * 获取当前正在Resume的Activity
-     * @param activity
      */
-    public static void getCurResumeActivity(AppCompatActivity activity) {
-        mCurResumeActivity = activity;
+    public static AppCompatActivity getCurResumeActivity() {
+        return mCurResumeActivity;
     }
 
     /**
@@ -88,6 +90,7 @@ public class BaseActivity extends AppCompatActivity {
         acceptOrRejectDialog = new AcceptOrRejectDialog(mCurResumeActivity,R.style.Custom_Dialog_Style,"对方请求开始新游戏",10);
         if (onDialogButtonClickListener != null)
             acceptOrRejectDialog.setOnDialogButtonClickListener(onDialogButtonClickListener);
+        acceptOrRejectDialog.show();
     }
 
     /**
@@ -95,6 +98,7 @@ public class BaseActivity extends AppCompatActivity {
      */
     public void showWaitingAcceptNewGameDialog() {
         waitingForNewGameDialog = new WaitingForDialog(mCurResumeActivity,R.style.Custom_Dialog_Style,"请等待对方同意");
+        waitingForNewGameDialog.show();
     }
 
     public void dismissWaitingAcceptNewGameDialog() {
@@ -106,7 +110,20 @@ public class BaseActivity extends AppCompatActivity {
     /**
      * 显示对方退出多人游戏的Dialog
      */
-    public void showQuitMutiplePlayerGameDialog() {
+    public void showLeaveMutipleGameDialog() {
+        if (leaveForMutipleGameDialog != null) {
+            leaveForMutipleGameDialog = new LeaveForDialog(this,R.style.Custom_Dialog_Style,"对方已离开多人游戏");
+        }
+        leaveForMutipleGameDialog.show();
+    }
 
+    /**
+     * 显示离开当前游戏的Dialog
+     */
+    public void showLeaveCurGameDialog() {
+        if (leaveForCurGameDialog != null) {
+            leaveForCurGameDialog = new LeaveForDialog(this,R.style.Custom_Dialog_Style,"对方已离开当前游戏");
+        }
+        leaveForCurGameDialog.show();
     }
 }
