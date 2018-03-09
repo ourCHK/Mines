@@ -21,6 +21,8 @@ import android.widget.Toast;
 import com.chk.mines.Beans.CommunicateData;
 import com.chk.mines.CustomServices.ClientConnectService;
 import com.chk.mines.CustomServices.ServerConnectService;
+import com.chk.mines.Interfaces.OnDialogButtonClickListener;
+import com.chk.mines.Utils.Constant;
 
 import static com.chk.mines.GameActivity.GAME_TYPE;
 import static com.chk.mines.GameActivity.SERVER_OR_CLIENT;
@@ -97,6 +99,48 @@ public class ChooseGameTypeActivity extends BaseActivity implements View.OnClick
                         Log.i(TAG,"client received message:"+ mChooseGameType);
                         startGameActivity();
                         break;
+                    case Constant.ASK_FOR_NEW_GAME:
+                        //显示请求开始新游戏的Dialog,左右键的操作
+                        showStartNewGameRequestDialog(new OnDialogButtonClickListener() {
+                            @Override
+                            public void onLeftClick() {
+                                CommunicateData communicateData = new CommunicateData();
+                                communicateData.setType(CommunicateData.GAME_STATE);
+                                communicateData.setGame_state(CommunicateData.REJECTE_NEW_GAME);
+                                switch (mServerOrClient) {
+                                    case Constant.SERVER:
+                                        mServerConnectService.sendMessage(communicateData);
+                                        break;
+                                    case Constant.CLIENT:
+                                        mClientConnectService.sendMessage(communicateData);
+                                        break;
+                                }
+                            }
+
+                            @Override
+                            public void onRightClick() {
+                                CommunicateData communicateData = new CommunicateData();
+                                communicateData.setType(CommunicateData.GAME_STATE);
+                                communicateData.setGame_state(CommunicateData.ACCEPT_NEW_GAME);
+                                switch (mServerOrClient) {
+                                    case Constant.SERVER:
+                                        mServerConnectService.sendMessage(communicateData);
+                                        break;
+                                    case Constant.CLIENT:
+                                        mClientConnectService.sendMessage(communicateData);
+                                        break;
+                                }
+                            }
+                        });
+                        break;
+                    case Constant.ACCEPT_NEW_GAME:
+                        dismissWaitingAcceptNewGameDialog();
+                        startGameActivity();
+                        break;
+                    case Constant.REJECT_NEW_GAME:
+                        dismissWaitingAcceptNewGameDialog();
+                        Toast.makeText(mServerConnectService, "对方拒绝开始新游戏", Toast.LENGTH_SHORT).show();
+                        break;
                 }
             }
         };
@@ -157,19 +201,23 @@ public class ChooseGameTypeActivity extends BaseActivity implements View.OnClick
                 break;
             case R.id.type1:
                 mChooseGameType = TYPE_1 | mCooperatorOrFight;
-                startGameActivity();
+                askForNewGame();
+//                startGameActivity();
                 break;
             case R.id.type2:
                 mChooseGameType = TYPE_2 | mCooperatorOrFight;
-                startGameActivity();
+                askForNewGame();
+//                startGameActivity();
                 break;
             case R.id.type3:
                 mChooseGameType = TYPE_3 | mCooperatorOrFight;
-                startGameActivity();
+                askForNewGame();
+//                startGameActivity();
                 break;
             case R.id.type4:
                 mChooseGameType = TYPE_4 | mCooperatorOrFight;
-                startGameActivity();
+                askForNewGame();
+//                startGameActivity();
                 break;
         }
     }
@@ -194,6 +242,18 @@ public class ChooseGameTypeActivity extends BaseActivity implements View.OnClick
         intent.putExtra(GAME_TYPE, mChooseGameType);
         intent.putExtra(SERVER_OR_CLIENT,mServerOrClient);
         startActivity(intent);
+    }
+
+    /**
+     * 请求开始新游戏
+     */
+    void askForNewGame() {
+        //这里可以加一个判断对方是否退出游戏的判断
+        CommunicateData communicateData = new CommunicateData();
+        communicateData.setType(CommunicateData.GAME_STATE);
+        communicateData.setGame_state(CommunicateData.ASK_FOR_NEW_GAME);
+        mServerConnectService.sendMessage(communicateData);
+        showWaitingAcceptNewGameDialog();
     }
 
     void openNewLayout(View newLayout) {

@@ -47,7 +47,7 @@ import java.util.concurrent.Executors;
 import static com.chk.mines.ChooseGameTypeActivity.CLIENT;
 import static com.chk.mines.ChooseGameTypeActivity.SERVER;
 
-public class CooperateGameActivityWithThread extends AppCompatActivity implements GameState, View.OnClickListener {
+public class CooperateGameActivityWithThread extends BaseActivity implements GameState, View.OnClickListener {
 
     private final static String TAG = CooperateGameActivityWithThread.class.getSimpleName();
     ExecutorService executorService;
@@ -831,6 +831,7 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
                 break;
         }
     }
+
 
     void showView() {
         AlphaAnimation appearAnimation = new AlphaAnimation(0, 1);

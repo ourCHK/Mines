@@ -25,7 +25,7 @@ import com.chk.mines.CustomServices.ServerConnectService;
 import com.chk.mines.CustomDialogs.ClientDialog;
 import com.chk.mines.CustomDialogs.ServerDialog;
 
-public class ConnectActivity extends AppCompatActivity implements View.OnClickListener{
+public class ConnectActivity extends BaseActivity implements View.OnClickListener{
     public final static String  TAG = ConnectActivity.class.getSimpleName();
 
     public final static int WIFI = 0;

@@ -34,6 +34,9 @@ public class Constant {
     public final static int TIME_CHANGED = 8;
     public final static int SOCKET_DISCONNECTED = 9;
     public final static int BIND_SERVICE = 11;   //客户端已经绑定服务了
+    public final static int ASK_FOR_NEW_GAME = 12;
+    public final static int ACCEPT_NEW_GAME = 13;
+    public final static int REJECT_NEW_GAME = 14;
 
     public final static int DRAG = 1;
     public final static int FLAG = 2;

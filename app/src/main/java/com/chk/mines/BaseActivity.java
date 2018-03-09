@@ -1,6 +1,7 @@
 package com.chk.mines;
 
-import android.app.Dialog;
+import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 
 import com.chk.mines.CustomDialogs.AcceptOrRejectDialog;
@@ -20,6 +21,33 @@ public class BaseActivity extends AppCompatActivity {
 
     private AcceptOrRejectDialog acceptOrRejectDialog;
     private WaitingForDialog waitingForNewGameDialog;
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        addSelfToActivityList(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        setCurResumeActivity(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (waitingForNewGameDialog != null) {
+            waitingForNewGameDialog.dismiss();
+            waitingForNewGameDialog = null;
+        }
+
+        if (acceptOrRejectDialog != null) {
+            acceptOrRejectDialog.dismiss();
+            acceptOrRejectDialog = null;
+        }
+        removeFromActivityList(this);
+    }
 
     /**
      * 将自己添加到ActivityList中去
@@ -49,7 +77,7 @@ public class BaseActivity extends AppCompatActivity {
      * 获取当前正在Resume的Activity
      * @param activity
      */
-    public void getCurResumeActivity(AppCompatActivity activity) {
+    public static void getCurResumeActivity(AppCompatActivity activity) {
         mCurResumeActivity = activity;
     }
 
@@ -80,19 +108,5 @@ public class BaseActivity extends AppCompatActivity {
      */
     public void showQuitMutiplePlayerGameDialog() {
 
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (waitingForNewGameDialog != null) {
-            waitingForNewGameDialog.dismiss();
-            waitingForNewGameDialog = null;
-        }
-
-        if (acceptOrRejectDialog != null) {
-            acceptOrRejectDialog.dismiss();
-            acceptOrRejectDialog = null;
-        }
     }
 }

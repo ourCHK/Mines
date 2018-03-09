@@ -51,7 +51,7 @@ import static com.chk.mines.CooperateGameActivity.PointType.DRAG;
 import static com.chk.mines.CooperateGameActivity.PointType.FLAG;
 import static com.chk.mines.CooperateGameActivity.PointType.FLAG_CONFUSED;
 
-public class CooperateGameActivity extends BaseActivity implements View.OnClickListener,GameState{
+public class CooperateGameActivity extends AppCompatActivity implements View.OnClickListener,GameState{
     public final static String TAG = CooperateGameActivity.class.getSimpleName();
     public final static String GAME_TYPE = "GameType";
     public final static String SERVER_OR_CLIENT = "ServerOrClient";

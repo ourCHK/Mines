@@ -9,6 +9,7 @@ import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.chk.mines.BaseActivity;
 import com.chk.mines.Beans.CommunicateData;
 import com.chk.mines.Utils.ClientSocketUtil;
 import com.chk.mines.Utils.Constant;
@@ -144,14 +145,6 @@ public class ClientConnectService extends ConnectService {
                 mGameActivityHandler.sendMessage(msg1);
                 break;
             case CommunicateData.GAME_STATE:    //游戏状态改变
-//                switch (communicateData.getGame_state()) {
-//                    case CommunicateData.GAME_INIT: //收到初始化的消息
-//
-//                        break;
-//                }
-//                if (mGameActivityHandler == null) {
-//
-//                }
                 Log.i(TAG,"GAME_STATE CHANGED");
                 Message msg2 = mGameActivityHandler.obtainMessage();
                 msg2.what = Constant.RECEIVED_MESSAGE_FROM_SERVER;
