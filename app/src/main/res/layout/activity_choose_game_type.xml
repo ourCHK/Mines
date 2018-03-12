@@ -8,6 +8,7 @@
     tools:context="com.chk.mines.ChooseGameTypeActivity">
 
     <TableLayout
+            android:visibility="gone"
             android:id="@+id/tableLayout"
             android:gravity="center"
             android:layout_width="match_parent"
@@ -44,7 +45,6 @@
         android:id="@+id/gridView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="gone"
         app:rowCount="2"
         app:columnCount="2">
 

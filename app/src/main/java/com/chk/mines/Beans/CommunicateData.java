@@ -21,12 +21,20 @@ public class CommunicateData {
     public static final int GAME_OVER = 5;
     public static final int GAME_WIN = 6;
     public static final int GAME_LOSE = 7;
+
     public static final int CLIENT_RECEIVED_MESSAGE = 12;   //客户端已经接收到服务端的数据，说明游戏可以开始了
     public static final int ACCEPTED = 13;  //接受重新开始
     public static final int REJECTED = 14;  //拒绝重新开始
     public static final int ASK_FOR_RESTART = 15;    //请求重新开始
     public static final int RECEIVED_MINES_DATA = 16;   //接收到雷的数据
     public static final int SEND_MINES_DATA = 17;    //发送雷的数据
+
+    public static final int ASK_FOR_NEW_GAME = 18;  //服务端请求新游戏
+    public static final int ACCEPT_NEW_GAME = 19;
+    public static final int REJECT_NEW_GAME = 20;
+
+    public static final int LEAVE_CUR_GAME = 21; //对方退出当前游戏
+    public static final int LEAVE_MUTIPLE_GAME = 22;    //对方离开多人游戏
 
     int game_state; //GameState that above;
 

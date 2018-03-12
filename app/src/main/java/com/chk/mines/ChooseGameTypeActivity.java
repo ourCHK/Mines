@@ -7,7 +7,6 @@ import android.content.ServiceConnection;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayout;
 import android.util.Log;
@@ -21,6 +20,8 @@ import android.widget.Toast;
 import com.chk.mines.Beans.CommunicateData;
 import com.chk.mines.CustomServices.ClientConnectService;
 import com.chk.mines.CustomServices.ServerConnectService;
+import com.chk.mines.Interfaces.OnDialogButtonClickListener;
+import com.chk.mines.Utils.Constant;
 
 import static com.chk.mines.GameActivity.GAME_TYPE;
 import static com.chk.mines.GameActivity.SERVER_OR_CLIENT;
@@ -32,7 +33,7 @@ import static com.chk.mines.GameActivity.TYPE_4;
 /**
  * 选择游戏类型和对战类型
  */
-public class ChooseGameTypeActivity extends AppCompatActivity implements View.OnClickListener {
+public class ChooseGameTypeActivity extends BaseActivity implements View.OnClickListener {
 
     public static final String TAG = ChooseGameTypeActivity.class.getSimpleName();
 
@@ -66,12 +67,13 @@ public class ChooseGameTypeActivity extends AppCompatActivity implements View.On
     Button mType4;
 
     int mServerOrClient;    //判断是服务端还是客户端
-    int mCooperatorOrFight; //判断是合作还是对战
+    int mCooperatorOrFight = COOPERATOR; //默认是合作，不做对战了
 
-    int mChoosedGameType;
-    boolean isDoublePlayer = true;
+    int mChooseGameType;
 
     Handler mHandler;
+
+    boolean isFirstOpenActivity;    //用于判断是不是第一次打开Activity
 
     ServerConnectService mServerConnectService;
     ServiceConnection mServerConnection;
@@ -92,9 +94,25 @@ public class ChooseGameTypeActivity extends AppCompatActivity implements View.On
             public void handleMessage(Message msg) {
                 switch (msg.what) {
                     case readyForStart: //客户端接收到服务端的开始命令
-                        mChoosedGameType = Integer.parseInt((String) msg.obj);
-                        Log.i(TAG,"client received message:"+mChoosedGameType);
+                        mChooseGameType = Integer.parseInt((String) msg.obj);
+                        Log.i(TAG,"client received message:"+ mChooseGameType);
                         startGameActivity();
+                        break;
+                    case Constant.RECEIVED_MESSAGE_FROM_SERVER:
+                        receivedMessageFromServer((CommunicateData)msg.obj);
+                        break;
+                    case Constant.RECEIVED_MESSAGE_FROM_CLIENT:
+                        receivedMessageFromClient((CommunicateData)msg.obj);
+                        break;
+                    case Constant.ASK_FOR_NEW_GAME:
+                        break;
+                    case Constant.ACCEPT_NEW_GAME:
+                        dismissWaitingAcceptNewGameDialog();
+                        startGameActivity();
+                        break;
+                    case Constant.REJECT_NEW_GAME:
+                        dismissWaitingAcceptNewGameDialog();
+                        Toast.makeText(mServerConnectService, "对方拒绝开始新游戏", Toast.LENGTH_SHORT).show();
                         break;
                 }
             }
@@ -106,15 +124,26 @@ public class ChooseGameTypeActivity extends AppCompatActivity implements View.On
         switch (mServerOrClient) {
             case CLIENT:
                 mWaitingForStart.setVisibility(View.VISIBLE);
-                mCurrentLayout.setVisibility(View.GONE);
+                mGridLayout.setVisibility(View.GONE);
                 startBindClientService();
                 break;
             case SERVER:
+                mGridLayout.setVisibility(View.VISIBLE);
+                mWaitingForStart.setVisibility(View.GONE);
                 startBindServerService();
                 break;
             default:
                 break;
         }
+        isFirstOpenActivity = true;
+    }
+
+    /**
+     * 返回activity的Handler
+     * @return
+     */
+    public Handler getHandler() {
+            return mHandler;
     }
 
     void viewInit() {
@@ -152,20 +181,96 @@ public class ChooseGameTypeActivity extends AppCompatActivity implements View.On
                 openNewLayout(mGridLayout);
                 break;
             case R.id.type1:
-                mChoosedGameType = TYPE_1 | mCooperatorOrFight;
-                startGameActivity();
+                mChooseGameType = TYPE_1 | mCooperatorOrFight;
+                askForNewGame();
+//                startGameActivity();
                 break;
             case R.id.type2:
-                mChoosedGameType = TYPE_2 | mCooperatorOrFight;
-                startGameActivity();
+                mChooseGameType = TYPE_2 | mCooperatorOrFight;
+                askForNewGame();
+//                startGameActivity();
                 break;
             case R.id.type3:
-                mChoosedGameType = TYPE_3 | mCooperatorOrFight;
-                startGameActivity();
+                mChooseGameType = TYPE_3 | mCooperatorOrFight;
+                askForNewGame();
+//                startGameActivity();
                 break;
             case R.id.type4:
-                mChoosedGameType = TYPE_4 | mCooperatorOrFight;
-                startGameActivity();
+                mChooseGameType = TYPE_4 | mCooperatorOrFight;
+                askForNewGame();
+//                startGameActivity();
+                break;
+        }
+    }
+
+    /**
+     * 处理服务端传来的消息
+     *
+     * @param message
+     */
+    private void receivedMessageFromServer(CommunicateData message) {
+        CommunicateData communicateData = message;
+        switch (communicateData.getType()) {
+            case CommunicateData.GAME_STATE: {
+                switch (communicateData.getGame_state()) {
+                    case CommunicateData.ASK_FOR_NEW_GAME:
+                        //显示请求开始新游戏的Dialog,左右键的操作
+                        showStartNewGameRequestDialog(new OnDialogButtonClickListener() {
+                            @Override
+                            public void onLeftClick() {
+                                CommunicateData communicateData = new CommunicateData();
+                                communicateData.setType(CommunicateData.GAME_STATE);
+                                communicateData.setGame_state(CommunicateData.REJECT_NEW_GAME);
+                                switch (mServerOrClient) {
+                                    case Constant.SERVER:
+                                        mServerConnectService.sendMessage(communicateData);
+                                        break;
+                                    case Constant.CLIENT:
+                                        mClientConnectService.sendMessage(communicateData);
+                                        break;
+                                }
+                            }
+
+                            @Override
+                            public void onRightClick() {
+                                CommunicateData communicateData = new CommunicateData();
+                                communicateData.setType(CommunicateData.GAME_STATE);
+                                communicateData.setGame_state(CommunicateData.ACCEPT_NEW_GAME);
+                                switch (mServerOrClient) {
+                                    case Constant.SERVER:
+                                        mServerConnectService.sendMessage(communicateData);
+                                        break;
+                                    case Constant.CLIENT:
+                                        mClientConnectService.sendMessage(communicateData);
+                                        break;
+                                }
+                            }
+                        });
+                        break;
+                }
+            }
+        }
+    }
+
+    /**
+     * 处理服务端传来的消息
+     *
+     * @param message
+     */
+    private void receivedMessageFromClient(CommunicateData message) {
+        CommunicateData communicateData = message;
+        switch (communicateData.getType()) {
+            case CommunicateData.GAME_STATE:
+                switch (communicateData.getGame_state()) {
+                    case CommunicateData.ACCEPT_NEW_GAME:   //对方同意开始新游戏
+                        dismissWaitingAcceptNewGameDialog();
+                        startGameActivity();
+                        break;
+                    case CommunicateData.REJECT_NEW_GAME:  //对方拒绝开始新游戏
+                        dismissWaitingAcceptNewGameDialog();
+                        Toast.makeText(ChooseGameTypeActivity.this, "对方拒绝开始新游戏", Toast.LENGTH_SHORT).show();
+                        break;
+                }
                 break;
         }
     }
@@ -175,35 +280,34 @@ public class ChooseGameTypeActivity extends AppCompatActivity implements View.On
             case SERVER:
                 CommunicateData communicateData = new CommunicateData();
                 communicateData.setType(CommunicateData.OTHER);
-                communicateData.setMessage(mChoosedGameType+"");
+                communicateData.setMessage(mChooseGameType +"");
                 mServerConnectService.sendMessage(communicateData); //调用服务端发送消息
                 break;
             case CLIENT:
                 break;
         }
         Intent intent = null;
-        if ((mChoosedGameType & COOPERATOR) != 0) { //说明是Cooperator类型的
+        if ((mChooseGameType & COOPERATOR) != 0) { //说明是Cooperator类型的
             intent =  new Intent(this,CooperateGameActivityWithThread.class);
         } else {    //说明是Fight类型的
             intent =  new Intent(this,FightGameActivity.class);
         }
-        intent.putExtra(GAME_TYPE,mChoosedGameType);
+        intent.putExtra(GAME_TYPE, mChooseGameType);
         intent.putExtra(SERVER_OR_CLIENT,mServerOrClient);
         startActivity(intent);
-//        CommunicateData communicateData = new CommunicateData();
-//        communicateData.setType(CommunicateData.OTHER);
-//        communicateData.setMessage(mChooseGameType+"");
-//        mServerConnectService.sendMessage(communicateData); //调用服务端发送消息
-//        switch (mChooseGameType) {
-//            case TYPE_1:
-//                break;
-//            case TYPE_2:
-//                break;
-//            case TYPE_3:
-//                break;
-//            case TYPE_4:
-//                break;
-//        }
+    }
+
+    /**
+     * 请求开始新游戏
+     */
+    void askForNewGame() {
+        //这里可以加一个判断对方是否退出游戏的判断
+        showWaitingAcceptNewGameDialog();
+
+        CommunicateData communicateData = new CommunicateData();
+        communicateData.setType(CommunicateData.GAME_STATE);
+        communicateData.setGame_state(CommunicateData.ASK_FOR_NEW_GAME);
+        mServerConnectService.sendMessage(communicateData);
     }
 
     void openNewLayout(View newLayout) {
@@ -237,10 +341,21 @@ public class ChooseGameTypeActivity extends AppCompatActivity implements View.On
     public void onBackPressed() {
 //        if (mWaitingForStart.isShown()) //客户端等待界面不给按返回键
 //            return;
-        if (mCurrentLayout != mPreLayout)
-            backLayout();
-        else
-            super.onBackPressed();
+//        if (mCurrentLayout != mPreLayout)
+//            backLayout();
+//        else
+        CommunicateData cd = new CommunicateData(); //通知对方已退出多人游戏
+        cd.setType(CommunicateData.GAME_STATE);
+        cd.setGame_state(CommunicateData.LEAVE_MUTIPLE_GAME);
+        switch (mServerOrClient) {
+            case SERVER:
+                mServerConnectService.sendMessage(cd);
+                break;
+            case CLIENT:
+                mClientConnectService.sendMessage(cd);
+                break;
+        }
+        super.onBackPressed();
     }
 
     void startBindServerService() {

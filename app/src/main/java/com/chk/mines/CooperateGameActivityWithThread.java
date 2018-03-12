@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,12 +30,12 @@ import com.chk.mines.CustomDialogs.WaitingForConfirmDialog;
 import com.chk.mines.CustomDialogs.WaitingForSyncDialog;
 import com.chk.mines.CustomServices.ClientConnectService;
 import com.chk.mines.CustomServices.ServerConnectService;
+import com.chk.mines.CustomViews.CustomMineView;
+import com.chk.mines.CustomViews.TimeTextView;
 import com.chk.mines.Interfaces.GameState;
 import com.chk.mines.Interfaces.OnDialogButtonClickListener;
 import com.chk.mines.Utils.Constant;
 import com.chk.mines.Utils.GsonUtil;
-import com.chk.mines.CustomViews.CustomMineView;
-import com.chk.mines.CustomViews.TimeTextView;
 
 import java.util.Random;
 import java.util.Timer;
@@ -47,7 +46,7 @@ import java.util.concurrent.Executors;
 import static com.chk.mines.ChooseGameTypeActivity.CLIENT;
 import static com.chk.mines.ChooseGameTypeActivity.SERVER;
 
-public class CooperateGameActivityWithThread extends AppCompatActivity implements GameState, View.OnClickListener {
+public class CooperateGameActivityWithThread extends BaseActivity implements GameState, View.OnClickListener {
 
     private final static String TAG = CooperateGameActivityWithThread.class.getSimpleName();
     ExecutorService executorService;
@@ -150,6 +149,14 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
         };
 
         init();
+    }
+
+    /**
+     * 返回activity的Handler
+     * @return
+     */
+    public Handler getHandler() {
+        return mGameHandler;
     }
 
     void init() {
@@ -531,7 +538,8 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
                         curGameState = Constant.GAME_PAUSE;
                         break;
                     case CommunicateData.ASK_FOR_RESTART:   //对方请求重新开始
-                        curGameState = Constant.GAME_PAUSE; //那么我们的状态也要暂时改为暂停游戏
+                        if (curGameState != Constant.GAME_OVER && curGameState != Constant.GAME_INIT)
+                            curGameState = Constant.GAME_PAUSE; //那么我们的状态也要暂时改为暂停游戏
                         showRestartDialog();
                         break;
                     case CommunicateData.ACCEPTED:      //对方已经接受了说明可以开始初始化了，我们这边初始化？？
@@ -540,7 +548,8 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
                         break;
                     case CommunicateData.REJECTED:      //对方拒绝，弹出一个Toast说明拒绝
                         dismissWaitingConfirmDialog();
-                        curGameState = Constant.GAME_START; //对方拒绝，那么继续开始游戏
+                        if (curGameState != Constant.GAME_OVER && curGameState != Constant.GAME_INIT) //处于OVER状态不用Start
+                            curGameState = Constant.GAME_START; //对方拒绝，那么继续开始游戏
                         Toast.makeText(CooperateGameActivityWithThread.this, "对方拒绝重新开始", Toast.LENGTH_SHORT).show();
                         break;
                     case CommunicateData.SEND_MINES_DATA:   //客户端发送雷数据
@@ -584,7 +593,8 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
                         curGameState = Constant.GAME_INIT;  //说明初始化成功,我们当前状态改为初始化
                         break;
                     case CommunicateData.ASK_FOR_RESTART:   //对方请求重新开始
-                        curGameState = Constant.GAME_PAUSE; //那么我们的状态也要暂时改为暂停游戏
+                        if (curGameState != Constant.GAME_OVER && curGameState != Constant.GAME_INIT)
+                            curGameState = Constant.GAME_PAUSE; //那么我们的状态也要暂时改为暂停游戏
                         showRestartDialog();
                         break;
                     case CommunicateData.ACCEPTED:      //对方已经接受了说明可以开始初始化了，我们这边初始化？？
@@ -593,10 +603,10 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
                         break;
                     case CommunicateData.REJECTED:      //对方拒绝，弹出一个Toast说明拒绝
                         dismissWaitingConfirmDialog();
-                        curGameState = Constant.GAME_START; //对方拒绝，那么继续开始游戏
+                        if (curGameState != Constant.GAME_OVER && curGameState != Constant.GAME_INIT) //处于OVER状态不用Start
+                            curGameState = Constant.GAME_START; //对方拒绝，那么继续开始游戏
                         Toast.makeText(CooperateGameActivityWithThread.this, "对方拒绝重新开始", Toast.LENGTH_SHORT).show();
                         break;
-
                 }
                 break;
             case CommunicateData.OTHER:     //其他的消息，准备接受服务端发来的消息
@@ -812,7 +822,8 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
      * 请求重新开始
      */
     void askForRestart() {
-        curGameState = Constant.GAME_PAUSE; //请求重新开始的时候也要暂停
+        if (curGameState != Constant.GAME_OVER && curGameState != Constant.GAME_INIT) //处于GAME_OVER状态不需要GAME_PAUSE
+            curGameState = Constant.GAME_PAUSE; //请求重新开始的时候也要暂停
         showWaitingConfirmDialog();
 
         CommunicateData communicateData = new CommunicateData();
@@ -826,6 +837,30 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
                 mClientConnectService.sendMessage(communicateData);
                 break;
         }
+    }
+
+    /**
+     * 退出时发送消息退出
+     */
+    @Override
+    public void onBackPressed() {
+//        if (mWaitingForStart.isShown()) //客户端等待界面不给按返回键
+//            return;
+//        if (mCurrentLayout != mPreLayout)
+//            backLayout();
+//        else
+        CommunicateData cd = new CommunicateData(); //通知对方已退出多人游戏
+        cd.setType(CommunicateData.GAME_STATE);
+        cd.setGame_state(CommunicateData.LEAVE_CUR_GAME);
+        switch (mServerOrClient) {
+            case Constant.SERVER:
+                mServerConnectService.sendMessage(cd);
+                break;
+            case Constant.CLIENT:
+                mClientConnectService.sendMessage(cd);
+                break;
+        }
+        super.onBackPressed();
     }
 
     void showView() {
@@ -928,7 +963,8 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
                             mClientConnectService.sendMessage(communicateData);
                             break;
                     }
-                    curGameState = Constant.GAME_START; //继续开始游戏
+                    if (curGameState != Constant.GAME_OVER && curGameState != Constant.GAME_INIT) //OVer状态无需变成Start状态
+                        curGameState = Constant.GAME_START; //继续开始游戏
                 }
 
                 @Override
@@ -966,7 +1002,7 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
 
                 @Override
                 public void onRightClick() {
-                    curGameState = Constant.GAME_RESTART;
+                    mRestart.performClick();
                 }
             });
         }
@@ -990,7 +1026,7 @@ public class CooperateGameActivityWithThread extends AppCompatActivity implement
 
                 @Override
                 public void onRightClick() {
-                    curGameState = Constant.GAME_RESTART;
+                    mRestart.performClick();
                 }
             });
         }
