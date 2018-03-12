@@ -23,7 +23,7 @@ public class BaseActivity extends AppCompatActivity {
     private AcceptOrRejectDialog acceptOrRejectDialog;
     private WaitingForDialog waitingForNewGameDialog;
     private LeaveForDialog leaveForCurGameDialog;   //离开当前游戏
-    private LeaveForDialog leaveForMutipleGameDialog;   //离开多人游戏
+    private LeaveForDialog leaveForMultipleGameDialog;   //离开多人游戏
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -50,6 +50,8 @@ public class BaseActivity extends AppCompatActivity {
             acceptOrRejectDialog = null;
         }
         removeFromActivityList(this);
+        if (mActivityList.size() == 0)  //如果已经没有Activity，说明准备离开BaseActivity了
+            mCurResumeActivity = null;  //设置为null;防止一方退出一方接收到消息报错
     }
 
     /**
@@ -108,22 +110,22 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     /**
-     * 显示对方退出多人游戏的Dialog
-     */
-    public void showLeaveMutipleGameDialog() {
-        if (leaveForMutipleGameDialog != null) {
-            leaveForMutipleGameDialog = new LeaveForDialog(this,R.style.Custom_Dialog_Style,"对方已离开多人游戏");
-        }
-        leaveForMutipleGameDialog.show();
-    }
-
-    /**
      * 显示离开当前游戏的Dialog
      */
     public void showLeaveCurGameDialog() {
-        if (leaveForCurGameDialog != null) {
+        if (leaveForCurGameDialog == null) {
             leaveForCurGameDialog = new LeaveForDialog(this,R.style.Custom_Dialog_Style,"对方已离开当前游戏");
         }
         leaveForCurGameDialog.show();
+    }
+
+    /**
+     * 显示对方退出多人游戏的Dialog
+     */
+    public void showLeaveMultipleGameDialog() {
+        if (leaveForMultipleGameDialog == null) {
+            leaveForMultipleGameDialog = new LeaveForDialog(this,R.style.Custom_Dialog_Style,"对方已离开多人游戏");
+        }
+        leaveForMultipleGameDialog.show();
     }
 }

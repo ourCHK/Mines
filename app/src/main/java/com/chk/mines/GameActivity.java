@@ -217,7 +217,7 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
                 mMineCount = 99;
                 break;
             case TYPE_4:
-                mMineView = new MineViewType4(this);
+//                mMineView = new MineViewType4(this);
                 break;
             default:
                 break;

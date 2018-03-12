@@ -247,6 +247,9 @@ public class ChooseGameTypeActivity extends BaseActivity implements View.OnClick
                             }
                         });
                         break;
+                    case CommunicateData.LEAVE_MULTIPLE_GAME:
+                        showLeaveMultipleGameDialog();
+                        break;
                 }
             }
         }
@@ -270,6 +273,9 @@ public class ChooseGameTypeActivity extends BaseActivity implements View.OnClick
                         dismissWaitingAcceptNewGameDialog();
                         Toast.makeText(ChooseGameTypeActivity.this, "对方拒绝开始新游戏", Toast.LENGTH_SHORT).show();
                         break;
+                    case CommunicateData.LEAVE_MULTIPLE_GAME:
+                        showLeaveMultipleGameDialog();
+                        break;
                 }
                 break;
         }
@@ -286,7 +292,7 @@ public class ChooseGameTypeActivity extends BaseActivity implements View.OnClick
             case CLIENT:
                 break;
         }
-        Intent intent = null;
+        Intent intent;
         if ((mChooseGameType & COOPERATOR) != 0) { //说明是Cooperator类型的
             intent =  new Intent(this,CooperateGameActivityWithThread.class);
         } else {    //说明是Fight类型的
@@ -346,7 +352,7 @@ public class ChooseGameTypeActivity extends BaseActivity implements View.OnClick
 //        else
         CommunicateData cd = new CommunicateData(); //通知对方已退出多人游戏
         cd.setType(CommunicateData.GAME_STATE);
-        cd.setGame_state(CommunicateData.LEAVE_MUTIPLE_GAME);
+        cd.setGame_state(CommunicateData.LEAVE_MULTIPLE_GAME);
         switch (mServerOrClient) {
             case SERVER:
                 mServerConnectService.sendMessage(cd);
@@ -355,6 +361,7 @@ public class ChooseGameTypeActivity extends BaseActivity implements View.OnClick
                 mClientConnectService.sendMessage(cd);
                 break;
         }
+
         super.onBackPressed();
     }
 

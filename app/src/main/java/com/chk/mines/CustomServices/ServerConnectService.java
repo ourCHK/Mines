@@ -135,7 +135,7 @@ public class ServerConnectService extends ConnectService {
                 break;
             case CommunicateData.GAME_STATE:    //游戏状态改变
                 if ((mCurActivityHandler = getCurActivityHandler())== null) {
-                    Toast.makeText(this, "出现未知错误，请重启游戏", Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(this, "出现未知错误，请重启游戏", Toast.LENGTH_SHORT).show();
                 } else {
                     Log.i(TAG,"GAME_STATE CHANGED");
                     Message msg2 = mCurActivityHandler.obtainMessage();
@@ -164,12 +164,14 @@ public class ServerConnectService extends ConnectService {
      */
     Handler getCurActivityHandler() {
         AppCompatActivity activity = BaseActivity.getCurResumeActivity();
-        if (activity instanceof ChooseGameTypeActivity) {
-            Log.i("TAG","curShowActivity："+ChooseGameTypeActivity.class.getSimpleName());
-            return ((ChooseGameTypeActivity) activity).getHandler();
-        } else if (activity instanceof CooperateGameActivityWithThread) {
-            Log.i("TAG","curShowActivity："+CooperateGameActivityWithThread.class.getSimpleName());
-            return ((CooperateGameActivityWithThread) activity).getHandler();
+        if (activity != null) {
+            if (activity instanceof ChooseGameTypeActivity) {
+                Log.i("TAG","curShowActivity："+ChooseGameTypeActivity.class.getSimpleName());
+                return ((ChooseGameTypeActivity) activity).getHandler();
+            } else if (activity instanceof CooperateGameActivityWithThread) {
+                Log.i("TAG","curShowActivity："+CooperateGameActivityWithThread.class.getSimpleName());
+                return ((CooperateGameActivityWithThread) activity).getHandler();
+            }
         }
         return null;
     }

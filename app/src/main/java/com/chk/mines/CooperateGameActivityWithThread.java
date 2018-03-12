@@ -558,6 +558,12 @@ public class CooperateGameActivityWithThread extends BaseActivity implements Gam
                     case CommunicateData.RECEIVED_MINES_DATA:   //对方接收到我们的雷的数据
                         curGameState = Constant.GAME_INIT;  //服务端可以开始初始化了
                         break;
+                    case CommunicateData.LEAVE_CUR_GAME:
+                        showLeaveCurGameDialog();
+                        break;
+                    case CommunicateData.LEAVE_MULTIPLE_GAME:
+                        showLeaveMultipleGameDialog();
+                        break;
                 }
             case CommunicateData.CLIENT_RECEIVED_MESSAGE:   //客户端已经接收到消息，已经可以准备开始游戏了
 //                Toast.makeText(CooperateGameActivityWithThread.this, "客户端已接受我们服务端发出的消息", Toast.LENGTH_SHORT).show();
@@ -606,6 +612,12 @@ public class CooperateGameActivityWithThread extends BaseActivity implements Gam
                         if (curGameState != Constant.GAME_OVER && curGameState != Constant.GAME_INIT) //处于OVER状态不用Start
                             curGameState = Constant.GAME_START; //对方拒绝，那么继续开始游戏
                         Toast.makeText(CooperateGameActivityWithThread.this, "对方拒绝重新开始", Toast.LENGTH_SHORT).show();
+                        break;
+                    case CommunicateData.LEAVE_CUR_GAME:
+                        showLeaveCurGameDialog();
+                        break;
+                    case CommunicateData.LEAVE_MULTIPLE_GAME:
+                        showLeaveMultipleGameDialog();
                         break;
                 }
                 break;
