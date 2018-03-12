@@ -39,7 +39,7 @@ public class ServerSocketUtil {
 //        this.mIpAddressServer = ipAddressClient;
         this.mActivityHandler = handler;
         this.mServiceHandler = serviceHandler;
-        mAcceptThread = new AcceptThread();
+//        mAcceptThread = new AcceptThread();
         mServerThread = new ServerThread();
 
         try {
@@ -49,7 +49,18 @@ public class ServerSocketUtil {
         }
     }
 
+    public void setActivityHandler(Handler mActivityHandler) {
+        this.mActivityHandler = mActivityHandler;
+    }
+
+
+    /**
+     * 服务端开始监听客户端网络请求
+     */
     public void startListener() {
+        if (mAcceptThread == null || !mAcceptThread.isAlive() || mAcceptThread.isInterrupted()) {
+            mAcceptThread = new AcceptThread();
+        }
         mAcceptThread.start();
     }
 
@@ -68,7 +79,7 @@ public class ServerSocketUtil {
         }
     }
 
-    class ServerThread extends Thread{  //用于接受消息的一个线程
+    class ServerThread extends Thread {  //用于接受消息的一个线程
         @Override
         public void run() {
             DataInputStream reader;

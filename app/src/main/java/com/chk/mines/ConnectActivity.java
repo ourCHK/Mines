@@ -152,7 +152,7 @@ public class ConnectActivity extends BaseActivity implements View.OnClickListene
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.server:   //这边应该还加一个判断Ip地址是否合法的一个判断
+            case R.id.server:   //这边应该还加一个判断Ip地址是否合法的一个判断，已经在对话框哪那里加入了
                 showServerDialog();
                 mHandler.sendEmptyMessage(START_ACCEPT);
                 break;
@@ -232,6 +232,7 @@ public class ConnectActivity extends BaseActivity implements View.OnClickListene
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        isMonitorRun = false;
         if (clientDialog != null) {
             clientDialog.dismiss();
             clientDialog = null;

@@ -27,6 +27,11 @@ public class ClientConnectService extends ConnectService {
 
     private static final String TAG = ClientConnectService.class.getSimpleName();
 
+    /**
+     * 用于判断Service是否已经在运行了
+     */
+    boolean isServiceRunning;
+
     private LocalBinder localBinder;
     private ClientSocketUtil mClientSocketUtil;
 
@@ -50,6 +55,12 @@ public class ClientConnectService extends ConnectService {
     public ClientConnectService() {
         super();
         init();
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        setServiceRunning(true);
+        return super.onStartCommand(intent, flags, startId);
     }
 
     @SuppressLint("HandlerLeak")
@@ -89,6 +100,7 @@ public class ClientConnectService extends ConnectService {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        setServiceRunning(false);
         Log.i(TAG,"ClientConnectService Destroy");
     }
 
@@ -199,6 +211,14 @@ public class ClientConnectService extends ConnectService {
             }
         }
         return null;
+    }
+
+    public boolean isServiceRunning() {
+        return isServiceRunning;
+    }
+
+    public void setServiceRunning(boolean serviceRunning) {
+        isServiceRunning = serviceRunning;
     }
 
     public class LocalBinder extends Binder {

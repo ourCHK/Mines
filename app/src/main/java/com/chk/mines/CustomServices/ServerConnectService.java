@@ -24,6 +24,13 @@ import com.chk.mines.Utils.ServerSocketUtil;
 public class ServerConnectService extends ConnectService {
 
     private static final String TAG = ServerConnectService.class.getSimpleName();
+
+
+    /**
+     * 用于判断Service是否已经在运行了
+     */
+    static boolean isServiceRunning;
+
     private LocalBinder localBinder;
     private ServerSocketUtil mServerSocketUtil;
 
@@ -46,6 +53,12 @@ public class ServerConnectService extends ConnectService {
     public ServerConnectService() {
         super();
         init();
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        setServiceRunning(true);
+        return super.onStartCommand(intent, flags, startId);
     }
 
     @SuppressLint("HandlerLeak")
@@ -78,6 +91,7 @@ public class ServerConnectService extends ConnectService {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        setServiceRunning(false);
         Log.i(TAG,"ServerConnectService destroy");
     }
 
@@ -85,6 +99,9 @@ public class ServerConnectService extends ConnectService {
         Log.i(TAG,"startAccept");
         if (mServerSocketUtil == null)
             mServerSocketUtil = new ServerSocketUtil(mActivityHandler,mServiceHandler);
+        else {
+            mServerSocketUtil.setActivityHandler(mActivityHandler); //历史遗留问题，需要重新设置新的Activity的Handler
+        }
         mServerSocketUtil.startListener();
     }
 
@@ -174,6 +191,14 @@ public class ServerConnectService extends ConnectService {
             }
         }
         return null;
+    }
+
+    public static boolean isServiceRunning() {
+        return isServiceRunning;
+    }
+
+    public static void setServiceRunning(boolean serviceRunning) {
+        isServiceRunning = serviceRunning;
     }
 
     public class LocalBinder extends Binder {
