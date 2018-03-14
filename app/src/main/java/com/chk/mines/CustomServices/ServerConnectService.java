@@ -13,6 +13,7 @@ import android.widget.Toast;
 import com.chk.mines.BaseActivity;
 import com.chk.mines.Beans.CommunicateData;
 import com.chk.mines.ChooseGameTypeActivity;
+import com.chk.mines.ConnectActivity;
 import com.chk.mines.CooperateGameActivityWithThread;
 import com.chk.mines.Utils.Constant;
 import com.chk.mines.Utils.GsonUtil;
@@ -76,6 +77,13 @@ public class ServerConnectService extends ConnectService {
                         sendSocketDisconnectedBroadcast();
                         Toast.makeText(ServerConnectService.this, "对方已从连接断开", Toast.LENGTH_SHORT).show();
                         break;
+                    case Constant.SOCKET_ACCEPTED:
+                        if ((mCurActivityHandler = getCurActivityHandler())== null) {
+//                    Toast.makeText(this, "出现未知错误，请重启游戏", Toast.LENGTH_SHORT).show();
+                        } else {
+                            mCurActivityHandler.sendEmptyMessage(Constant.SOCKET_ACCEPTED);
+                        }
+                        break;
                 }
             }
         };
@@ -98,10 +106,7 @@ public class ServerConnectService extends ConnectService {
     public void startAccept() {
         Log.i(TAG,"startAccept");
         if (mServerSocketUtil == null)
-            mServerSocketUtil = new ServerSocketUtil(mActivityHandler,mServiceHandler);
-        else {
-            mServerSocketUtil.setActivityHandler(mActivityHandler); //历史遗留问题，需要重新设置新的Activity的Handler
-        }
+            mServerSocketUtil = new ServerSocketUtil(mServiceHandler);
         mServerSocketUtil.startListener();
     }
 
@@ -188,6 +193,9 @@ public class ServerConnectService extends ConnectService {
             } else if (activity instanceof CooperateGameActivityWithThread) {
                 Log.i("TAG","curShowActivity："+CooperateGameActivityWithThread.class.getSimpleName());
                 return ((CooperateGameActivityWithThread) activity).getHandler();
+            } else if (activity instanceof ConnectActivity) {
+                Log.i("TAG","curShowActivity:"+ConnectActivity.class.getSimpleName());
+                return ((ConnectActivity) activity).getHandler();
             }
         }
         return null;

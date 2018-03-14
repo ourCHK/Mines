@@ -31,9 +31,8 @@ public class ClientSocketUtil {
     ConnectThread mConnectThread;
     ClientThread mClientThread;
 
-    public ClientSocketUtil(String ipAddressServer,Handler handler,Handler serviceHandler) {
+    public ClientSocketUtil(String ipAddressServer,Handler serviceHandler) {
         this.mIpAddressServer = ipAddressServer;
-        this.mActivityHandler = handler;
         this.mServiceHandler = serviceHandler;
         mConnectThread = new ConnectThread();
         mClientThread = new ClientThread();
@@ -48,7 +47,7 @@ public class ClientSocketUtil {
         public void run() {
             try {
                 mSocket = new Socket(mIpAddressServer, mPort);
-                mActivityHandler.sendEmptyMessage(SOCKET_CONNECTED);    //其实这个地方最好就是把Activity的Handler从Socket的代码移除掉
+//                mActivityHandler.sendEmptyMessage(SOCKET_CONNECTED);    //其实这个地方最好就是把Activity的Handler从Socket的代码移除掉
                 mServiceHandler.sendEmptyMessage(ClientConnectService.SOCKET_CONNECTED);    //通知Service我们的Socket已经连接上去了
                 Log.i("SocketUtil","连接成功");
                 mClientThread.start();

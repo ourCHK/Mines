@@ -24,6 +24,7 @@ import com.chk.mines.CustomServices.ServerConnectService;
 
 import com.chk.mines.CustomDialogs.ClientDialog;
 import com.chk.mines.CustomDialogs.ServerDialog;
+import com.chk.mines.Utils.Constant;
 
 public class ConnectActivity extends BaseActivity implements View.OnClickListener{
     public final static String  TAG = ConnectActivity.class.getSimpleName();
@@ -90,18 +91,31 @@ public class ConnectActivity extends BaseActivity implements View.OnClickListene
                         startBindServerService();
                         Toast.makeText(ConnectActivity.this, "StartAccept", Toast.LENGTH_SHORT).show();
                         break;
-                    case SOCKET_CONNECTED:  //客户端已经连接到服务端
+//                    case SOCKET_CONNECTED:  //客户端已经连接到服务端
+//                        mServerOrClient = CLIENT;
+//                        clientDialog.dismiss();
+//                        Toast.makeText(ConnectActivity.this, "已连接到服务端", Toast.LENGTH_SHORT).show();
+//                        startChooseGameTypeActivity();
+//                        break;
+                    case Constant.SOCKET_CONNECTED:
                         mServerOrClient = CLIENT;
                         clientDialog.dismiss();
                         Toast.makeText(ConnectActivity.this, "已连接到服务端", Toast.LENGTH_SHORT).show();
                         startChooseGameTypeActivity();
                         break;
-                    case SOCKET_ACCEPTED:   //服务端已经接收了客户端
+                    case Constant.SOCKET_ACCEPTED:
                         mServerOrClient = SERVER;
                         serverDialog.dismiss();
                         Toast.makeText(ConnectActivity.this, "已接收到客户端", Toast.LENGTH_SHORT).show();
                         startChooseGameTypeActivity();
                         break;
+//                    case SOCKET_ACCEPTED:   //服务端已经接收了客户端
+//                        mServerOrClient = SERVER;
+//                        serverDialog.dismiss();
+//                        Toast.makeText(ConnectActivity.this, "已接收到客户端", Toast.LENGTH_SHORT).show();
+//                        startChooseGameTypeActivity();
+//                        break;
+
                     case RECEIVED_MESSAGE:
                         received((String)msg.obj);
                         Toast.makeText(ConnectActivity.this, " ReceivedMessage", Toast.LENGTH_SHORT).show();
@@ -110,6 +124,14 @@ public class ConnectActivity extends BaseActivity implements View.OnClickListene
             }
         };
         init();
+    }
+
+    /**
+     * 返回activity的Handler
+     * @return
+     */
+    public Handler getHandler() {
+        return mHandler;
     }
 
     void init() {

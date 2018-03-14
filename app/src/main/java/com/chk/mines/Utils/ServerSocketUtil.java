@@ -35,9 +35,9 @@ public class ServerSocketUtil {
 
     Timer timer;
 
-    public ServerSocketUtil(Handler handler,Handler serviceHandler) {
+    public ServerSocketUtil(Handler serviceHandler) {
 //        this.mIpAddressServer = ipAddressClient;
-        this.mActivityHandler = handler;
+//        this.mActivityHandler = handler;
         this.mServiceHandler = serviceHandler;
 //        mAcceptThread = new AcceptThread();
         mServerThread = new ServerThread();
@@ -68,11 +68,13 @@ public class ServerSocketUtil {
         @Override
         public void run() {
             try {
-                Log.i("SocketUtil","开始接受客户端请求");
+                Log.i("ServerSocketUtil","开始接受客户端请求");
                 mSocket = mServerSocket.accept();
                 mServerThread.start();
-                mActivityHandler.sendEmptyMessage(SOCKET_ACCEPTED);
-                Log.i("SocketUtil","接收到客户端请求");
+
+                mServiceHandler.sendEmptyMessage(Constant.SOCKET_ACCEPTED);
+//                mActivityHandler.sendEmptyMessage(SOCKET_ACCEPTED);
+                Log.i("ServerSocketUtil","接收到客户端请求");
             } catch (IOException e) {
                 e.printStackTrace();
             }

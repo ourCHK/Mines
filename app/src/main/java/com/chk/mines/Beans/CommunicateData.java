@@ -36,6 +36,9 @@ public class CommunicateData {
     public static final int LEAVE_CUR_GAME = 21; //对方退出当前游戏
     public static final int LEAVE_MULTIPLE_GAME = 22;    //对方离开多人游戏
 
+    public static final int SOCKET_CONNECTED = 23;
+    public static final int SOCKET_DISCONNECTED = 24;
+
     int game_state; //GameState that above;
 
     public static final int DRAG = 1;

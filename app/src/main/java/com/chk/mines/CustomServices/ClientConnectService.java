@@ -13,6 +13,7 @@ import android.widget.Toast;
 import com.chk.mines.BaseActivity;
 import com.chk.mines.Beans.CommunicateData;
 import com.chk.mines.ChooseGameTypeActivity;
+import com.chk.mines.ConnectActivity;
 import com.chk.mines.CooperateGameActivityWithThread;
 import com.chk.mines.Utils.ClientSocketUtil;
 import com.chk.mines.Utils.Constant;
@@ -80,6 +81,12 @@ public class ClientConnectService extends ConnectService {
                         break;
                     case SOCKET_CONNECTED:  //客户端连接上服务端的Socket的时候就开始发送心跳包
                         setSocketConnected(true);
+                        if ((mCurActivityHandler = getCurActivityHandler())== null) {
+//                    Toast.makeText(this, "出现未知错误，请重启游戏", Toast.LENGTH_SHORT).show();
+                        } else {
+                            mCurActivityHandler.sendEmptyMessage(Constant.SOCKET_CONNECTED);
+                        }
+                        //下面的代码可能要移除掉
                         Log.i(TAG,"客户端开始发送心跳包");
                         CommunicateData cd = new CommunicateData();
                         cd.setType(CommunicateData.HEART_BEAT);
@@ -106,7 +113,7 @@ public class ClientConnectService extends ConnectService {
 
     public void startConnect(String serverIpAddress) {
         if (mClientSocketUtil == null)
-            mClientSocketUtil = new ClientSocketUtil(serverIpAddress, mActivityHandler, mServiceHandler);
+            mClientSocketUtil = new ClientSocketUtil(serverIpAddress, mServiceHandler);
         mClientSocketUtil.startConnect();
     }
 
@@ -208,6 +215,9 @@ public class ClientConnectService extends ConnectService {
             } else if (activity instanceof CooperateGameActivityWithThread) {
                 Log.i("TAG","curShowActivity："+CooperateGameActivityWithThread.class.getSimpleName());
                 return ((CooperateGameActivityWithThread) activity).getHandler();
+            } else if (activity instanceof ConnectActivity) {
+                Log.i("TAG","curShowActivity:"+ConnectActivity.class.getSimpleName());
+                return ((ConnectActivity) activity).getHandler();
             }
         }
         return null;
