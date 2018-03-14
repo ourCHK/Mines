@@ -13,7 +13,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Timer;
 
-import static com.chk.mines.ConnectActivity.SOCKET_ACCEPTED;
 import static com.chk.mines.CustomServices.ServerConnectService.RECEIVED_MESSAGE;
 
 /**
@@ -35,6 +34,8 @@ public class ServerSocketUtil {
 
     Timer timer;
 
+    boolean isRunning = true;
+
     public ServerSocketUtil(Handler serviceHandler) {
 //        this.mIpAddressServer = ipAddressClient;
 //        this.mActivityHandler = handler;
@@ -42,11 +43,7 @@ public class ServerSocketUtil {
 //        mAcceptThread = new AcceptThread();
         mServerThread = new ServerThread();
 
-        try {
-            mServerSocket = new ServerSocket(mPort);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
     }
 
     public void setActivityHandler(Handler mActivityHandler) {
@@ -58,23 +55,31 @@ public class ServerSocketUtil {
      * 服务端开始监听客户端网络请求
      */
     public void startListener() {
-        if (mAcceptThread == null || !mAcceptThread.isAlive() || mAcceptThread.isInterrupted()) {
+        if (mAcceptThread == null || !mAcceptThread.isAlive()) {
             mAcceptThread = new AcceptThread();
+            mAcceptThread.start();
+        } else {
+            Log.i("ServerSocketUtil","服务端已开启");
         }
-        mAcceptThread.start();
     }
 
     class AcceptThread extends Thread {
         @Override
         public void run() {
             try {
-                Log.i("ServerSocketUtil","开始接受客户端请求");
-                mSocket = mServerSocket.accept();
-                mServerThread.start();
-
-                mServiceHandler.sendEmptyMessage(Constant.SOCKET_ACCEPTED);
-//                mActivityHandler.sendEmptyMessage(SOCKET_ACCEPTED);
-                Log.i("ServerSocketUtil","接收到客户端请求");
+                try {
+                    mServerSocket = new ServerSocket(mPort);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                while (isRunning) {
+                    Log.i("ServerSocketUtil","开始接受客户端请求");
+                    mSocket = mServerSocket.accept();
+                    mServerThread.start();
+                    mServiceHandler.sendEmptyMessage(Constant.SOCKET_ACCEPTED);
+                    Log.i("ServerSocketUtil","接收到客户端请求");
+                }
+                Log.i("ServerSocketUtil","Accepted线程结束");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -95,7 +100,7 @@ public class ServerSocketUtil {
                     msg.what = RECEIVED_MESSAGE;
                     msg.obj = message;
                     mServiceHandler.sendMessage(msg);
-                    Log.i("ServerSocketUtil",message);
+//                    Log.i("ServerSocketUtil",message);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -120,7 +125,7 @@ public class ServerSocketUtil {
 
     public void send(CommunicateData communicateData) {
         final String message = GsonUtil.communicateDataToString(communicateData);
-        Log.i("ServerSocketUtil","sendMessage:"+message);
+//        Log.i("ServerSocketUtil","sendMessage:"+message);
         new Thread(new Runnable() {
             @Override
             public void run() {

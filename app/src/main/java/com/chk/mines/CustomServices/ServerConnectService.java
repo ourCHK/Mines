@@ -54,11 +54,13 @@ public class ServerConnectService extends ConnectService {
     public ServerConnectService() {
         super();
         init();
+        Log.i(TAG,"ServerConnectService init");
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         setServiceRunning(true);
+        Log.i(TAG,"ServerConnectService onStartCommand");
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -70,7 +72,7 @@ public class ServerConnectService extends ConnectService {
             public void handleMessage(Message msg) {
                 switch (msg.what) {
                     case RECEIVED_MESSAGE:
-                        Log.i(TAG,"ServerConnectService Received Message:"+msg.obj.toString());
+//                        Log.i(TAG,"ServerConnectService Received Message:"+msg.obj.toString());
                         receivedMessage(msg);
                         break;
                     case SOCKET_DISCONNECTED:   //我们这里可以发送一个广播出去
@@ -93,6 +95,7 @@ public class ServerConnectService extends ConnectService {
     public IBinder onBind(Intent intent) {
         // TODO: Return the communication channel to the service.
 //        throw new UnsupportedOperationException("Not yet implemented");
+        Log.i(TAG,"ServerConnectService onBind");
         return localBinder;
     }
 
