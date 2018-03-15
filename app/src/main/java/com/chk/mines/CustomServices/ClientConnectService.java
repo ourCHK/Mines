@@ -105,6 +105,12 @@ public class ClientConnectService extends ConnectService {
     }
 
     @Override
+    public boolean onUnbind(Intent intent) {
+        Log.i(TAG,"ClientConnectService onUnbind");
+        return super.onUnbind(intent);
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
         setServiceRunning(false);

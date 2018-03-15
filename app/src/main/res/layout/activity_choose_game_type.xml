@@ -52,7 +52,7 @@
             app:layout_columnWeight="1"
             app:layout_rowWeight="1"
             android:id="@+id/type1"
-            android:text="8*8"
+            android:text="8*8\n(10mines)"
             android:textSize="30dp"
             />
 
@@ -60,7 +60,7 @@
             app:layout_columnWeight="1"
             app:layout_rowWeight="1"
             android:id="@+id/type2"
-            android:text="16*16"
+            android:text="16*16\n(40mines)"
             android:textSize="30dp"
             />
 
@@ -68,7 +68,7 @@
             app:layout_columnWeight="1"
             app:layout_rowWeight="1"
             android:id="@+id/type3"
-            android:text="16*30"
+            android:text="16*30\n(99mines)"
             android:textSize="30dp"
             />
 

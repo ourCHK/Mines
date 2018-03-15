@@ -21,6 +21,8 @@ import static com.chk.mines.CustomServices.ServerConnectService.RECEIVED_MESSAGE
 
 public class ServerSocketUtil {
 
+    static final String TAG = ServerSocketUtil.class.getSimpleName();
+
     private String mIpAddressServer;    //貌似不用这个也可以
     private ServerSocket mServerSocket;
     private Socket mSocket;
@@ -35,15 +37,13 @@ public class ServerSocketUtil {
     Timer timer;
 
     boolean isRunning = true;
+    boolean isServerThreadRunning = true;
 
     public ServerSocketUtil(Handler serviceHandler) {
 //        this.mIpAddressServer = ipAddressClient;
 //        this.mActivityHandler = handler;
         this.mServiceHandler = serviceHandler;
 //        mAcceptThread = new AcceptThread();
-        mServerThread = new ServerThread();
-
-
     }
 
     public void setActivityHandler(Handler mActivityHandler) {
@@ -75,6 +75,9 @@ public class ServerSocketUtil {
                 while (isRunning) {
                     Log.i("ServerSocketUtil","开始接受客户端请求");
                     mSocket = mServerSocket.accept();
+
+                    mServerThread = new ServerThread();
+                    isServerThreadRunning = true;
                     mServerThread.start();
                     mServiceHandler.sendEmptyMessage(Constant.SOCKET_ACCEPTED);
                     Log.i("ServerSocketUtil","接收到客户端请求");
@@ -89,13 +92,14 @@ public class ServerSocketUtil {
     class ServerThread extends Thread {  //用于接受消息的一个线程
         @Override
         public void run() {
-            DataInputStream reader;
+            Log.i(TAG,"ServerThread is Running");
+            DataInputStream reader = null;
             try {
                 // 获取读取流
                 reader = new DataInputStream(mSocket.getInputStream());
-                while (true) {
+                while (isServerThreadRunning) {
                     // 读取数据
-                    String message = reader.readUTF();
+                    String message = reader.readUTF();  //阻塞方法
                     Message msg = mServiceHandler.obtainMessage();
                     msg.what = RECEIVED_MESSAGE;
                     msg.obj = message;
@@ -103,9 +107,27 @@ public class ServerSocketUtil {
 //                    Log.i("ServerSocketUtil",message);
                 }
             } catch (IOException e) {
+                Log.i(TAG,"StopThread Error!");
                 e.printStackTrace();
+            } finally {
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
+            Log.i(TAG,"ServerThread is Stopped");
         }
+    }
+
+    /**
+     * 停止当前正在通信的Thread
+     */
+    public void stopCurrentServerThread() {
+        if (mServerThread != null && mServerThread.isAlive())
+            isServerThreadRunning = false;
     }
 
     public void send(final String message) {

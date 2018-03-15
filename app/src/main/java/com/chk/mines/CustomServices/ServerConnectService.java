@@ -81,7 +81,6 @@ public class ServerConnectService extends ConnectService {
                         break;
                     case Constant.SOCKET_ACCEPTED:
                         if ((mCurActivityHandler = getCurActivityHandler())== null) {
-//                    Toast.makeText(this, "出现未知错误，请重启游戏", Toast.LENGTH_SHORT).show();
                         } else {
                             mCurActivityHandler.sendEmptyMessage(Constant.SOCKET_ACCEPTED);
                         }
@@ -100,6 +99,12 @@ public class ServerConnectService extends ConnectService {
     }
 
     @Override
+    public boolean onUnbind(Intent intent) {
+        Log.i(TAG,"ServerConnectService onUnbind");
+        return super.onUnbind(intent);
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
         setServiceRunning(false);
@@ -111,6 +116,14 @@ public class ServerConnectService extends ConnectService {
         if (mServerSocketUtil == null)
             mServerSocketUtil = new ServerSocketUtil(mServiceHandler);
         mServerSocketUtil.startListener();
+    }
+
+    /**
+     * 停止当前正在通信的Thread
+     */
+    public void stopCurrentServerThread() {
+        if (mServerSocketUtil != null)
+            mServerSocketUtil.stopCurrentServerThread();
     }
 
     public void sendMessage(String message) {
@@ -179,7 +192,6 @@ public class ServerConnectService extends ConnectService {
                     mGameActivityHandler.sendEmptyMessage(Constant.BIND_SERVICE);
                 }
                 break;
-
         }
     }
 

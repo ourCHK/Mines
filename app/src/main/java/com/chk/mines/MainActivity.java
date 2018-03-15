@@ -10,7 +10,9 @@ import android.widget.Button;
 import android.widget.TableLayout;
 import android.widget.Toast;
 
+import com.chk.mines.CustomDialogs.RecordDialog;
 import com.chk.mines.CustomDialogs.RestartDialog;
+import com.chk.mines.CustomServices.ServerConnectService;
 import com.chk.mines.Interfaces.OnDialogButtonClickListener;
 import com.chk.mines.Utils.BindView;
 import com.chk.mines.Utils.InitBindView;
@@ -28,44 +30,24 @@ import static com.chk.mines.GameActivity.TYPE_4;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     RestartDialog restartDialog;
+    RecordDialog recordDialog;
 
     View mCurrentLayout;
     View mPreLayout;
 
-    //    @BindView(R.id.tableLayout)
     TableLayout mTableLayout;
-
-    //    @BindView(R.id.gridView)
     GridLayout mGridLayout;
-
-    //    @BindView(R.id.connectType)
     TableLayout mConnectType;
-
-    //    @BindView(R.id.doublePlayer)
     Button doublePlayer;
-
-    //    @BindView(R.id.singlePlayer)
     Button singlePlayer;
-
-    //    @BindView(R.id.type1)
     Button mType1;
-
-    //    @BindView(R.id.type2)
     Button mType2;
-
-    //    @BindView(R.id.type3)
     Button mType3;
-
-    //    @BindView(R.id.type4)
     Button mType4;
-
-    //    @BindView(R.id.wifiConnector)
     Button mWifiConnector;
-
-    //    @BindView(R.id.bluetoothConnector)
     Button mBlueConnector;
-
     Button mAbout;
+    Button mRecord;
 
     int mConnectorType = -1;
 
@@ -87,6 +69,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mConnectType = findViewById(R.id.connectType);
         doublePlayer = findViewById(R.id.doublePlayer);
         singlePlayer = findViewById(R.id.singlePlayer);
+        mRecord = findViewById(R.id.record);
         mAbout = findViewById(R.id.about);
         mType1 = findViewById(R.id.type1);
         mType2 = findViewById(R.id.type2);
@@ -107,6 +90,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mWifiConnector.setOnClickListener(this);
         mBlueConnector.setOnClickListener(this);
         mAbout.setOnClickListener(this);
+        mRecord.setOnClickListener(this);
     }
 
     @Override
@@ -144,6 +128,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.about:
                 showRestartDialog();
+                break;
+            case R.id.record:
+                showRecordDialog();
                 break;
 
         }
@@ -200,7 +187,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     void showRestartDialog() {  //测试
         if (restartDialog == null) {
-            restartDialog = new RestartDialog(this, R.style.Custom_Dialog_Style);
+            restartDialog = new RestartDialog(this, R.style.Theme_AppCompat_Dialog);
             restartDialog.setOnDialogButtonClickListener(new OnDialogButtonClickListener() {
                 @Override
                 public void onLeftClick() {     //返回
@@ -213,6 +200,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             });
         }
         restartDialog.show();
+    }
 
+    void showRecordDialog() {
+        if (recordDialog == null) {
+            recordDialog = new RecordDialog(this,R.style.Theme_AppCompat_Dialog);
+        }
+        recordDialog.show();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Intent intent = new Intent(this, ServerConnectService.class);
+        stopService(intent);
     }
 }

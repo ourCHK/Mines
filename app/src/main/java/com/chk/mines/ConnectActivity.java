@@ -84,10 +84,12 @@ public class ConnectActivity extends BaseActivity implements View.OnClickListene
                         break;
                     case START_CONNECT: //客户端开始连接服务端
                         IpAddressServer = (String) msg.obj;
+//                        startServerService();   //保证一直在后台运行，这个地方可能可以去掉
                         startBindClientService();
                         Toast.makeText(ConnectActivity.this, "StartConnect", Toast.LENGTH_SHORT).show();
                         break;
                     case START_ACCEPT:  //服务端开始接收客户端请求
+                        startServerService();   //保证一直在后台运行
                         startBindServerService();
                         Toast.makeText(ConnectActivity.this, "StartAccept", Toast.LENGTH_SHORT).show();
                         break;
@@ -273,6 +275,20 @@ public class ConnectActivity extends BaseActivity implements View.OnClickListene
             unbindService(mClientConnection);
         }
     }
+
+    void startServerService() {
+        if (!ServerConnectService.isServiceRunning()) {
+            Intent intent = new Intent(this,ServerConnectService.class);
+            startService(intent);
+        }
+    }
+
+//    void startClientService() {
+//        if (!ClientConnectService.is)
+//        Intent intent = new Intent(this,ClientConnectService.class);
+//        startService(intent);
+//    }
+
 
     void startBindServerService() {
         Intent serverIntent = new Intent(this,ServerConnectService.class);
