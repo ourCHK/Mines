@@ -4,18 +4,22 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayout;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.widget.Button;
 import android.widget.TableLayout;
 import android.widget.Toast;
 
+import com.chk.mines.Beans.Record;
+import com.chk.mines.CustomAdapter.RecordAdapter;
 import com.chk.mines.CustomDialogs.RecordDialog;
 import com.chk.mines.CustomDialogs.RestartDialog;
 import com.chk.mines.CustomServices.ServerConnectService;
 import com.chk.mines.Interfaces.OnDialogButtonClickListener;
-import com.chk.mines.Utils.BindView;
-import com.chk.mines.Utils.InitBindView;
+
+import java.util.ArrayList;
 
 import static com.chk.mines.ConnectActivity.BLUETOOTH;
 import static com.chk.mines.ConnectActivity.WIFI;
@@ -35,6 +39,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     View mCurrentLayout;
     View mPreLayout;
 
+    RecyclerView mRecordRecyclerView;
     TableLayout mTableLayout;
     GridLayout mGridLayout;
     TableLayout mConnectType;
@@ -51,8 +56,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     int mConnectorType = -1;
 
-    int mChoosedGameType;
-    boolean isSingleGame = true;
+    int mChooseGameType;
+
+    ArrayList<Record> mTypeOneList;
+    ArrayList<Record> mTypeTwoList;
+    ArrayList<Record> mTypeThreeList;
+    RecordAdapter mRecordAdapter;
 
 
     @Override
@@ -63,7 +72,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     void init() {
-//        InitBindView.init(this);
+        mRecordRecyclerView = findViewById(R.id.recordRecyclerView);
         mTableLayout = findViewById(R.id.tableLayout);
         mGridLayout = findViewById(R.id.gridView);
         mConnectType = findViewById(R.id.connectType);
@@ -91,6 +100,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mBlueConnector.setOnClickListener(this);
         mAbout.setOnClickListener(this);
         mRecord.setOnClickListener(this);
+
+//        dataInit();
+    }
+
+    void dataInit() {
+        mTypeOneList = new ArrayList<>();
+        mTypeTwoList = new ArrayList<>();
+        mTypeThreeList = new ArrayList<>();
+        for (int i=0;i<5;i++) {
+            Record record = new Record();
+            record.setName("CHK");
+            record.setGameTime(1);
+            mTypeOneList.add(record);
+            mTypeTwoList.add(record);
+            mTypeThreeList.add(record);
+        }
+        mRecordAdapter = new RecordAdapter(mTypeOneList);
+        mRecordRecyclerView.setAdapter(mRecordAdapter);
+        mRecordRecyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
 
     @Override
@@ -103,19 +131,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 openNewLayout(mConnectType);
                 break;
             case R.id.type1:
-                mChoosedGameType = TYPE_1;
+                mChooseGameType = TYPE_1;
                 startGameActivity();
                 break;
             case R.id.type2:
-                mChoosedGameType = TYPE_2;
+                mChooseGameType = TYPE_2;
                 startGameActivity();
                 break;
             case R.id.type3:
-                mChoosedGameType = TYPE_3;
+                mChooseGameType = TYPE_3;
                 startGameActivity();
                 break;
             case R.id.type4:
-                mChoosedGameType = TYPE_4;
+                mChooseGameType = TYPE_4;
                 startGameActivity();
                 break;
             case R.id.wifiConnector:
@@ -137,10 +165,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     void startGameActivity() {
-        mChoosedGameType = mChoosedGameType | FLAG_IS_SINGLE;
+        mChooseGameType = mChooseGameType | FLAG_IS_SINGLE;
 
         Intent intent = new Intent(this, GameActivity.class);
-        intent.putExtra(GAME_TYPE, mChoosedGameType);
+        intent.putExtra(GAME_TYPE, mChooseGameType);
         startActivity(intent);
     }
 

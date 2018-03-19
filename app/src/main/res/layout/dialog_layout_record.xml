@@ -70,6 +70,10 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content" />
     </LinearLayout>
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recordRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-
+    </android.support.v7.widget.RecyclerView>
 </LinearLayout>
