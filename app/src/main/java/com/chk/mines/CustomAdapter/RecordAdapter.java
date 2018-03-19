@@ -32,9 +32,9 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordHold
     @Override
     public void onBindViewHolder(RecordHolder holder, int position) {
         Record record = mRecordList.get(position);
-        holder.name.setText(position);
-        holder.name.setText(record.getName());
-        holder.name.setText(record.getGameTime());
+        holder.rank.setText((position+1)+"");
+        holder.name.setText(record.getName()+"");
+        holder.time.setText(record.getGameTime()+"");
     }
 
     @Override
@@ -54,9 +54,9 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordHold
 
         public RecordHolder(View itemView) {
             super(itemView);
-            rank = itemView.findViewById(R.id.rank);
-            name = itemView.findViewById(R.id.name);
-            time = itemView.findViewById(R.id.time);
+            rank = itemView.findViewById(R.id.recordRank);
+            name = itemView.findViewById(R.id.recordName);
+            time = itemView.findViewById(R.id.recordTime);
         }
     }
 }
