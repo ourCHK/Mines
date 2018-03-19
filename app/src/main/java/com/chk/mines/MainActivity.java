@@ -100,8 +100,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mBlueConnector.setOnClickListener(this);
         mAbout.setOnClickListener(this);
         mRecord.setOnClickListener(this);
-
 //        dataInit();
+
     }
 
     void dataInit() {
