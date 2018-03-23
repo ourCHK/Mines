@@ -6,6 +6,13 @@ package com.chk.mines.Interfaces;
  */
 
 public interface OnDialogButtonClickListener {
+    /**
+     * 点击左按钮
+     */
     void onLeftClick();
+
+    /**
+     * 点击右按钮
+     */
     void onRightClick();
 }

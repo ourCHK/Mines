@@ -34,7 +34,7 @@ import java.util.TimerTask;
 import static com.chk.mines.GameActivity.PointType.DRAG;
 import static com.chk.mines.GameActivity.PointType.FLAG;
 
-public class GameActivity extends AppCompatActivity implements View.OnClickListener,GameState{
+public class GameActivity extends BaseActivity implements View.OnClickListener,GameState{
     public final static String TAG = GameActivity.class.getSimpleName();
     public final static String GAME_TYPE = "GameType";
     public final static String SERVER_OR_CLIENT = "ServerOrClient";

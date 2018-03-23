@@ -117,20 +117,20 @@ public class RecordDialog extends Dialog {
         mTypeThreeList = new ArrayList<>();
         for (int i=0;i<5;i++) {
             Record record = new Record();
-            record.setName("CHK1");
+            record.setGamePlayer("CHK1");
             record.setGameTime(1);
             mTypeOneList.add(record);
             mCurrentList.add(record);
         }
         for (int i=0;i<5;i++) {
             Record record = new Record();
-            record.setName("CHK2");
+            record.setGamePlayer("CHK2");
             record.setGameTime(2);
             mTypeTwoList.add(record);
         }
         for (int i=0;i<5;i++) {
             Record record = new Record();
-            record.setName("CHK3");
+            record.setGamePlayer("CHK3");
             record.setGameTime(3);
             mTypeThreeList.add(record);
         }

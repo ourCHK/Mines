@@ -1,20 +1,20 @@
 <resources>
-    <string name="app_name">Mines</string>
-    <string name="single_player">单人游戏</string>
-    <string name="double_player">双人游戏</string>
-    <string name="record">记录榜</string>
-    <string name="about">关于</string>
-    <string name="wifi_connector">Wifi联机</string>
-    <string name="bluetooth_connector">BlueTooth联机</string>
-    <string name="server">我要当服务端</string>
-    <string name="client">我要当客户端</string>
-    <string name="chooseSpec">选择规格</string>
+    <string gamePlayer="app_name">Mines</string>
+    <string gamePlayer="single_player">单人游戏</string>
+    <string gamePlayer="double_player">双人游戏</string>
+    <string gamePlayer="record">记录榜</string>
+    <string gamePlayer="about">关于</string>
+    <string gamePlayer="wifi_connector">Wifi联机</string>
+    <string gamePlayer="bluetooth_connector">BlueTooth联机</string>
+    <string gamePlayer="server">我要当服务端</string>
+    <string gamePlayer="client">我要当客户端</string>
+    <string gamePlayer="chooseSpec">选择规格</string>
 
-    <string name="flag">标记</string>
-    <string name="paused">暂停</string>
-    <string name="restart">重新开始</string>
+    <string gamePlayer="flag">标记</string>
+    <string gamePlayer="paused">暂停</string>
+    <string gamePlayer="restart">重新开始</string>
 
-    <string name="custom">自定义</string>
+    <string gamePlayer="custom">自定义</string>
 
-    <string name="HotspotIpAddress">192.168.43.1</string>
+    <string gamePlayer="HotspotIpAddress">192.168.43.1</string>
 </resources>
