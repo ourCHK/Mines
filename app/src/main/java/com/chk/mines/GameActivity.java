@@ -34,7 +34,7 @@ import java.util.TimerTask;
 import static com.chk.mines.GameActivity.PointType.DRAG;
 import static com.chk.mines.GameActivity.PointType.FLAG;
 
-public class GameActivity extends AppCompatActivity implements View.OnClickListener,GameState{
+public class GameActivity extends BaseActivity implements View.OnClickListener,GameState{
     public final static String TAG = GameActivity.class.getSimpleName();
     public final static String GAME_TYPE = "GameType";
     public final static String SERVER_OR_CLIENT = "ServerOrClient";
@@ -83,34 +83,34 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
     LinearLayout mMainLayout;   //整个窗口的Layout
     LinearLayout mOperateLayout;    //操作窗口的Layout
 
-//    @BindView(R.id.mineViewContainer)
+    //    @BindView(R.id.mineViewContainer)
     LinearLayout mMineViewContainer;
 
-//    @BindView(R.id.shovel)
+    //    @BindView(R.id.shovel)
     ImageView mShovel;
 
-//    @BindView(R.id.flag)
+    //    @BindView(R.id.flag)
     ImageView mFlag;
 
-//    @BindView(R.id.flag_confused)
+    //    @BindView(R.id.flag_confused)
     ImageView mFlagConfused;
 
-//    @BindView(R.id.timeView)
+    //    @BindView(R.id.timeView)
     TimeTextView mTimeView;
 
-//    @BindView(R.id.restart)
+    //    @BindView(R.id.restart)
     ImageView mRestart;
 
-//    @BindView(R.id.startAndPaused)
+    //    @BindView(R.id.startAndPaused)
     ImageView mStartAndPaused;
 
-//    @BindView(R.id.remainMines)
+    //    @BindView(R.id.remainMines)
     TextView mRemainMines;
 
-//    @BindView(R.id.gameView)
+    //    @BindView(R.id.gameView)
     ScrollView mGameView;
 
-//    @BindView(R.id.pausedView)
+    //    @BindView(R.id.pausedView)
     TextView mPausedView;
 
 //    ServerConnectService mServerConnectService;

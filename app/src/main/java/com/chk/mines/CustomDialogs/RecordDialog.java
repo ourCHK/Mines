@@ -15,6 +15,7 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.chk.mines.Beans.Record;
+import com.chk.mines.Beans.RecordList;
 import com.chk.mines.CustomAdapter.RecordAdapter;
 import com.chk.mines.R;
 
@@ -117,23 +118,24 @@ public class RecordDialog extends Dialog {
         mTypeThreeList = new ArrayList<>();
         for (int i=0;i<5;i++) {
             Record record = new Record();
-            record.setName("CHK1");
-            record.setGameTime(1);
+            record.setGamePlayer("CHK1");
+            record.setGameTime(i);
             mTypeOneList.add(record);
             mCurrentList.add(record);
         }
         for (int i=0;i<5;i++) {
             Record record = new Record();
-            record.setName("CHK2");
-            record.setGameTime(2);
+            record.setGamePlayer("CHK2");
+            record.setGameTime(i);
             mTypeTwoList.add(record);
         }
         for (int i=0;i<5;i++) {
             Record record = new Record();
-            record.setName("CHK3");
-            record.setGameTime(3);
+            record.setGamePlayer("CHK3");
+            record.setGameTime(i);
             mTypeThreeList.add(record);
         }
+        RecordList recordList = new RecordList(mTypeOneList);
         mRecordAdapter = new RecordAdapter(mCurrentList);
         mRecyclerView.setAdapter(mRecordAdapter);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(mContext));

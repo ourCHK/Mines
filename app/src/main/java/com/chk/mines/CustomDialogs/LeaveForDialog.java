@@ -79,8 +79,8 @@ public class LeaveForDialog extends Dialog implements OnTimeEnd {
 //            public void handleMessage(Message msg) {
 //                switch (msg.what) {
 //                    case Constant.TIME_CHANGED:
-//                        mLeftButton.setText("拒绝("+time+")");
-//                        if (time == 0) {
+//                        mLeftButton.setText("拒绝("+timeText+")");
+//                        if (timeText == 0) {
 //                            timer.cancel();
 //                            mLeftButton.performClick();
 //                        }
@@ -94,7 +94,7 @@ public class LeaveForDialog extends Dialog implements OnTimeEnd {
 //        mShowText = findViewById(R.id.showText);
 //
 //        mShowText.setText(showText);
-//        mLeftButton.setText("拒绝("+time+")");
+//        mLeftButton.setText("拒绝("+timeText+")");
 //
 //        mLeftButton.setOnClickListener(new View.OnClickListener() {
 //            @Override
@@ -153,12 +153,12 @@ public class LeaveForDialog extends Dialog implements OnTimeEnd {
     protected void onStart() {
         super.onStart();
         Log.i(TAG,"start");
-//        mLeftButton.setText("拒绝("+time+")");
+//        mLeftButton.setText("拒绝("+timeText+")");
 //        timer = new Timer();
 //        timer.schedule(new TimerTask() {
 //            @Override
 //            public void run() {
-//                time--;
+//                timeText--;
 //                mDialogHandler.sendEmptyMessage(Constant.TIME_CHANGED);
 //            }
 //        },1000,1000);

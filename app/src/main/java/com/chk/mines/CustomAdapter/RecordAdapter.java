@@ -33,7 +33,7 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordHold
     public void onBindViewHolder(RecordHolder holder, int position) {
         Record record = mRecordList.get(position);
         holder.rank.setText((position+1)+"");
-        holder.name.setText(record.getName()+"");
+        holder.name.setText(record.getGamePlayer()+"");
         holder.time.setText(record.getGameTime()+"");
     }
 

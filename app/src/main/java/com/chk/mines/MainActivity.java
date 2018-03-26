@@ -31,7 +31,7 @@ import static com.chk.mines.GameActivity.TYPE_3;
 import static com.chk.mines.GameActivity.TYPE_4;
 
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends BaseActivity implements View.OnClickListener {
 
     RestartDialog restartDialog;
     RecordDialog recordDialog;
@@ -57,11 +57,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     int mConnectorType = -1;
 
     int mChooseGameType;
-
-    ArrayList<Record> mTypeOneList;
-    ArrayList<Record> mTypeTwoList;
-    ArrayList<Record> mTypeThreeList;
-    RecordAdapter mRecordAdapter;
 
 
     @Override
@@ -100,25 +95,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mBlueConnector.setOnClickListener(this);
         mAbout.setOnClickListener(this);
         mRecord.setOnClickListener(this);
-//        dataInit();
 
-    }
-
-    void dataInit() {
-        mTypeOneList = new ArrayList<>();
-        mTypeTwoList = new ArrayList<>();
-        mTypeThreeList = new ArrayList<>();
-        for (int i=0;i<5;i++) {
-            Record record = new Record();
-            record.setName("CHK");
-            record.setGameTime(1);
-            mTypeOneList.add(record);
-            mTypeTwoList.add(record);
-            mTypeThreeList.add(record);
-        }
-        mRecordAdapter = new RecordAdapter(mTypeOneList);
-        mRecordRecyclerView.setAdapter(mRecordAdapter);
-        mRecordRecyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
 
     @Override
@@ -155,9 +132,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 startConnectActivity();
                 break;
             case R.id.about:
-                showRestartDialog();
+//                showRestartDialog();
+                showNewRecordDialog(100);
                 break;
             case R.id.record:
+                checkSize();
                 showRecordDialog();
                 break;
 
