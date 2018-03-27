@@ -2,7 +2,6 @@ package com.chk.mines.Beans;
 
 import android.util.Log;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 /**
@@ -11,11 +10,11 @@ import java.util.ArrayList;
  */
 public class RecordList {
     private final static String TAG  = RecordList.class.getSimpleName();
-    int size;   //链表的长度
-    RecordNode recordNodeHead;
+    static int size;   //链表的长度
+    static RecordNode recordNodeHead;
 
     public RecordList(ArrayList<Record> recordList) {
-        if (size != 0) {
+        if (recordList.size() != 0) {
             for (Record record:recordList) {
                 RecordNode recordNode = new RecordNode();
                 recordNode.record = record;
@@ -28,9 +27,10 @@ public class RecordList {
 
         RecordNode currentNode = recordNodeHead;
         while (currentNode != null) {
-            Log.i(TAG,currentNode.record.getGameTime()+"");
+            Log.i(TAG,"CurrentNodeTime:"+currentNode.record.getGameTime());
+            currentNode = currentNode.nextNode;
         }
-        Log.i(TAG,getLongestTime()+"");
+        Log.i(TAG,"longestTime:"+getLongestTime());
     }
 
     /**
@@ -55,7 +55,7 @@ public class RecordList {
                 } else {
                     previousNode = currentNode;
                     currentNode = currentNode.nextNode;
-                    if (currentNode == null) {  //判断当前节点是否为null，是的话说明不足5个直接插入即可
+                    if (currentNode == null) {  //判断当前节点是否为null，是的话说明不足5个直接插入即可,其实这里还是有个bug,如果是第五个那么则应该还会插入到最后一个地方
                         previousNode.nextNode = recordNode;
                     }
                 }
@@ -73,7 +73,7 @@ public class RecordList {
      * 获取游戏完成的最长时间
      * @return  返回游戏时间，如果没有游戏记录则返回-1
      */
-    int getLongestTime() {
+    public static int getLongestTime() {
         int currentTime = -1;
         if (size > 0) {
             RecordNode currentNode = recordNodeHead;

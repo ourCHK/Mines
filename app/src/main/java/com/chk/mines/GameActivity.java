@@ -16,6 +16,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.chk.mines.Beans.Mine;
+import com.chk.mines.Beans.Record;
 import com.chk.mines.Interfaces.GameState;
 import com.chk.mines.Interfaces.OnDialogButtonClickListener;
 
@@ -553,7 +554,15 @@ public class GameActivity extends BaseActivity implements View.OnClickListener,G
     public void gameSuccess() {
         GAME_STATE = GAME_SUCCESS;
         mStartAndPaused.setImageResource(R.mipmap.pause);
-        showCustomDialog(GAME_SUCCESS);
+        if (isNewRecord(time, mChoosedGameType)) {  //新纪录
+            Record record = new Record();
+            record.setGameData(System.currentTimeMillis()+"");
+            record.setGameTime(time);
+            record.setGameType(mChoosedGameType);
+            showNewRecordDialog(record);
+
+        } else
+            showCustomDialog(GAME_SUCCESS);
         if (timer != null)
             timer.cancel();
         Log.i("GameActivity","Success");

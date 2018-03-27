@@ -41,6 +41,7 @@ public abstract class NewRecordDialog extends Dialog implements OnDialogButtonCl
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.dialog_layout_new_record);
+        setCancelable(false);
 
         timeText = findViewById(R.id.successTime);
         leftButton = findViewById(R.id.leftButton);
@@ -53,8 +54,6 @@ public abstract class NewRecordDialog extends Dialog implements OnDialogButtonCl
             @Override
             public void onClick(View v) {
                 onLeftClick();
-                dismiss();
-                setInputNameText("");
             }
         });
 
@@ -62,14 +61,20 @@ public abstract class NewRecordDialog extends Dialog implements OnDialogButtonCl
             @Override
             public void onClick(View v) {
                 onRightClick();
-                dismiss();
-                setInputNameText("");
             }
         });
     }
 
-    public void getInputNameText() {
-        inputName.getText().toString();
+    /**
+     * 设置完成时间
+     * @param time
+     */
+    public void setTimeText(int time) {
+        timeText.setText("时间："+time+"秒");
+    }
+
+    public String getInputNameText() {
+        return inputName.getText().toString();
     }
 
     public void setInputNameText(String text) {

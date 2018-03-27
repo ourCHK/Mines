@@ -133,7 +133,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 break;
             case R.id.about:
 //                showRestartDialog();
-                showNewRecordDialog(100);
+//                showNewRecordDialog(100);
+                startQuery();
                 break;
             case R.id.record:
                 checkSize();

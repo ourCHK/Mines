@@ -26,6 +26,8 @@ import java.util.LinkedList;
 
 public class BaseActivity extends AppCompatActivity {
 
+    final static String TAG = BaseActivity.class.getSimpleName();
+
     public static ArrayList<Record> mTypeOneList = new ArrayList<>(5);
     public static ArrayList<Record> mTypeTwoList = new ArrayList<>(5);
     public static ArrayList<Record> mTypeThreeList = new ArrayList<>(5);
@@ -148,23 +150,27 @@ public class BaseActivity extends AppCompatActivity {
 
     /**
      * 显示新纪录的dialog
-     * @param time
      */
-    public void showNewRecordDialog(int time) {
+    public void showNewRecordDialog(final Record record) {
         if (newRecordDialog == null) {
-            newRecordDialog = new NewRecordDialog(this,R.style.Custom_Dialog_Style,time) {
+            newRecordDialog = new NewRecordDialog(this,R.style.Custom_Dialog_Style,record.getGameTime()) {
                 @Override
                 public void onLeftClick() {
-
+                    setInputNameText("");
+                    dismiss();
                 }
 
                 @Override
                 public void onRightClick() {
-
+                    record.setGamePlayer(newRecordDialog.getInputNameText());
+                    startInsert(record);
+                    setInputNameText("");
+                    dismiss();
                 }
             };
         }
         newRecordDialog.show();
+        newRecordDialog.setTimeText(record.getGameTime());
     }
 
     /**
@@ -181,6 +187,19 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     public void parseCursor(Cursor cursor,ArrayList<Record> arrayList) {
+//        while (cursor.moveToNext()) {
+//            int gameType = cursor.getInt(cursor.getColumnIndex("game_type"));
+//                int gameTime = cursor.getInt(cursor.getColumnIndex("game_time"));
+//                String gamePlayer = cursor.getString(cursor.getColumnIndex("game_player"));
+//                String gameData = cursor.getString(cursor.getColumnIndex("game_data"));
+//                Record record = new Record();
+//                record.setGameType(gameType);
+//                record.setGameTime(gameTime);
+//                record.setGamePlayer(gamePlayer);
+//                record.setGameData(gameData);
+//                arrayList.add(record);
+//                Log.i(TAG,"parseCursor:     GameType:"+gameType+"  gameTime:"+gameTime+" game_player:"+gamePlayer+" game_data:"+gameData);
+//        }
         if (cursor.moveToFirst()) {
             do {
                 int gameType = cursor.getInt(cursor.getColumnIndex("game_type"));
@@ -193,54 +212,68 @@ public class BaseActivity extends AppCompatActivity {
                 record.setGamePlayer(gamePlayer);
                 record.setGameData(gameData);
                 arrayList.add(record);
+                Log.i(TAG,"parseCursor:     GameType:"+gameType+"  gameTime:"+gameTime+" game_player:"+gamePlayer+" game_data:"+gameData);
             } while (cursor.moveToNext());
         }
     }
 
+    /**
+     * 插入数据到数据库中去
+     * @param record
+     */
     public void startInsert(Record record) {
-        ArrayList<Record> recordList = null;
-        switch (record.getGameType()) {
-            case Constant.TYPE_1:
-                recordList = mTypeOneList;
-                break;
-            case Constant.TYPE_2:
-                recordList = mTypeTwoList;
-                break;
-            case Constant.TYPE_3:
-                recordList = mTypeThreeList;
-                break;
-            case Constant.TYPE_4:
-                break;
-        }
-        if (recordList.size() == 0) {
-            recordList.add(record);
-        } else {
-            for (int i=0; i<recordList.size(); i++) {
-                if (recordList.get(i).getGameTime() > record.getGameTime()) {  //如果找到大于我们当前的时间
-
-                }
-            }
-        }
+//        ArrayList<Record> recordList = null;
+//        switch (record.getGameType()) {
+//            case Constant.TYPE_1:
+//                recordList = mTypeOneList;
+//                break;
+//            case Constant.TYPE_2:
+//                recordList = mTypeTwoList;
+//                break;
+//            case Constant.TYPE_3:
+//                recordList = mTypeThreeList;
+//                break;
+//            case Constant.TYPE_4:
+//                break;
+//        }
+//        if (recordList.size() == 0) {
+//            recordList.add(record);
+//        } else {
+//            for (int i=0; i<recordList.size(); i++) {
+//                if (recordList.get(i).getGameTime() > record.getGameTime()) {  //如果找到大于我们当前的时间
+//
+//                }
+//            }
+//        }
         RecordDao recordDao = new RecordDao(this);
         recordDao.insertRecord(record);
     }
 
     /**
      * 判断是不是新纪录
-     * @param record
+     * @param time 完成时间
+     * @param type 游戏类型
      * @return
      */
-    boolean isNewRecord(Record record) {
-        switch (record.getGameType()) {
+    boolean isNewRecord(int time, int type) {
+        ArrayList<Record> recordList = null;
+        switch (type) {
             case Constant.TYPE_1:
-                return record.getGameTime() < mTypeOneList.get(5).getGameTime();
+                recordList = mTypeOneList;
+                break;
             case Constant.TYPE_2:
-                return record.getGameTime() < mTypeTwoList.get(5).getGameTime();
+                recordList = mTypeOneList;
+                break;
             case Constant.TYPE_3:
-                return record.getGameTime() < mTypeThreeList.get(5).getGameTime();
+                recordList = mTypeOneList;
+                break;
             case Constant.TYPE_4:
                 break;
         }
+        if (recordList.size() < 5)
+            return true;
+        else if (time < recordList.get(4).getGameTime())
+            return true;
         return false;
     }
 
