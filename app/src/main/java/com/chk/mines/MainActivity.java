@@ -64,6 +64,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         init();
+        dataInit();
     }
 
     void init() {
@@ -95,6 +96,10 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         mBlueConnector.setOnClickListener(this);
         mAbout.setOnClickListener(this);
         mRecord.setOnClickListener(this);
+    }
+
+    void dataInit() {
+        startQuery();
 
     }
 

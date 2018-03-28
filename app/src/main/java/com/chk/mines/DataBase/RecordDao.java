@@ -25,11 +25,9 @@ public class RecordDao {
 
     public void insertRecord(Record record) {
         db = mDBHelper.getWritableDatabase();
-//        db.beginTransaction();
         db.execSQL("insert into "+mDBHelper.TABLE_NAME+" values(?,?,?,?)",new Object[]{record.getGameType(),
                 record.getGameTime(),record.getGamePlayer(),record.getGameData()});
         db.close();
-//        db.endTransaction();
         Log.i(TAG,"Insert Record:Name:"+record.getGamePlayer()+" Time:"+record.getGameTime()+" Type:"+record.getGameType());
     }
 
@@ -39,7 +37,7 @@ public class RecordDao {
     public Cursor queryRecord(int game_type) {
         Log.i(TAG,"query Record");
         db = mDBHelper.getWritableDatabase();
-        Cursor cursor = db.rawQuery("select * from "+RecordDBHelper.TABLE_NAME+" where game_type = "+game_type+" limit 5",null);
+        Cursor cursor = db.rawQuery("select * from "+RecordDBHelper.TABLE_NAME+" where game_type = "+game_type+" limit 5 order by game_time",null);
 //        Cursor cursor = db.rawQuery("select * from records",null);
 //        while (cursor.moveToNext()) {
 //            int gameType = cursor.getInt(cursor.getColumnIndex("game_type"));
@@ -59,6 +57,4 @@ public class RecordDao {
     public void updateRecord() {
 
     }
-
-
 }

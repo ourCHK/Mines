@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import com.chk.mines.Beans.Record;
+import com.chk.mines.Beans.RecordList;
 import com.chk.mines.CustomDialogs.AcceptOrRejectDialog;
 import com.chk.mines.CustomDialogs.LeaveForDialog;
 import com.chk.mines.CustomDialogs.NewRecordDialog;
@@ -32,6 +33,10 @@ public class BaseActivity extends AppCompatActivity {
     public static ArrayList<Record> mTypeTwoList = new ArrayList<>(5);
     public static ArrayList<Record> mTypeThreeList = new ArrayList<>(5);
 
+    public static RecordList mListOne;
+    public static RecordList mListTwo;
+    public static RecordList mListThree;
+
     public static ArrayList<AppCompatActivity> mActivityList = new ArrayList<>();
     private static AppCompatActivity mCurResumeActivity; //当前Resume的Activity;
 
@@ -41,8 +46,6 @@ public class BaseActivity extends AppCompatActivity {
     private LeaveForDialog leaveForMultipleGameDialog;   //离开多人游戏
 
     private NewRecordDialog newRecordDialog;
-
-
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -184,6 +187,15 @@ public class BaseActivity extends AppCompatActivity {
         parseCursor(cursor1,mTypeOneList);
         parseCursor(cursor2,mTypeTwoList);
         parseCursor(cursor3,mTypeThreeList);
+        mListOne = new RecordList(mTypeOneList);
+        mListTwo = new RecordList(mTypeTwoList);
+        mListThree = new RecordList(mTypeThreeList);
+        Log.i(TAG,"mListOne:");
+        mListOne.printAllNode();
+        Log.i(TAG,"mListTwo:");
+        mListTwo.printAllNode();
+        Log.i(TAG,"mListThree:");
+        mListThree.printAllNode();
     }
 
     public void parseCursor(Cursor cursor,ArrayList<Record> arrayList) {

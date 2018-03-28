@@ -376,11 +376,27 @@ public class GameActivity extends BaseActivity implements View.OnClickListener,G
                 break;
             case FLAG_CONFUSED:
                 confuseCube(row, column);
+                makeGameSuccessTest();
                 break;
         }
         mMineView.invalidate();     //刷新界面
         setRemainMinesOrCheckResult();
         //在这里也许应该加一个网络通信的东西
+    }
+
+    /**
+     * 瞬间让游戏成功
+     */
+    void makeGameSuccessTest() {
+        for (int i=0; i<mines.length; i++) {
+            for (int j=0; j<mines[0].length; j++) {
+                if (mines[i][j].getNum() != -1) {
+                    mines[i][j].setOpen(true);
+                }
+            }
+        }
+//        mMineView.invalidate();
+//        setRemainMinesOrCheckResult();
     }
 
     /**
