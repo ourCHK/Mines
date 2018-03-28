@@ -15,6 +15,7 @@ import android.widget.Toast;
 import com.chk.mines.Beans.Record;
 import com.chk.mines.CustomAdapter.RecordAdapter;
 import com.chk.mines.CustomDialogs.RecordDialog;
+import com.chk.mines.CustomDialogs.RecordListDialog;
 import com.chk.mines.CustomDialogs.RestartDialog;
 import com.chk.mines.CustomServices.ServerConnectService;
 import com.chk.mines.Interfaces.OnDialogButtonClickListener;
@@ -34,7 +35,7 @@ import static com.chk.mines.GameActivity.TYPE_4;
 public class MainActivity extends BaseActivity implements View.OnClickListener {
 
     RestartDialog restartDialog;
-    RecordDialog recordDialog;
+    RecordListDialog recordDialog;
 
     View mCurrentLayout;
     View mPreLayout;
@@ -142,7 +143,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 startQuery();
                 break;
             case R.id.record:
-                checkSize();
+//                checkSize();
                 showRecordDialog();
                 break;
 
@@ -217,7 +218,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 
     void showRecordDialog() {
         if (recordDialog == null) {
-            recordDialog = new RecordDialog(this,R.style.Theme_AppCompat_Dialog);
+            recordDialog = new RecordListDialog(this,R.style.Theme_AppCompat_Dialog,mListOne,mListTwo,mListThree);
         }
         recordDialog.show();
     }

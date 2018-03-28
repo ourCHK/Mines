@@ -172,4 +172,29 @@ public class RecordList {
         }
         return currentTime;
     }
+
+    /**
+     * 获取List的size
+     * @return
+     */
+    public int size() {
+        return size;
+    }
+
+    /**
+     * 根据Position来获取recordList的record
+     * @return
+     */
+    public Record get(int position) {
+        Record record = null;
+        RecordNode currentNode = recordNodeHead;
+        for (int i=0; i<size; i++) {
+            if (i == position) {
+                record = currentNode.record;
+                break;
+            }
+            currentNode = currentNode.nextNode;
+        }
+        return record;
+    }
 }

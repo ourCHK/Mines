@@ -37,7 +37,7 @@ public class RecordDao {
     public Cursor queryRecord(int game_type) {
         Log.i(TAG,"query Record");
         db = mDBHelper.getWritableDatabase();
-        Cursor cursor = db.rawQuery("select * from "+RecordDBHelper.TABLE_NAME+" where game_type = "+game_type+" limit 5 order by game_time",null);
+        Cursor cursor = db.rawQuery("select * from "+RecordDBHelper.TABLE_NAME+" where game_type = "+game_type+" order by game_time limit 5",null);
 //        Cursor cursor = db.rawQuery("select * from records",null);
 //        while (cursor.moveToNext()) {
 //            int gameType = cursor.getInt(cursor.getColumnIndex("game_type"));
