@@ -33,11 +33,17 @@ public class RecordList {
         Log.i(TAG,"longestTime:"+getLongestTime());
     }
 
+    public void insert(Record record) {
+        RecordNode recordNode = new RecordNode();
+        recordNode.record = record;
+        insert(recordNode);
+    }
+
     /**
      * 插入节点
      * @param recordNode
      */
-    void insert(RecordNode recordNode) {
+    public void insert(RecordNode recordNode) {
         if (size == 0) {
             recordNodeHead = recordNode;
         } else {

@@ -259,6 +259,18 @@ public class BaseActivity extends AppCompatActivity {
 //        }
         RecordDao recordDao = new RecordDao(this);
         recordDao.insertRecord(record);
+
+        switch (record.getGameType()) {
+            case Constant.TYPE_1:
+                mListOne.insert(record);
+                break;
+            case Constant.TYPE_2:
+                mListTwo.insert(record);
+                break;
+            case Constant.TYPE_3:
+                mListThree.insert(record);
+                break;
+        }
     }
 
     /**

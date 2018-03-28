@@ -141,5 +141,13 @@ public class RecordListDialog extends Dialog {
         mRecyclerView.setLayoutManager(new LinearLayoutManager(mContext));
         mRecordAdapterOne.notifyDataSetChanged();
     }
+
+    @Override
+    public void show() {
+        super.show();
+        mRecordSpinner.setSelection(0);
+        mRecyclerView.setAdapter(mRecordAdapterOne);
+        mRecordAdapterOne.notifyDataSetChanged();
+    }
 }
 
