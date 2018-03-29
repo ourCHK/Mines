@@ -57,13 +57,12 @@ public class RecordListDialog extends Dialog {
 
         setCancelable(false);
 
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND,
-                WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
+//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND,
+//                WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
         Display display = getWindow().getWindowManager().getDefaultDisplay();
         WindowManager.LayoutParams lp = getWindow().getAttributes();
         lp.width = display.getWidth(); // 设置dialog宽度为屏幕的4/5
         getWindow().setAttributes(lp);
-
     }
 
     void init() {

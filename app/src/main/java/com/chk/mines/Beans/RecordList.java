@@ -51,7 +51,7 @@ public class RecordList {
             RecordNode currentNode = recordNodeHead;
             RecordNode previousNode = recordNodeHead;
             do {
-                if (recordNode.record.getGameType() < currentNode.record.getGameTime()) {
+                if (recordNode.record.getGameTime() < currentNode.record.getGameTime()) {
                     recordNode.nextNode = currentNode;
                     if (previousNode == recordNodeHead) {   //说明比第一个节点还快
                         recordNodeHead = recordNode;

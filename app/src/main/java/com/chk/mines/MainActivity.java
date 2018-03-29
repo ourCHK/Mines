@@ -14,11 +14,13 @@ import android.widget.Toast;
 
 import com.chk.mines.Beans.Record;
 import com.chk.mines.CustomAdapter.RecordAdapter;
+import com.chk.mines.CustomDialogs.CustomGameDialog;
 import com.chk.mines.CustomDialogs.RecordDialog;
 import com.chk.mines.CustomDialogs.RecordListDialog;
 import com.chk.mines.CustomDialogs.RestartDialog;
 import com.chk.mines.CustomServices.ServerConnectService;
 import com.chk.mines.Interfaces.OnDialogButtonClickListener;
+import com.chk.mines.Utils.Constant;
 
 import java.util.ArrayList;
 
@@ -36,6 +38,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 
     RestartDialog restartDialog;
     RecordListDialog recordDialog;
+    CustomGameDialog customGameDialog;
 
     View mCurrentLayout;
     View mPreLayout;
@@ -100,8 +103,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     }
 
     void dataInit() {
-        startQuery();
 
+        startQuery();
     }
 
     @Override
@@ -126,8 +129,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 startGameActivity();
                 break;
             case R.id.type4:
-                mChooseGameType = TYPE_4;
-                startGameActivity();
+                showCustomGameDialog();
                 break;
             case R.id.wifiConnector:
                 mConnectorType = WIFI;
@@ -221,6 +223,51 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
             recordDialog = new RecordListDialog(this,R.style.Theme_AppCompat_Dialog,mListOne,mListTwo,mListThree);
         }
         recordDialog.show();
+    }
+
+    void showCustomGameDialog() {
+        if (customGameDialog == null) {
+            customGameDialog = new CustomGameDialog(this,R.style.Custom_Dialog_Style) {
+                @Override
+                public void onLeftClick() {
+                    dismiss();
+                }
+
+                @Override
+                public void onRightClick() {
+                    if (isAnyEmpty()) {
+                        Toast.makeText(MainActivity.this, "请将填写完整", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if (getMineRow() < Constant.MIN_CUSTOM_ROW) {
+                        Toast.makeText(MainActivity.this,"排数必须大于等于："+Constant.MIN_CUSTOM_ROW, Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if (getMineRow() > Constant.MAX_CUSTOM_ROW){
+                        Toast.makeText(MainActivity.this,"排数必须小于等于："+Constant.MAX_CUSTOM_ROW, Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if (getMineColumn() < Constant.MIN_CUSTOM_COLUMN) {
+                        Toast.makeText(MainActivity.this,"列数必须大于等于："+Constant.MIN_CUSTOM_COLUMN, Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if (getMineColumn() > Constant.MAX_CUSTOM_COLUMN) {
+                        Toast.makeText(MainActivity.this,"列数必须小于等于："+Constant.MAX_CUSTOM_COLUMN, Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if (getMinePercent() < Constant.MIN_CUSTOM_MINE_PERCENT) {
+                        Toast.makeText(MainActivity.this,"雷比例必须大于等于："+Constant.MIN_CUSTOM_MINE_PERCENT, Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if (getMinePercent() > Constant.MAX_CUSTOM_MINE_PERCENT) {
+                        Toast.makeText(MainActivity.this,"雷比例必须小于等于："+Constant.MAX_CUSTOM_MINE_PERCENT, Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    dismiss();
+                }
+            };
+        }
+        customGameDialog.show();
     }
 
     @Override
