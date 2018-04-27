@@ -155,7 +155,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     void startGameActivity() {
         mChooseGameType = mChooseGameType | FLAG_IS_SINGLE;
 
-        Intent intent = new Intent(this, GameActivity.class);
+        Intent intent = new Intent(this, RemovalGameActivity.class);
         intent.putExtra(GAME_TYPE, mChooseGameType);
         startActivity(intent);
     }
