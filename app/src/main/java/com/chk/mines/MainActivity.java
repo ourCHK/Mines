@@ -2,9 +2,7 @@ package com.chk.mines;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayout;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
@@ -12,14 +10,12 @@ import android.widget.Button;
 import android.widget.TableLayout;
 import android.widget.Toast;
 
-import com.chk.mines.Beans.Record;
-import com.chk.mines.CustomAdapter.RecordAdapter;
-import com.chk.mines.CustomDialogs.RecordDialog;
-import com.chk.mines.CustomDialogs.RestartDialog;
+import com.chk.mines.CustomDialogs.CustomGameDialog;
+import com.chk.mines.CustomDialogs.RecordListDialog;
+import com.chk.mines.CustomDialogs.RestartRequestConfirmDialog;
 import com.chk.mines.CustomServices.ServerConnectService;
 import com.chk.mines.Interfaces.OnDialogButtonClickListener;
-
-import java.util.ArrayList;
+import com.chk.mines.Utils.Constant;
 
 import static com.chk.mines.ConnectActivity.BLUETOOTH;
 import static com.chk.mines.ConnectActivity.WIFI;
@@ -31,10 +27,11 @@ import static com.chk.mines.GameActivity.TYPE_3;
 import static com.chk.mines.GameActivity.TYPE_4;
 
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends BaseActivity implements View.OnClickListener {
 
-    RestartDialog restartDialog;
-    RecordDialog recordDialog;
+    RestartRequestConfirmDialog restartDialog;
+    RecordListDialog recordDialog;
+    CustomGameDialog customGameDialog;
 
     View mCurrentLayout;
     View mPreLayout;
@@ -58,17 +55,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     int mChooseGameType;
 
-    ArrayList<Record> mTypeOneList;
-    ArrayList<Record> mTypeTwoList;
-    ArrayList<Record> mTypeThreeList;
-    RecordAdapter mRecordAdapter;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         init();
+        dataInit();
     }
 
     void init() {
@@ -100,25 +93,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mBlueConnector.setOnClickListener(this);
         mAbout.setOnClickListener(this);
         mRecord.setOnClickListener(this);
-//        dataInit();
-
     }
 
     void dataInit() {
-        mTypeOneList = new ArrayList<>();
-        mTypeTwoList = new ArrayList<>();
-        mTypeThreeList = new ArrayList<>();
-        for (int i=0;i<5;i++) {
-            Record record = new Record();
-            record.setName("CHK");
-            record.setGameTime(1);
-            mTypeOneList.add(record);
-            mTypeTwoList.add(record);
-            mTypeThreeList.add(record);
-        }
-        mRecordAdapter = new RecordAdapter(mTypeOneList);
-        mRecordRecyclerView.setAdapter(mRecordAdapter);
-        mRecordRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        startQuery();
     }
 
     @Override
@@ -132,19 +111,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.type1:
                 mChooseGameType = TYPE_1;
-                startGameActivity();
+                startGameActivity(8,8,10,TYPE_1);
                 break;
             case R.id.type2:
                 mChooseGameType = TYPE_2;
-                startGameActivity();
+                startGameActivity(16,16,40,TYPE_2);
                 break;
             case R.id.type3:
                 mChooseGameType = TYPE_3;
-                startGameActivity();
+                startGameActivity(16,30,99,TYPE_3);
                 break;
             case R.id.type4:
-                mChooseGameType = TYPE_4;
-                startGameActivity();
+                showCustomGameDialog();
                 break;
             case R.id.wifiConnector:
                 mConnectorType = WIFI;
@@ -155,20 +133,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 startConnectActivity();
                 break;
             case R.id.about:
-                showRestartDialog();
+                Toast.makeText(this, "Powered by CHK", Toast.LENGTH_LONG).show();
+//                startQuery();
+
                 break;
             case R.id.record:
+//                checkSize();
                 showRecordDialog();
                 break;
 
         }
     }
 
-    void startGameActivity() {
-        mChooseGameType = mChooseGameType | FLAG_IS_SINGLE;
-
-        Intent intent = new Intent(this, GameActivity.class);
-        intent.putExtra(GAME_TYPE, mChooseGameType);
+    /**
+     * 启动游戏界面
+     * @param rows  行数
+     * @param columns   列数
+     * @param mMineCount    雷的数量
+     */
+    void startGameActivity(int rows,int columns,int mMineCount,int gameType) {
+        Intent intent = new Intent(this,RemovalGameActivity.class);
+        intent.putExtra("rows",rows);
+        intent.putExtra("columns",columns);
+        intent.putExtra("mMineCount",mMineCount);
+        intent.putExtra("mGameType",gameType);
         startActivity(intent);
     }
 
@@ -215,7 +203,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     void showRestartDialog() {  //测试
         if (restartDialog == null) {
-            restartDialog = new RestartDialog(this, R.style.Theme_AppCompat_Dialog);
+            restartDialog = new RestartRequestConfirmDialog(this, R.style.Theme_AppCompat_Dialog);
             restartDialog.setOnDialogButtonClickListener(new OnDialogButtonClickListener() {
                 @Override
                 public void onLeftClick() {     //返回
@@ -232,9 +220,55 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     void showRecordDialog() {
         if (recordDialog == null) {
-            recordDialog = new RecordDialog(this,R.style.Theme_AppCompat_Dialog);
+            recordDialog = new RecordListDialog(this,R.style.Theme_AppCompat_Dialog,mListOne,mListTwo,mListThree);
         }
         recordDialog.show();
+    }
+
+    void showCustomGameDialog() {
+        if (customGameDialog == null) {
+            customGameDialog = new CustomGameDialog(this,R.style.Custom_Dialog_Style) {
+                @Override
+                public void onLeftClick() {
+                    dismiss();
+                }
+
+                @Override
+                public void onRightClick() {
+                    if (isAnyEmpty()) {
+                        Toast.makeText(MainActivity.this, "请将填写完整", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if (getMineRow() < Constant.MIN_CUSTOM_ROW) {
+                        Toast.makeText(MainActivity.this,"排数必须大于等于："+Constant.MIN_CUSTOM_ROW, Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if (getMineRow() > Constant.MAX_CUSTOM_ROW){
+                        Toast.makeText(MainActivity.this,"排数必须小于等于："+Constant.MAX_CUSTOM_ROW, Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if (getMineColumn() < Constant.MIN_CUSTOM_COLUMN) {
+                        Toast.makeText(MainActivity.this,"列数必须大于等于："+Constant.MIN_CUSTOM_COLUMN, Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if (getMineColumn() > Constant.MAX_CUSTOM_COLUMN) {
+                        Toast.makeText(MainActivity.this,"列数必须小于等于："+Constant.MAX_CUSTOM_COLUMN, Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if (getMinePercent() < Constant.MIN_CUSTOM_MINE_PERCENT) {
+                        Toast.makeText(MainActivity.this,"雷比例必须大于等于："+Constant.MIN_CUSTOM_MINE_PERCENT, Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if (getMinePercent() > Constant.MAX_CUSTOM_MINE_PERCENT) {
+                        Toast.makeText(MainActivity.this,"雷比例必须小于等于："+Constant.MAX_CUSTOM_MINE_PERCENT, Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    startGameActivity(getMineRow(),getMineColumn(),getMineCount(),TYPE_4);
+                    dismiss();
+                }
+            };
+        }
+        customGameDialog.show();
     }
 
     @Override

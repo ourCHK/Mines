@@ -28,7 +28,7 @@ import static com.chk.mines.GameActivity.PointDown;
  * 可自定义的MineView，其实后面可以全部按这个来
  */
 
-public class CustomMineView extends View{
+public class CustomMineView extends View {
 
     public static int DEVICE_WIDTH;
     public static int DEVICE_HEIGHT;
@@ -39,7 +39,7 @@ public class CustomMineView extends View{
     Bitmap mBlackMineBitmap;
     Bitmap mRedMineBitmap;
     Bitmap mFlagBitmap;
-    Bitmap mFlagAndConfuzedBitmap;
+    Bitmap mFlagAndConfusedBitmap;
     Rect rectResize;
     Rect rectBitmap;
 
@@ -121,7 +121,7 @@ public class CustomMineView extends View{
         mBlackMineBitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.mine_black);
         mRedMineBitmap = BitmapFactory.decodeResource(getResources(),R.mipmap.mine_red);
         mFlagBitmap = BitmapFactory.decodeResource(getResources(),R.mipmap.flag);
-        mFlagAndConfuzedBitmap = BitmapFactory.decodeResource(getResources(),R.mipmap.flag_confused);
+        mFlagAndConfusedBitmap = BitmapFactory.decodeResource(getResources(),R.mipmap.flag_confused);
         rectResize = new Rect();
         rectBitmap = new Rect(0,0,mBlackMineBitmap.getWidth(),mBlackMineBitmap.getHeight());
 
@@ -264,7 +264,7 @@ public class CustomMineView extends View{
                             if (mines[i][j].isMine())   //刚好位置也是雷，那就不画这个confused
                                 continue;
                         }
-                        canvas.drawBitmap(mFlagAndConfuzedBitmap, rectBitmap, rectResize,mPaint);
+                        canvas.drawBitmap(mFlagAndConfusedBitmap, rectBitmap, rectResize,mPaint);
                     }
                 }
             }

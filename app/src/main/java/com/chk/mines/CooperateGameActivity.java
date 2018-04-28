@@ -26,7 +26,7 @@ import com.chk.mines.Beans.CommunicateData;
 import com.chk.mines.Beans.Mine;
 import com.chk.mines.CustomDialogs.CustomDialog;
 import com.chk.mines.CustomDialogs.DisconnectDialog;
-import com.chk.mines.CustomDialogs.RestartDialog;
+import com.chk.mines.CustomDialogs.RestartRequestConfirmDialog;
 import com.chk.mines.CustomDialogs.WaitingForSyncDialog;
 import com.chk.mines.CustomServices.ClientConnectService;
 import com.chk.mines.CustomServices.ServerConnectService;
@@ -142,7 +142,7 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
 
     WaitingForSyncDialog syncDialog;
     DisconnectDialog disconnectDialog;
-    RestartDialog restartDialog;
+    RestartRequestConfirmDialog restartDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -983,7 +983,7 @@ public class CooperateGameActivity extends AppCompatActivity implements View.OnC
 
     void showRestartDialog() {
         if (restartDialog == null) {
-            restartDialog = new RestartDialog(this,R.style.Custom_Dialog_Style);
+            restartDialog = new RestartRequestConfirmDialog(this,R.style.Custom_Dialog_Style);
             restartDialog.setOnDialogButtonClickListener(new OnDialogButtonClickListener() {
                 @Override
                 public void onLeftClick() {     //返回

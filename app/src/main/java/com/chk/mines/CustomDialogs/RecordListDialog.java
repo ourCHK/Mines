@@ -14,39 +14,39 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import com.chk.mines.Beans.Record;
 import com.chk.mines.Beans.RecordList;
 import com.chk.mines.CustomAdapter.RecordAdapter;
 import com.chk.mines.R;
-
-import java.util.ArrayList;
 
 /**
  * Created by chk on 18-3-15.
  */
 
-public class RecordDialog extends Dialog {
+public class RecordListDialog extends Dialog {
 
     ImageView mClose;
     RecyclerView mRecyclerView;
     Spinner mRecordSpinner;
 
-    ArrayList<Record> mCurrentList;
-    ArrayList<Record> mTypeOneList;
-    ArrayList<Record> mTypeTwoList;
-    ArrayList<Record> mTypeThreeList;
-    RecordAdapter mRecordAdapter;
-
+    RecordList mTypeOneList;
+    RecordList mTypeTwoList;
+    RecordList mTypeThreeList;
+    RecordAdapter mRecordAdapterOne;
+    RecordAdapter mRecordAdapterTwo;
+    RecordAdapter mRecordAdapterThree;
     Context mContext;
 
-    public RecordDialog(@NonNull Context context) {
+    public RecordListDialog(@NonNull Context context) {
         super(context);
         this.mContext = context;
     }
 
-    public RecordDialog(@NonNull Context context, int themeResId) {
+    public RecordListDialog(@NonNull Context context, int themeResId, RecordList listOne,  RecordList listTwo,  RecordList listThree ) {
         super(context, themeResId);
         this.mContext = context;
+        mTypeOneList = listOne;
+        mTypeTwoList = listTwo;
+        mTypeThreeList = listThree;
     }
 
     @Override
@@ -63,11 +63,11 @@ public class RecordDialog extends Dialog {
         WindowManager.LayoutParams lp = getWindow().getAttributes();
         lp.width = display.getWidth(); // 设置dialog宽度为屏幕的4/5
         getWindow().setAttributes(lp);
-
     }
 
     void init() {
         viewInit();
+        dataInit();
     }
 
     void viewInit() {
@@ -86,19 +86,16 @@ public class RecordDialog extends Dialog {
                 Toast.makeText(mContext, "you click the:"+i+"", Toast.LENGTH_SHORT).show();
                 switch (i) {
                     case 0:
-                        mCurrentList.clear();
-                        mCurrentList.addAll(mTypeOneList);
-                        mRecordAdapter.notifyDataSetChanged();
+                        mRecyclerView.setAdapter(mRecordAdapterOne);
+                        mRecordAdapterOne.notifyDataSetChanged();
                         break;
                     case 1:
-                        mCurrentList.clear();
-                        mCurrentList.addAll(mTypeTwoList);
-                        mRecordAdapter.notifyDataSetChanged();
+                        mRecyclerView.setAdapter(mRecordAdapterTwo);
+                        mRecordAdapterOne.notifyDataSetChanged();
                         break;
                     case 2:
-                        mCurrentList.clear();
-                        mCurrentList.addAll(mTypeThreeList);
-                        mRecordAdapter.notifyDataSetChanged();
+                        mRecyclerView.setAdapter(mRecordAdapterThree);
+                        mRecordAdapterOne.notifyDataSetChanged();
                         break;
                 }
             }
@@ -110,7 +107,7 @@ public class RecordDialog extends Dialog {
         });
     }
 
-//    void dataInit() {
+    void dataInit() {
 //        mCurrentList = new ArrayList<>();
 //        mTypeOneList = new ArrayList<>();
 //        mTypeTwoList = new ArrayList<>();
@@ -135,10 +132,21 @@ public class RecordDialog extends Dialog {
 //            mTypeThreeList.add(record);
 //        }
 //        RecordList recordList = new RecordList(mTypeOneList);
-//        mRecordAdapterOne = new RecordAdapter(mCurrentList);
-//        mRecyclerView.setAdapter(mRecordAdapterOne);
-//        mRecyclerView.setLayoutManager(new LinearLayoutManager(mContext));
-//        mRecordAdapterOne.notifyDataSetChanged();
-//    }
+        mRecordAdapterOne = new RecordAdapter(mTypeOneList);
+        mRecordAdapterTwo = new RecordAdapter(mTypeTwoList);
+        mRecordAdapterThree = new RecordAdapter(mTypeThreeList);
+
+        mRecyclerView.setAdapter(mRecordAdapterOne);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(mContext));
+        mRecordAdapterOne.notifyDataSetChanged();
+    }
+
+    @Override
+    public void show() {
+        super.show();
+        mRecordSpinner.setSelection(0);
+        mRecyclerView.setAdapter(mRecordAdapterOne);
+        mRecordAdapterOne.notifyDataSetChanged();
+    }
 }
 

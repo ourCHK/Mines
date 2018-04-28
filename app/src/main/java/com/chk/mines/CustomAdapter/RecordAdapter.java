@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.chk.mines.Beans.Record;
+import com.chk.mines.Beans.RecordList;
 import com.chk.mines.R;
 
 import java.util.ArrayList;
@@ -17,9 +18,9 @@ import java.util.ArrayList;
 
 public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordHolder> {
 
-    ArrayList<Record> mRecordList = new ArrayList<>();
+    RecordList mRecordList;
 
-    public RecordAdapter(ArrayList<Record> recordList) {
+    public RecordAdapter(RecordList recordList) {
         this.mRecordList = recordList;
     }
 
@@ -33,8 +34,10 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordHold
     public void onBindViewHolder(RecordHolder holder, int position) {
         Record record = mRecordList.get(position);
         holder.rank.setText((position+1)+"");
-        holder.name.setText(record.getName()+"");
-        holder.time.setText(record.getGameTime()+"");
+        if (record != null) {
+            holder.name.setText(record.getGamePlayer()+"");
+            holder.time.setText(record.getGameTime()+"");
+        }
     }
 
     @Override
@@ -44,7 +47,7 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordHold
 
     @Override
     public int getItemCount() {
-        return mRecordList.size();
+        return 5;
     }
 
     class RecordHolder extends RecyclerView.ViewHolder {

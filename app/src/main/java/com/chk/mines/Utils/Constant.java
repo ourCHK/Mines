@@ -40,9 +40,15 @@ public class Constant {
     public final static int ACCEPT_NEW_GAME = 13;
     public final static int REJECT_NEW_GAME = 14;
 
-
     public final static int DRAG = 1;
     public final static int FLAG = 2;
     public final static int FLAG_CONFUSED = 3;
     public final static int PointDown = 10; //接收View传来的消息
+
+    public final static int MAX_CUSTOM_ROW = 40;
+    public final static int MIN_CUSTOM_ROW = 8;
+    public final static int MAX_CUSTOM_COLUMN = 40;
+    public final static int MIN_CUSTOM_COLUMN = 8;
+    public final static int MAX_CUSTOM_MINE_PERCENT = 60;
+    public final static int MIN_CUSTOM_MINE_PERCENT = 5;
 }

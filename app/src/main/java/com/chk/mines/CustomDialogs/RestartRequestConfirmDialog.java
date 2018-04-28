@@ -24,9 +24,9 @@ import java.util.TimerTask;
  * 确认重新开始的对话框
  */
 
-public class RestartDialog extends Dialog implements OnTimeEnd {
+public class RestartRequestConfirmDialog extends Dialog implements OnTimeEnd {
 
-    private final static String TAG = RestartDialog.class.getSimpleName();
+    private final static String TAG = RestartRequestConfirmDialog.class.getSimpleName();
 
     Context mContext;
 
@@ -34,12 +34,16 @@ public class RestartDialog extends Dialog implements OnTimeEnd {
     Button mRightButton;
     OnDialogButtonClickListener mOnDialogButtonClickListener;
 
-    public RestartDialog(@NonNull Context context) {
+    Handler mDialogHandler;
+    Timer timer;
+    int time;
+
+    public RestartRequestConfirmDialog(@NonNull Context context) {
         super(context);
         this.mContext = context;
     }
 
-    public RestartDialog(@NonNull Context context, int themeResId) {
+    public RestartRequestConfirmDialog(@NonNull Context context, int themeResId) {
         super(context, themeResId);
         this.mContext = context;
     }
@@ -48,7 +52,22 @@ public class RestartDialog extends Dialog implements OnTimeEnd {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.dialog_layout_restart);
+        setContentView(R.layout.dialog_layout_restart_confirm);
+
+        mDialogHandler = new Handler(){
+            @Override
+            public void handleMessage(Message msg) {
+                switch (msg.what) {
+                    case Constant.TIME_CHANGED:
+                        mLeftButton.setText("拒绝("+time+")");
+                        if (time == 0) {
+                            timer.cancel();
+                            mLeftButton.performClick();
+                        }
+                        break;
+                }
+            }
+        };
 
         mLeftButton = findViewById(R.id.leftButton);
         mRightButton = findViewById(R.id.rightButton);
@@ -110,12 +129,26 @@ public class RestartDialog extends Dialog implements OnTimeEnd {
     protected void onStart() {
         super.onStart();
         Log.i(TAG,"start");
+        time = 5;
+        mLeftButton.setText("拒绝("+time+")");
+        timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                time--;
+                mDialogHandler.sendEmptyMessage(Constant.TIME_CHANGED);
+            }
+        },1000,1000);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
         Log.i(TAG,"stop");
+        if (timer != null) {
+            timer.cancel();
+            timer = null;
+        }
     }
 
     @Override
@@ -123,4 +156,5 @@ public class RestartDialog extends Dialog implements OnTimeEnd {
         super.cancel();
         Log.i(TAG,"cancel");
     }
+
 }

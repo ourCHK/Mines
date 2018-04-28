@@ -16,6 +16,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.chk.mines.Beans.Mine;
+import com.chk.mines.Beans.Record;
 import com.chk.mines.Interfaces.GameState;
 import com.chk.mines.Interfaces.OnDialogButtonClickListener;
 
@@ -34,7 +35,7 @@ import java.util.TimerTask;
 import static com.chk.mines.GameActivity.PointType.DRAG;
 import static com.chk.mines.GameActivity.PointType.FLAG;
 
-public class GameActivity extends AppCompatActivity implements View.OnClickListener,GameState{
+public class GameActivity extends BaseActivity implements View.OnClickListener,GameState{
     public final static String TAG = GameActivity.class.getSimpleName();
     public final static String GAME_TYPE = "GameType";
     public final static String SERVER_OR_CLIENT = "ServerOrClient";
@@ -83,34 +84,34 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
     LinearLayout mMainLayout;   //整个窗口的Layout
     LinearLayout mOperateLayout;    //操作窗口的Layout
 
-//    @BindView(R.id.mineViewContainer)
+    //    @BindView(R.id.mineViewContainer)
     LinearLayout mMineViewContainer;
 
-//    @BindView(R.id.shovel)
+    //    @BindView(R.id.shovel)
     ImageView mShovel;
 
-//    @BindView(R.id.flag)
+    //    @BindView(R.id.flag)
     ImageView mFlag;
 
-//    @BindView(R.id.flag_confused)
+    //    @BindView(R.id.flag_confused)
     ImageView mFlagConfused;
 
-//    @BindView(R.id.timeView)
+    //    @BindView(R.id.timeView)
     TimeTextView mTimeView;
 
-//    @BindView(R.id.restart)
+    //    @BindView(R.id.restart)
     ImageView mRestart;
 
-//    @BindView(R.id.startAndPaused)
+    //    @BindView(R.id.startAndPaused)
     ImageView mStartAndPaused;
 
-//    @BindView(R.id.remainMines)
+    //    @BindView(R.id.remainMines)
     TextView mRemainMines;
 
-//    @BindView(R.id.gameView)
+    //    @BindView(R.id.gameView)
     ScrollView mGameView;
 
-//    @BindView(R.id.pausedView)
+    //    @BindView(R.id.pausedView)
     TextView mPausedView;
 
 //    ServerConnectService mServerConnectService;
@@ -375,11 +376,27 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case FLAG_CONFUSED:
                 confuseCube(row, column);
+                makeGameSuccessTest();
                 break;
         }
         mMineView.invalidate();     //刷新界面
         setRemainMinesOrCheckResult();
         //在这里也许应该加一个网络通信的东西
+    }
+
+    /**
+     * 瞬间让游戏成功
+     */
+    void makeGameSuccessTest() {
+        for (int i=0; i<mines.length; i++) {
+            for (int j=0; j<mines[0].length; j++) {
+                if (mines[i][j].getNum() != -1) {
+                    mines[i][j].setOpen(true);
+                }
+            }
+        }
+//        mMineView.invalidate();
+//        setRemainMinesOrCheckResult();
     }
 
     /**
@@ -553,7 +570,15 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
     public void gameSuccess() {
         GAME_STATE = GAME_SUCCESS;
         mStartAndPaused.setImageResource(R.mipmap.pause);
-        showCustomDialog(GAME_SUCCESS);
+        if (isNewRecord(time, mChoosedGameType)) {  //新纪录
+            Record record = new Record();
+            record.setGameData(System.currentTimeMillis()+"");
+            record.setGameTime(time);
+            record.setGameType(mChoosedGameType);
+            showNewRecordDialog(record);
+
+        } else
+            showCustomDialog(GAME_SUCCESS);
         if (timer != null)
             timer.cancel();
         Log.i("GameActivity","Success");
