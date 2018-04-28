@@ -286,13 +286,13 @@ public class BaseActivity extends AppCompatActivity {
                 recordList = mTypeOneList;
                 break;
             case Constant.TYPE_2:
-                recordList = mTypeOneList;
+                recordList = mTypeTwoList;
                 break;
             case Constant.TYPE_3:
-                recordList = mTypeOneList;
+                recordList = mTypeThreeList;
                 break;
-            case Constant.TYPE_4:
-                break;
+            case Constant.TYPE_4:   //自定义游戏不做记录
+                return false;
         }
         if (recordList.size() < 5)
             return true;

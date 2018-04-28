@@ -111,15 +111,15 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 break;
             case R.id.type1:
                 mChooseGameType = TYPE_1;
-                startGameActivity(8,8,10);
+                startGameActivity(8,8,10,TYPE_1);
                 break;
             case R.id.type2:
                 mChooseGameType = TYPE_2;
-                startGameActivity(16,16,40);
+                startGameActivity(16,16,40,TYPE_2);
                 break;
             case R.id.type3:
                 mChooseGameType = TYPE_3;
-                startGameActivity(16,30,99);
+                startGameActivity(16,30,99,TYPE_3);
                 break;
             case R.id.type4:
                 showCustomGameDialog();
@@ -133,9 +133,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 startConnectActivity();
                 break;
             case R.id.about:
-//                showRestartConfirmDialog();
-//                showNewRecordDialog(100);
-                startQuery();
+                Toast.makeText(this, "Powered by CHK", Toast.LENGTH_LONG).show();
+//                startQuery();
+
                 break;
             case R.id.record:
 //                checkSize();
@@ -151,11 +151,12 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
      * @param columns   列数
      * @param mMineCount    雷的数量
      */
-    void startGameActivity(int rows,int columns,int mMineCount) {
+    void startGameActivity(int rows,int columns,int mMineCount,int gameType) {
         Intent intent = new Intent(this,RemovalGameActivity.class);
         intent.putExtra("rows",rows);
         intent.putExtra("columns",columns);
         intent.putExtra("mMineCount",mMineCount);
+        intent.putExtra("mGameType",gameType);
         startActivity(intent);
     }
 
@@ -262,7 +263,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                         Toast.makeText(MainActivity.this,"雷比例必须小于等于："+Constant.MAX_CUSTOM_MINE_PERCENT, Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    startGameActivity(getMineRow(),getMineColumn(),getMineCount());
+                    startGameActivity(getMineRow(),getMineColumn(),getMineCount(),TYPE_4);
                     dismiss();
                 }
             };

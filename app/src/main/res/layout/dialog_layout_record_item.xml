@@ -8,6 +8,7 @@
     android:layout_height="wrap_content">
     <TextView
         android:gravity="center"
+        android:layout_gravity="center"
         android:id="@+id/recordRank"
         android:text="1"
         android:layout_weight="1"
@@ -17,18 +18,20 @@
 
     <TextView
         android:gravity="center"
+        android:layout_gravity="center"
         android:id="@+id/recordName"
         android:textStyle="bold"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:text="" />
 
     <TextView
+        android:layout_gravity="center"
         android:gravity="center"
         android:id="@+id/recordTime"
         android:textStyle="bold"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:text="" />

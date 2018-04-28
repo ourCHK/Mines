@@ -15,6 +15,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.chk.mines.Beans.Mine;
+import com.chk.mines.Beans.Record;
 import com.chk.mines.CustomDialogs.CustomDialog;
 import com.chk.mines.CustomDialogs.RestartDialog;
 import com.chk.mines.CustomDialogs.RestartRequestConfirmDialog;
@@ -58,6 +59,7 @@ public class RemovalGameActivity extends BaseActivity implements GameState,View.
     int rows;
     int columns;
     int mMineCount;
+    int mGameType;
     private String mMinesString;    //多人游戏时存储的雷的数据
 
     int curGameState;
@@ -142,6 +144,7 @@ public class RemovalGameActivity extends BaseActivity implements GameState,View.
         rows = intent.getIntExtra("rows",-1);
         columns = intent.getIntExtra("columns",-1);
         mMineCount = intent.getIntExtra("mMineCount",-1);
+        mGameType = intent.getIntExtra("mGameType",-1);
     }
 
     void minesInit() {
@@ -479,7 +482,15 @@ public class RemovalGameActivity extends BaseActivity implements GameState,View.
     @Override
     public void gameSuccess() {
         mStartOrPaused.setImageResource(R.mipmap.pause);
-        showSuccessDialog();
+        if (isNewRecord(time,mGameType)) {
+            Record record = new Record();
+            record.setGameData(System.currentTimeMillis()+"");
+            record.setGameTime(time);
+            record.setGameType(mGameType);
+            showNewRecordDialog(record);
+        } else {
+            showSuccessDialog();
+        }
         Log.i(TAG, "GAME_SUCCESS");
     }
 
