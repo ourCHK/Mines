@@ -99,6 +99,7 @@ public abstract class CustomGameDialog extends Dialog implements OnDialogButtonC
         mineRow.setText("");
         mineColumn.setText("");
         minePercent.setText("");
+        minePercent.clearFocus();   //清除焦点
     }
 
 }

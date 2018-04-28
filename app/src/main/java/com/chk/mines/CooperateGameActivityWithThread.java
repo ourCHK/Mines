@@ -25,7 +25,7 @@ import com.chk.mines.Beans.CommunicateData;
 import com.chk.mines.Beans.Mine;
 import com.chk.mines.CustomDialogs.CustomDialog;
 import com.chk.mines.CustomDialogs.DisconnectDialog;
-import com.chk.mines.CustomDialogs.RestartDialog;
+import com.chk.mines.CustomDialogs.RestartRequestConfirmDialog;
 import com.chk.mines.CustomDialogs.WaitingForConfirmDialog;
 import com.chk.mines.CustomDialogs.WaitingForSyncDialog;
 import com.chk.mines.CustomServices.ClientConnectService;
@@ -94,7 +94,7 @@ public class CooperateGameActivityWithThread extends BaseActivity implements Gam
 
     WaitingForSyncDialog syncDialog;
     DisconnectDialog disconnectDialog;
-    RestartDialog restartDialog;
+    RestartRequestConfirmDialog restartDialog;
     WaitingForConfirmDialog waitingConfirmDialog;
     CustomDialog successDialog;
     CustomDialog failDialog;
@@ -540,7 +540,7 @@ public class CooperateGameActivityWithThread extends BaseActivity implements Gam
                     case CommunicateData.ASK_FOR_RESTART:   //对方请求重新开始
                         if (curGameState != Constant.GAME_OVER && curGameState != Constant.GAME_INIT)
                             curGameState = Constant.GAME_PAUSE; //那么我们的状态也要暂时改为暂停游戏
-                        showRestartDialog();
+                        showRestartConfirmDialog();
                         break;
                     case CommunicateData.ACCEPTED:      //对方已经接受了说明可以开始初始化了，我们这边初始化？？
                         curGameState = Constant.GAME_RESTART;   //对方同意，说明可以重新开始了
@@ -601,7 +601,7 @@ public class CooperateGameActivityWithThread extends BaseActivity implements Gam
                     case CommunicateData.ASK_FOR_RESTART:   //对方请求重新开始
                         if (curGameState != Constant.GAME_OVER && curGameState != Constant.GAME_INIT)
                             curGameState = Constant.GAME_PAUSE; //那么我们的状态也要暂时改为暂停游戏
-                        showRestartDialog();
+                        showRestartConfirmDialog();
                         break;
                     case CommunicateData.ACCEPTED:      //对方已经接受了说明可以开始初始化了，我们这边初始化？？
                         curGameState = Constant.GAME_RESTART;   //对方同意，说明可以重新开始了
@@ -957,9 +957,9 @@ public class CooperateGameActivityWithThread extends BaseActivity implements Gam
             disconnectDialog.dismiss();
     }
 
-    void showRestartDialog() {
+    void showRestartConfirmDialog() {
         if (restartDialog == null) {
-            restartDialog = new RestartDialog(this, R.style.Custom_Dialog_Style);
+            restartDialog = new RestartRequestConfirmDialog(this, R.style.Custom_Dialog_Style);
             restartDialog.setCancelable(false);
             restartDialog.setOnDialogButtonClickListener(new OnDialogButtonClickListener() {
                 @Override

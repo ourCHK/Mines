@@ -2,11 +2,8 @@ package com.chk.mines;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -17,15 +14,10 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.chk.mines.Beans.CommunicateData;
 import com.chk.mines.Beans.Mine;
 import com.chk.mines.CustomDialogs.CustomDialog;
-import com.chk.mines.CustomDialogs.DisconnectDialog;
 import com.chk.mines.CustomDialogs.RestartDialog;
-import com.chk.mines.CustomDialogs.WaitingForConfirmDialog;
-import com.chk.mines.CustomDialogs.WaitingForSyncDialog;
-import com.chk.mines.CustomServices.ClientConnectService;
-import com.chk.mines.CustomServices.ServerConnectService;
+import com.chk.mines.CustomDialogs.RestartRequestConfirmDialog;
 import com.chk.mines.CustomViews.CustomMineView;
 import com.chk.mines.CustomViews.TimeTextView;
 import com.chk.mines.Interfaces.GameState;
@@ -38,9 +30,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import static com.chk.mines.ChooseGameTypeActivity.CLIENT;
-import static com.chk.mines.ChooseGameTypeActivity.SERVER;
 
 public class RemovalGameActivity extends BaseActivity implements GameState,View.OnClickListener{
 
@@ -124,7 +113,6 @@ public class RemovalGameActivity extends BaseActivity implements GameState,View.
         dataInit();
         minesInit();
         viewInit();
-        curGameState = Constant.GAME_INIT;  //给定一个初始状态
     }
 
     void dataInit() {
@@ -154,10 +142,6 @@ public class RemovalGameActivity extends BaseActivity implements GameState,View.
         rows = intent.getIntExtra("rows",-1);
         columns = intent.getIntExtra("columns",-1);
         mMineCount = intent.getIntExtra("mMineCount",-1);
-
-        rows = 8;
-        columns = 8;
-        mMineCount = 10;
     }
 
     void minesInit() {
@@ -253,6 +237,8 @@ public class RemovalGameActivity extends BaseActivity implements GameState,View.
             }
             Log.i("GameActivity", string);
         }
+
+        curGameState = Constant.GAME_INIT;  //雷的数据初始化之后就应该设置为初始化状态
     }
 
     void startOrPauseGame() {
@@ -430,6 +416,7 @@ public class RemovalGameActivity extends BaseActivity implements GameState,View.
     public void gameInit() {
         dismissAllDialog();
         mShovel.performClick();   //设置默认为点击挖掘背景
+        mRemainMines.setText("Mines:" + 0 + "/" + mMineCount);  //初始化状态
         mMineView.setMines(mines, mMineCount);
         if (mMineViewContainer.getChildCount() == 0) {   //mMineViewContainer不能重复添加同一个View，判断内部View是否为0
             lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -558,7 +545,7 @@ public class RemovalGameActivity extends BaseActivity implements GameState,View.
 
                 @Override
                 public void onRightClick() {    //继续    //这里发送一个同意的消息
-
+                    curGameState = Constant.GAME_RESTART;
                 }
             });
         }

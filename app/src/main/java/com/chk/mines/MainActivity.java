@@ -2,9 +2,7 @@ package com.chk.mines;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayout;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
@@ -12,17 +10,12 @@ import android.widget.Button;
 import android.widget.TableLayout;
 import android.widget.Toast;
 
-import com.chk.mines.Beans.Record;
-import com.chk.mines.CustomAdapter.RecordAdapter;
 import com.chk.mines.CustomDialogs.CustomGameDialog;
-import com.chk.mines.CustomDialogs.RecordDialog;
 import com.chk.mines.CustomDialogs.RecordListDialog;
-import com.chk.mines.CustomDialogs.RestartDialog;
+import com.chk.mines.CustomDialogs.RestartRequestConfirmDialog;
 import com.chk.mines.CustomServices.ServerConnectService;
 import com.chk.mines.Interfaces.OnDialogButtonClickListener;
 import com.chk.mines.Utils.Constant;
-
-import java.util.ArrayList;
 
 import static com.chk.mines.ConnectActivity.BLUETOOTH;
 import static com.chk.mines.ConnectActivity.WIFI;
@@ -36,7 +29,7 @@ import static com.chk.mines.GameActivity.TYPE_4;
 
 public class MainActivity extends BaseActivity implements View.OnClickListener {
 
-    RestartDialog restartDialog;
+    RestartRequestConfirmDialog restartDialog;
     RecordListDialog recordDialog;
     CustomGameDialog customGameDialog;
 
@@ -118,15 +111,15 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 break;
             case R.id.type1:
                 mChooseGameType = TYPE_1;
-                startGameActivity();
+                startGameActivity(8,8,10);
                 break;
             case R.id.type2:
                 mChooseGameType = TYPE_2;
-                startGameActivity();
+                startGameActivity(16,16,40);
                 break;
             case R.id.type3:
                 mChooseGameType = TYPE_3;
-                startGameActivity();
+                startGameActivity(16,30,99);
                 break;
             case R.id.type4:
                 showCustomGameDialog();
@@ -140,7 +133,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 startConnectActivity();
                 break;
             case R.id.about:
-//                showRestartDialog();
+//                showRestartConfirmDialog();
 //                showNewRecordDialog(100);
                 startQuery();
                 break;
@@ -152,11 +145,17 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         }
     }
 
-    void startGameActivity() {
-        mChooseGameType = mChooseGameType | FLAG_IS_SINGLE;
-
-        Intent intent = new Intent(this, RemovalGameActivity.class);
-        intent.putExtra(GAME_TYPE, mChooseGameType);
+    /**
+     * 启动游戏界面
+     * @param rows  行数
+     * @param columns   列数
+     * @param mMineCount    雷的数量
+     */
+    void startGameActivity(int rows,int columns,int mMineCount) {
+        Intent intent = new Intent(this,RemovalGameActivity.class);
+        intent.putExtra("rows",rows);
+        intent.putExtra("columns",columns);
+        intent.putExtra("mMineCount",mMineCount);
         startActivity(intent);
     }
 
@@ -203,7 +202,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 
     void showRestartDialog() {  //测试
         if (restartDialog == null) {
-            restartDialog = new RestartDialog(this, R.style.Theme_AppCompat_Dialog);
+            restartDialog = new RestartRequestConfirmDialog(this, R.style.Theme_AppCompat_Dialog);
             restartDialog.setOnDialogButtonClickListener(new OnDialogButtonClickListener() {
                 @Override
                 public void onLeftClick() {     //返回
@@ -263,6 +262,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                         Toast.makeText(MainActivity.this,"雷比例必须小于等于："+Constant.MAX_CUSTOM_MINE_PERCENT, Toast.LENGTH_SHORT).show();
                         return;
                     }
+                    startGameActivity(getMineRow(),getMineColumn(),getMineCount());
                     dismiss();
                 }
             };
