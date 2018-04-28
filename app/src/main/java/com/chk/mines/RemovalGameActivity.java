@@ -76,10 +76,7 @@ public class RemovalGameActivity extends BaseActivity implements GameState,View.
 
     int mCurrentType = Constant.DRAG;   //默认是这个,挖掘的类型
 
-    WaitingForSyncDialog syncDialog;
-    DisconnectDialog disconnectDialog;
     RestartDialog restartDialog;
-    WaitingForConfirmDialog waitingConfirmDialog;
     CustomDialog successDialog;
     CustomDialog failDialog;
 
@@ -127,6 +124,7 @@ public class RemovalGameActivity extends BaseActivity implements GameState,View.
         dataInit();
         minesInit();
         viewInit();
+        curGameState = Constant.GAME_INIT;  //给定一个初始状态
     }
 
     void dataInit() {
@@ -163,9 +161,9 @@ public class RemovalGameActivity extends BaseActivity implements GameState,View.
     }
 
     void minesInit() {
-
         mMineView = new CustomMineView(this, rows, columns);
         mMineView.setHandler(mGameHandler);
+        resetMines();
     }
 
     void viewInit() {
@@ -411,7 +409,21 @@ public class RemovalGameActivity extends BaseActivity implements GameState,View.
 
     @Override
     public void onClick(View v) {
-
+        switch (v.getId()) {
+            case R.id.restart:
+                showRestartDialog();
+                break;
+            case R.id.showDialog:
+                break;
+            case R.id.flag:     //这里对按钮背景或则资源进行设置
+            case R.id.flag_confused:
+            case R.id.shovel:
+                setBackgroundAndCurrentType(v.getId());
+                break;
+            case R.id.startAndPaused:
+                startOrPauseGame(); //暂停或者开始游戏
+                break;
+        }
     }
 
     @Override
@@ -522,6 +534,7 @@ public class RemovalGameActivity extends BaseActivity implements GameState,View.
             }
         }
     }
+
 
     /**
      * 关闭所有正在显示的Dialog
