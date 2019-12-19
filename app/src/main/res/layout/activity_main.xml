@@ -18,10 +18,11 @@
                 android:layout_width="match_parent"
                 android:id="@+id/singlePlayer"
                 android:textSize="24sp"
-                android:text="@string/single_player"/>
+                android:text="@string/start_play"/>
         </TableRow>
 
         <TableRow
+            android:visibility="gone"
             android:gravity="center">
             <Button
                 android:textSize="24sp"
@@ -40,6 +41,7 @@
         </TableRow>
 
         <TableRow
+            android:visibility="gone"
             android:gravity="center">
             <Button
                 android:layout_width="match_parent"
@@ -49,6 +51,7 @@
         </TableRow>
 
         <TableRow
+            android:visibility="gone"
         android:gravity="center">
             <Button
                 android:layout_width="match_parent"
@@ -91,6 +94,7 @@
             />
 
         <Button
+            android:visibility="gone"
             app:layout_columnWeight="1"
             app:layout_rowWeight="1"
             android:id="@+id/type4"

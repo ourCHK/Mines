@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Mines</string>
-    <string name="single_player">单人游戏</string>
+    <string name="start_play">开始游戏</string>
     <string name="double_player">双人游戏</string>
     <string name="record">记录榜</string>
     <string name="about">关于</string>
