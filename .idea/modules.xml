@@ -2,10 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Mines.iml" filepath="$PROJECT_DIR$/Mines.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/Mines-app.iml" filepath="$PROJECT_DIR$/app/Mines-app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/Projects-Mines.iml" filepath="$PROJECT_DIR$/Projects-Mines.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Mines.iml" filepath="$PROJECT_DIR$/.idea/modules/Mines.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/Mines.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/Mines.app.iml" />
     </modules>
   </component>
 </project>
